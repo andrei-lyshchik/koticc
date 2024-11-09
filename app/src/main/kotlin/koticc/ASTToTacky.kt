@@ -235,6 +235,42 @@ private class TackyGenerator(initialVariableCount: Int) {
 
                 tempValue
             }
+            is AST.Expression.Conditional -> {
+                val condition = generateExpression(expression.condition)
+                val elseLabel = nextLabelName("cond_else")
+                instructions.add(
+                    Tacky.Instruction.JumpIfZero(
+                        src = condition,
+                        target = elseLabel,
+                    ),
+                )
+                val thenValue = generateExpression(expression.thenExpression)
+                val result = nextVariable()
+                instructions.add(
+                    Tacky.Instruction.Copy(
+                        src = thenValue,
+                        dst = result,
+                    ),
+                )
+                val endLabel = nextLabelName("cond_end")
+                instructions.add(
+                    Tacky.Instruction.Jump(endLabel),
+                )
+                instructions.add(
+                    Tacky.Instruction.Label(elseLabel),
+                )
+                val elseValue = generateExpression(expression.elseExpression)
+                instructions.add(
+                    Tacky.Instruction.Copy(
+                        src = elseValue,
+                        dst = result,
+                    ),
+                )
+                instructions.add(
+                    Tacky.Instruction.Label(endLabel),
+                )
+                result
+            }
         }
 
     private fun generateIf(ifStatement: AST.Statement.If) {

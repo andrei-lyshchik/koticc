@@ -27,6 +27,7 @@ class ReturnCodeIntegrationTest {
         "/programs/unary.c",
         "/programs/increments_decrements.c",
         "/programs/if.c",
+        "/programs/conditional_ternary.c",
     )
 
     @ParameterizedTest

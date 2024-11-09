@@ -160,26 +160,40 @@ private class Parser(
                     break
                 }
                 nextToken()
-                val right =
-                    when (binaryOperatorLike.associativity()) {
-                        is Associativity.Left -> parseExpression(precedence + 1).bind()
-                        is Associativity.Right -> parseExpression(precedence).bind()
-                    }
                 left =
                     when (binaryOperatorLike) {
                         is BinaryOperatorLike.BinaryOperator ->
                             AST.Expression.Binary(
                                 operator = binaryOperatorLike.value,
                                 left = left,
-                                right = right,
+                                // minPrecedence = precedence + 1 => left associative
+                                right = parseExpression(precedence + 1).bind(),
                             )
-                        is BinaryOperatorLike.Assignment -> AST.Expression.Assignment(left, right)
+                        is BinaryOperatorLike.Assignment ->
+                            AST.Expression.Assignment(
+                                left = left,
+                                // minPrecedence = precedence => right associative
+                                right = parseExpression(precedence).bind(),
+                            )
                         is BinaryOperatorLike.CompoundAssignmentOperator ->
                             AST.Expression.CompoundAssignment(
                                 operator = binaryOperatorLike.value,
                                 left = left,
-                                right = right,
+                                // minPrecedence = precedence => right associative
+                                right = parseExpression(precedence).bind(),
                             )
+                        is BinaryOperatorLike.Conditional -> {
+                            // any expression can be between ? and : - even assignment
+                            val thenExpression = parseExpression(0).bind()
+                            expectToken(Token.Colon).bind()
+                            // minPrecedence = precedence => right associative
+                            val elseExpression = parseExpression(precedence).bind()
+                            AST.Expression.Conditional(
+                                condition = left,
+                                thenExpression = thenExpression,
+                                elseExpression = elseExpression,
+                            )
+                        }
                     }
                 binaryOperatorLike = peekToken()?.let(::toBinaryOperatorLikeOrNull)
             }
@@ -359,6 +373,7 @@ private class Parser(
                     AST.CompoundAssignmentOperator.ShiftRight,
                     token.location,
                 )
+            Token.QuestionMark -> BinaryOperatorLike.Conditional
             else -> null
         }
     }
@@ -367,6 +382,7 @@ private class Parser(
         when (this) {
             is BinaryOperatorLike.Assignment -> 1
             is BinaryOperatorLike.CompoundAssignmentOperator -> 1
+            is BinaryOperatorLike.Conditional -> 2
             is BinaryOperatorLike.BinaryOperator ->
                 when (value) {
                     AST.BinaryOperator.LogicalOr -> 34
@@ -395,13 +411,6 @@ private class Parser(
                 }
         }
 
-    private fun BinaryOperatorLike.associativity() =
-        when (this) {
-            is BinaryOperatorLike.BinaryOperator -> Associativity.Left
-            is BinaryOperatorLike.Assignment -> Associativity.Right
-            is BinaryOperatorLike.CompoundAssignmentOperator -> Associativity.Right
-        }
-
     private fun Token.toPostfixOperatorOrNull() =
         when (this) {
             Token.DoublePlus -> AST.PostfixOperator.Increment
@@ -425,6 +434,8 @@ private sealed interface BinaryOperatorLike {
         val value: AST.CompoundAssignmentOperator,
         val location: Location,
     ) : BinaryOperatorLike
+
+    data object Conditional : BinaryOperatorLike
 }
 
 private sealed interface Associativity {

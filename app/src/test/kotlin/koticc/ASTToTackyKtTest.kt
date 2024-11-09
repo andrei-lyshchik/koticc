@@ -1021,4 +1021,122 @@ class ASTToTackyKtTest {
             tacky,
         )
     }
+
+    @Test
+    fun `should produce tacky for conditional expression`() {
+        val input =
+            ValidASTProgram(
+                value =
+                    AST.Program(
+                        functionDefinition =
+                            AST.FunctionDefinition(
+                                name = "main",
+                                body =
+                                    listOf(
+                                        AST.BlockItem.Declaration(
+                                            declaration =
+                                                AST.Declaration(
+                                                    name = "a.0",
+                                                    initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                                    location = Location(2, 5),
+                                                ),
+                                        ),
+                                        AST.BlockItem.Declaration(
+                                            declaration =
+                                                AST.Declaration(
+                                                    name = "b.1",
+                                                    initializer = null,
+                                                    location = Location(3, 5),
+                                                ),
+                                        ),
+                                        AST.BlockItem.Statement(
+                                            statement =
+                                                AST.Statement.Expression(
+                                                    expression =
+                                                        AST.Expression.Assignment(
+                                                            left = AST.Expression.Variable("a.0", Location(3, 13)),
+                                                            right =
+                                                                AST.Expression.Conditional(
+                                                                    condition =
+                                                                        AST.Expression.Binary(
+                                                                            operator = AST.BinaryOperator.Equal,
+                                                                            left = AST.Expression.Variable("a.0", Location(3, 13)),
+                                                                            right = AST.Expression.IntLiteral(1, Location(3, 17)),
+                                                                        ),
+                                                                    thenExpression =
+                                                                        AST.Expression.Assignment(
+                                                                            left = AST.Expression.Variable("b.1", Location(4, 5)),
+                                                                            right = AST.Expression.IntLiteral(2, Location(4, 9)),
+                                                                        ),
+                                                                    elseExpression =
+                                                                        AST.Expression.Assignment(
+                                                                            left = AST.Expression.Variable("b.1", Location(5, 5)),
+                                                                            right = AST.Expression.IntLiteral(3, Location(5, 9)),
+                                                                        ),
+                                                                ),
+                                                        ),
+                                                ),
+                                        ),
+                                    ),
+                                location = Location(1, 1),
+                            ),
+                    ),
+                variableCount = 2,
+            )
+
+        val tacky = programASTToTacky(input)
+
+        assertEquals(
+            Tacky.Program(
+                functionDefinition =
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                            listOf(
+                                Tacky.Instruction.Copy(
+                                    src = Tacky.Value.IntConstant(1),
+                                    dst = Tacky.Value.Variable("a.0"),
+                                ),
+                                Tacky.Instruction.Binary(
+                                    operator = Tacky.BinaryOperator.Equal,
+                                    left = Tacky.Value.Variable("a.0"),
+                                    right = Tacky.Value.IntConstant(1),
+                                    dst = Tacky.Value.Variable("tmp.2"),
+                                ),
+                                Tacky.Instruction.JumpIfZero(
+                                    src = Tacky.Value.Variable("tmp.2"),
+                                    target = LabelName("cond_else.0"),
+                                ),
+                                Tacky.Instruction.Copy(
+                                    src = Tacky.Value.IntConstant(2),
+                                    dst = Tacky.Value.Variable("b.1"),
+                                ),
+                                Tacky.Instruction.Copy(
+                                    src = Tacky.Value.Variable("b.1"),
+                                    dst = Tacky.Value.Variable("tmp.3"),
+                                ),
+                                Tacky.Instruction.Jump(
+                                    target = LabelName("cond_end.1"),
+                                ),
+                                Tacky.Instruction.Label(LabelName("cond_else.0")),
+                                Tacky.Instruction.Copy(
+                                    src = Tacky.Value.IntConstant(3),
+                                    dst = Tacky.Value.Variable("b.1"),
+                                ),
+                                Tacky.Instruction.Copy(
+                                    src = Tacky.Value.Variable("b.1"),
+                                    dst = Tacky.Value.Variable("tmp.3"),
+                                ),
+                                Tacky.Instruction.Label(LabelName("cond_end.1")),
+                                Tacky.Instruction.Copy(
+                                    src = Tacky.Value.Variable("tmp.3"),
+                                    dst = Tacky.Value.Variable("a.0"),
+                                ),
+                                Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
+                            ),
+                    ),
+            ),
+            tacky,
+        )
+    }
 }

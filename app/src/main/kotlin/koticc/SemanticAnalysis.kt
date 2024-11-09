@@ -121,6 +121,13 @@ private class SemanticAnalysisContext {
                 is AST.Expression.Postfix -> {
                     validatePostfix(expression).bind()
                 }
+                is AST.Expression.Conditional -> {
+                    AST.Expression.Conditional(
+                        condition = validateExpression(expression.condition).bind(),
+                        thenExpression = validateExpression(expression.thenExpression).bind(),
+                        elseExpression = validateExpression(expression.elseExpression).bind(),
+                    )
+                }
             }
         }
 

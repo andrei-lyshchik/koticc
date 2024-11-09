@@ -534,6 +534,76 @@ int main(void) {
                             right = AST.Expression.IntLiteral(value = 1, location = Location(2, 11)),
                         ),
                 ),
+            "a ? 1 : 2" to
+                AST.Expression.Conditional(
+                    condition = AST.Expression.Variable(name = "a", location = Location(2, 5)),
+                    thenExpression = AST.Expression.IntLiteral(value = 1, location = Location(2, 9)),
+                    elseExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 13)),
+                ),
+            "a ? b ? 1 : 2 : 3" to
+                AST.Expression.Conditional(
+                    condition = AST.Expression.Variable(name = "a", location = Location(2, 5)),
+                    thenExpression =
+                        AST.Expression.Conditional(
+                            condition = AST.Expression.Variable(name = "b", location = Location(2, 9)),
+                            thenExpression = AST.Expression.IntLiteral(value = 1, location = Location(2, 13)),
+                            elseExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 17)),
+                        ),
+                    elseExpression = AST.Expression.IntLiteral(value = 3, location = Location(2, 21)),
+                ),
+            "a ? 1 : b ? 2 : 3" to
+                AST.Expression.Conditional(
+                    condition = AST.Expression.Variable(name = "a", location = Location(2, 5)),
+                    thenExpression = AST.Expression.IntLiteral(value = 1, location = Location(2, 9)),
+                    elseExpression =
+                        AST.Expression.Conditional(
+                            condition = AST.Expression.Variable(name = "b", location = Location(2, 13)),
+                            thenExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 17)),
+                            elseExpression = AST.Expression.IntLiteral(value = 3, location = Location(2, 21)),
+                        ),
+                ),
+            "a = 1 ? 2 : 3" to
+                AST.Expression.Assignment(
+                    left = AST.Expression.Variable(name = "a", location = Location(2, 5)),
+                    right =
+                        AST.Expression.Conditional(
+                            condition = AST.Expression.IntLiteral(value = 1, location = Location(2, 9)),
+                            thenExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 13)),
+                            elseExpression = AST.Expression.IntLiteral(value = 3, location = Location(2, 17)),
+                        ),
+                ),
+            "a || b ? 1 : 2" to
+                AST.Expression.Conditional(
+                    condition =
+                        AST.Expression.Binary(
+                            operator = AST.BinaryOperator.LogicalOr,
+                            left = AST.Expression.Variable(name = "a", location = Location(2, 5)),
+                            right = AST.Expression.Variable(name = "b", location = Location(2, 10)),
+                        ),
+                    thenExpression = AST.Expression.IntLiteral(value = 1, location = Location(2, 14)),
+                    elseExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 18)),
+                ),
+            "1 ? 2 : 3 || 4" to
+                AST.Expression.Conditional(
+                    condition = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
+                    thenExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 9)),
+                    elseExpression =
+                        AST.Expression.Binary(
+                            operator = AST.BinaryOperator.LogicalOr,
+                            left = AST.Expression.IntLiteral(value = 3, location = Location(2, 13)),
+                            right = AST.Expression.IntLiteral(value = 4, location = Location(2, 18)),
+                        ),
+                ),
+            "1 ? a = 1 : 2" to
+                AST.Expression.Conditional(
+                    condition = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
+                    thenExpression =
+                        AST.Expression.Assignment(
+                            left = AST.Expression.Variable(name = "a", location = Location(2, 9)),
+                            right = AST.Expression.IntLiteral(value = 1, location = Location(2, 13)),
+                        ),
+                    elseExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 17)),
+                ),
         )
 
     @ParameterizedTest

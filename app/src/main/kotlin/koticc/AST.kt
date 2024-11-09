@@ -88,6 +88,15 @@ object AST {
             override val location: Location
                 get() = operand.location
         }
+
+        data class Conditional(
+            val condition: Expression,
+            val thenExpression: Expression,
+            val elseExpression: Expression,
+        ) : Expression {
+            override val location: Location
+                get() = condition.location
+        }
     }
 
     enum class UnaryOperator {

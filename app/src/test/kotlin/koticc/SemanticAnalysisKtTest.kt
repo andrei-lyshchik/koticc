@@ -220,19 +220,6 @@ class SemanticAnalysisKtTest {
         assertEquals(expected.left(), validate(input))
     }
 
-    class CompoundAssignmentTestCases : VarargArgumentsProvider(
-        AST.CompoundAssignmentOperator.Add,
-        AST.CompoundAssignmentOperator.Subtract,
-        AST.CompoundAssignmentOperator.Multiply,
-        AST.CompoundAssignmentOperator.Divide,
-        AST.CompoundAssignmentOperator.Modulo,
-        AST.CompoundAssignmentOperator.BitwiseAnd,
-        AST.CompoundAssignmentOperator.BitwiseOr,
-        AST.CompoundAssignmentOperator.BitwiseXor,
-        AST.CompoundAssignmentOperator.ShiftLeft,
-        AST.CompoundAssignmentOperator.ShiftRight,
-    )
-
     @ParameterizedTest
     @EnumSource(AST.CompoundAssignmentOperator::class)
     fun `should return error if left side of compound assignment is not a variable`(
@@ -682,6 +669,119 @@ class SemanticAnalysisKtTest {
                             ),
                     ),
                 variableCount = 1,
+            )
+
+        assertEquals(expected.right(), validate(input))
+    }
+
+    @Test
+    fun `should handle conditional expression`() {
+        val input =
+            AST.Program(
+                functionDefinition =
+                    AST.FunctionDefinition(
+                        name = "main",
+                        body =
+                            listOf(
+                                AST.BlockItem.Declaration(
+                                    declaration =
+                                        AST.Declaration(
+                                            name = "a",
+                                            initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                            location = Location(2, 5),
+                                        ),
+                                ),
+                                AST.BlockItem.Declaration(
+                                    declaration =
+                                        AST.Declaration(
+                                            name = "b",
+                                            initializer = null,
+                                            location = Location(3, 5),
+                                        ),
+                                ),
+                                AST.BlockItem.Statement(
+                                    statement =
+                                        AST.Statement.Expression(
+                                            expression =
+                                                AST.Expression.Conditional(
+                                                    condition =
+                                                        AST.Expression.Binary(
+                                                            operator = AST.BinaryOperator.Equal,
+                                                            left = AST.Expression.Variable("a", Location(3, 13)),
+                                                            right = AST.Expression.IntLiteral(1, Location(3, 17)),
+                                                        ),
+                                                    thenExpression =
+                                                        AST.Expression.Assignment(
+                                                            left = AST.Expression.Variable("b", Location(4, 5)),
+                                                            right = AST.Expression.IntLiteral(2, Location(4, 9)),
+                                                        ),
+                                                    elseExpression =
+                                                        AST.Expression.Assignment(
+                                                            left = AST.Expression.Variable("b", Location(5, 5)),
+                                                            right = AST.Expression.IntLiteral(3, Location(5, 9)),
+                                                        ),
+                                                ),
+                                        ),
+                                ),
+                            ),
+                        location = Location(1, 1),
+                    ),
+            )
+
+        val expected =
+            ValidASTProgram(
+                value =
+                    AST.Program(
+                        functionDefinition =
+                            AST.FunctionDefinition(
+                                name = "main",
+                                body =
+                                    listOf(
+                                        AST.BlockItem.Declaration(
+                                            declaration =
+                                                AST.Declaration(
+                                                    name = "a.0",
+                                                    initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                                    location = Location(2, 5),
+                                                ),
+                                        ),
+                                        AST.BlockItem.Declaration(
+                                            declaration =
+                                                AST.Declaration(
+                                                    name = "b.1",
+                                                    initializer = null,
+                                                    location = Location(3, 5),
+                                                ),
+                                        ),
+                                        AST.BlockItem.Statement(
+                                            statement =
+                                                AST.Statement.Expression(
+                                                    expression =
+                                                        AST.Expression.Conditional(
+                                                            condition =
+                                                                AST.Expression.Binary(
+                                                                    operator = AST.BinaryOperator.Equal,
+                                                                    left = AST.Expression.Variable("a.0", Location(3, 13)),
+                                                                    right = AST.Expression.IntLiteral(1, Location(3, 17)),
+                                                                ),
+                                                            thenExpression =
+                                                                AST.Expression.Assignment(
+                                                                    left = AST.Expression.Variable("b.1", Location(4, 5)),
+                                                                    right = AST.Expression.IntLiteral(2, Location(4, 9)),
+                                                                ),
+                                                            elseExpression =
+                                                                AST.Expression.Assignment(
+                                                                    left = AST.Expression.Variable("b.1", Location(5, 5)),
+                                                                    right = AST.Expression.IntLiteral(3, Location(5, 9)),
+                                                                ),
+                                                        ),
+                                                ),
+                                        ),
+                                    ),
+                                location = Location(1, 1),
+                            ),
+                    ),
+                variableCount = 2,
             )
 
         assertEquals(expected.right(), validate(input))
