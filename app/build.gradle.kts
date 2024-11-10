@@ -37,5 +37,10 @@ tasks.named<Test>("test") {
 spotless {
     kotlin {
         ktlint()
+            .editorConfigOverride(
+                mapOf(
+                    "ktlint_standard_max-line-length" to "disabled"
+                )
+            )
     }
 }

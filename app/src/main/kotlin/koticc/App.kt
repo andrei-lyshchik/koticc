@@ -22,8 +22,8 @@ class CompilerCommand : CliktCommand(name = "ktc") {
             option(
                 "--lex",
                 help =
-                    "Run only lexer, and stop after that, producing no output files, " +
-                        "and returning non-zero exit code if any of the stages fail.",
+                "Run only lexer, and stop after that, producing no output files, " +
+                    "and returning non-zero exit code if any of the stages fail.",
             ).flag()
                 .convert { PartialMode.Lex },
             option(
@@ -34,26 +34,26 @@ class CompilerCommand : CliktCommand(name = "ktc") {
             option(
                 "--validate",
                 help =
-                    "Run only semantic validation, and stop after that, producing no output files",
+                "Run only semantic validation, and stop after that, producing no output files",
             ).flag()
                 .convert { PartialMode.Validate },
             option(
                 "--tacky",
                 help =
-                    "Run only tacky code generation, and stop after that, producing no output files",
+                "Run only tacky code generation, and stop after that, producing no output files",
             ).flag()
                 .convert { PartialMode.Tacky },
             option(
                 "--codegen",
                 help =
-                    "Run only assembly code generation, and stop after that, producing no output files",
+                "Run only assembly code generation, and stop after that, producing no output files",
             ).flag()
                 .convert { PartialMode.Codegen },
             option(
                 "--emit-assembly",
                 "-S",
                 help =
-                    "Emit assembly into output file, but do not run the assembler and linker",
+                "Emit assembly into output file, but do not run the assembler and linker",
             ).flag()
                 .convert { PartialMode.EmitAssembly },
         ).single()

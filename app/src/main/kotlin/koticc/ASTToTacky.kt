@@ -23,10 +23,10 @@ private class TackyGenerator(initialVariableCount: Int) {
         )
         return Tacky.Program(
             functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = program.functionDefinition.name,
-                    body = instructions,
-                ),
+            Tacky.FunctionDefinition(
+                name = program.functionDefinition.name,
+                body = instructions,
+            ),
         )
     }
 
@@ -58,7 +58,7 @@ private class TackyGenerator(initialVariableCount: Int) {
             is AST.Statement.If -> generateIf(statement)
             is AST.Statement.Labeled -> generateLabeledStatement(statement)
             is AST.Statement.Goto -> generateGoto(statement)
-            is AST.Statement.Compound -> TODO()
+            is AST.Statement.Compound -> generateBlock(statement.block)
         }
     }
 
@@ -73,6 +73,10 @@ private class TackyGenerator(initialVariableCount: Int) {
             Tacky.Instruction.Label(statement.label),
         )
         generateStatement(statement.statement)
+    }
+
+    private fun generateBlock(blockItem: AST.Block) {
+        blockItem.blockItems.forEach { generateBlockItem(it) }
     }
 
     private fun generateReturn(statement: AST.Statement.Return) {

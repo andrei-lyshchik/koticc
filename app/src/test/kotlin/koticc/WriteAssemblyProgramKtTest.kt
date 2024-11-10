@@ -169,22 +169,22 @@ class WriteAssemblyProgramKtTest {
         val assembly =
             Assembly.Program(
                 functionDefinition =
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                            listOf(
-                                Assembly.Instruction.Label(LabelName("start")),
-                                Assembly.Instruction.Mov(
-                                    src = Assembly.Operand.Immediate(42),
-                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
-                                ),
-                                Assembly.Instruction.Mov(
-                                    src = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
-                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.Dx),
-                                ),
-                                Assembly.Instruction.Ret,
-                            ),
+                Assembly.FunctionDefinition(
+                    name = "main",
+                    body =
+                    listOf(
+                        Assembly.Instruction.Label(LabelName("start")),
+                        Assembly.Instruction.Mov(
+                            src = Assembly.Operand.Immediate(42),
+                            dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                        ),
+                        Assembly.Instruction.Mov(
+                            src = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                            dst = Assembly.Operand.Register(Assembly.RegisterValue.Dx),
+                        ),
+                        Assembly.Instruction.Ret,
                     ),
+                ),
             )
 
         val output = assemblyToString(assembly)
