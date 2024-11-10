@@ -24,7 +24,7 @@ int main(void) {
                 functionDefinition =
                     AST.FunctionDefinition(
                         name = "main",
-                        body = emptyList(),
+                        body = AST.Block(blockItems = emptyList()),
                         location = Location(1, 1),
                     ),
             )
@@ -78,10 +78,13 @@ int main(void) {
                     AST.FunctionDefinition(
                         name = "main",
                         body =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    AST.Declaration("a", null, Location(2, 5)),
-                                ),
+                            AST.Block(
+                                blockItems =
+                                    listOf(
+                                        AST.BlockItem.Declaration(
+                                            AST.Declaration("a", null, Location(2, 5)),
+                                        ),
+                                    ),
                             ),
                         location = Location(1, 1),
                     ),
@@ -107,17 +110,20 @@ int main(void) {
                     AST.FunctionDefinition(
                         name = "main",
                         body =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    AST.Declaration(
-                                        "a",
-                                        AST.Expression.IntLiteral(
-                                            value = 1,
-                                            location = Location(2, 13),
+                            AST.Block(
+                                blockItems =
+                                    listOf(
+                                        AST.BlockItem.Declaration(
+                                            AST.Declaration(
+                                                "a",
+                                                AST.Expression.IntLiteral(
+                                                    value = 1,
+                                                    location = Location(2, 13),
+                                                ),
+                                                Location(2, 5),
+                                            ),
                                         ),
-                                        Location(2, 5),
                                     ),
-                                ),
                             ),
                         location = Location(1, 1),
                     ),
@@ -143,16 +149,19 @@ int main(void) {
                     AST.FunctionDefinition(
                         name = "main",
                         body =
-                            listOf(
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Return(
-                                        AST.Expression.IntLiteral(
-                                            value = 1,
-                                            location = Location(2, 12),
+                            AST.Block(
+                                blockItems =
+                                    listOf(
+                                        AST.BlockItem.Statement(
+                                            AST.Statement.Return(
+                                                AST.Expression.IntLiteral(
+                                                    value = 1,
+                                                    location = Location(2, 12),
+                                                ),
+                                                Location(2, 5),
+                                            ),
                                         ),
-                                        Location(2, 5),
                                     ),
-                                ),
                             ),
                         location = Location(1, 1),
                     ),
@@ -178,12 +187,15 @@ int main(void) {
                     AST.FunctionDefinition(
                         name = "main",
                         body =
-                            listOf(
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Null(
-                                        location = Location(2, 5),
+                            AST.Block(
+                                blockItems =
+                                    listOf(
+                                        AST.BlockItem.Statement(
+                                            AST.Statement.Null(
+                                                location = Location(2, 5),
+                                            ),
+                                        ),
                                     ),
-                                ),
                             ),
                         location = Location(1, 1),
                     ),
@@ -626,10 +638,13 @@ int main(void) {
                     AST.FunctionDefinition(
                         name = "main",
                         body =
-                            listOf(
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Expression(expectedExpression),
-                                ),
+                            AST.Block(
+                                blockItems =
+                                    listOf(
+                                        AST.BlockItem.Statement(
+                                            AST.Statement.Expression(expectedExpression),
+                                        ),
+                                    ),
                             ),
                         location = Location(1, 1),
                     ),
@@ -727,6 +742,62 @@ int main(void) {
                             ),
                     ),
             ),
+        "if (a == 1) { int c = 1; b = c + 1; } else { b = 2; }" to
+            AST.Statement.If(
+                condition =
+                    AST.Expression.Binary(
+                        operator = AST.BinaryOperator.Equal,
+                        left = AST.Expression.Variable(name = "a", location = Location(2, 9)),
+                        right = AST.Expression.IntLiteral(value = 1, location = Location(2, 14)),
+                    ),
+                thenStatement =
+                    AST.Statement.Compound(
+                        block =
+                            AST.Block(
+                                blockItems =
+                                    listOf(
+                                        AST.BlockItem.Declaration(
+                                            declaration =
+                                                AST.Declaration(
+                                                    name = "c",
+                                                    initializer = AST.Expression.IntLiteral(value = 1, location = Location(2, 27)),
+                                                    location = Location(2, 19),
+                                                ),
+                                        ),
+                                        AST.BlockItem.Statement(
+                                            AST.Statement.Expression(
+                                                AST.Expression.Assignment(
+                                                    left = AST.Expression.Variable(name = "b", location = Location(2, 30)),
+                                                    right =
+                                                        AST.Expression.Binary(
+                                                            operator = AST.BinaryOperator.Add,
+                                                            left = AST.Expression.Variable(name = "c", location = Location(2, 34)),
+                                                            right = AST.Expression.IntLiteral(value = 1, location = Location(2, 38)),
+                                                        ),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                            ),
+                    ),
+                elseStatement =
+                    AST.Statement.Compound(
+                        block =
+                            AST.Block(
+                                blockItems =
+                                    listOf(
+                                        AST.BlockItem.Statement(
+                                            AST.Statement.Expression(
+                                                AST.Expression.Assignment(
+                                                    left = AST.Expression.Variable(name = "b", location = Location(2, 50)),
+                                                    right = AST.Expression.IntLiteral(value = 2, location = Location(2, 54)),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                            ),
+                    ),
+            ),
     )
 
     @ParameterizedTest
@@ -740,14 +811,76 @@ int main(void) {
             int main(void) {
                 $ifStatementInput
             }
-            """.trimIndent().also { println(it) }
+            """.trimIndent()
 
         val expected =
             AST.Program(
                 functionDefinition =
                     AST.FunctionDefinition(
                         name = "main",
-                        body = listOf(AST.BlockItem.Statement(expectedStatement)),
+                        body = AST.Block(blockItems = listOf(AST.BlockItem.Statement(expectedStatement))),
+                        location = Location(1, 1),
+                    ),
+            ).right()
+
+        assertEquals(expected, parseInput(input))
+    }
+
+    @Test
+    fun `should parse top level compound statement in function body`() {
+        val input =
+            """
+            int main(void) {
+                {
+                    int a = 1;
+                    int b = 2;
+                }
+            }
+            """.trimIndent()
+
+        val expected =
+            AST.Program(
+                functionDefinition =
+                    AST.FunctionDefinition(
+                        name = "main",
+                        body =
+                            AST.Block(
+                                blockItems =
+                                    listOf(
+                                        AST.BlockItem.Statement(
+                                            AST.Statement.Compound(
+                                                block =
+                                                    AST.Block(
+                                                        blockItems =
+                                                            listOf(
+                                                                AST.BlockItem.Declaration(
+                                                                    AST.Declaration(
+                                                                        name = "a",
+                                                                        initializer =
+                                                                            AST.Expression.IntLiteral(
+                                                                                value = 1,
+                                                                                location = Location(3, 17),
+                                                                            ),
+                                                                        location = Location(3, 9),
+                                                                    ),
+                                                                ),
+                                                                AST.BlockItem.Declaration(
+                                                                    AST.Declaration(
+                                                                        name = "b",
+                                                                        initializer =
+                                                                            AST.Expression.IntLiteral(
+                                                                                value = 2,
+                                                                                location = Location(4, 17),
+                                                                            ),
+                                                                        location = Location(4, 9),
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                    ),
+                                            ),
+                                        ),
+                                    ),
+                            ),
                         location = Location(1, 1),
                     ),
             ).right()
@@ -772,26 +905,29 @@ int main(void) {
                     AST.FunctionDefinition(
                         name = "main",
                         body =
-                            listOf(
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Labeled(
-                                        label = LabelName("label"),
-                                        statement =
-                                            AST.Statement.Expression(
-                                                AST.Expression.Assignment(
-                                                    left = AST.Expression.Variable(name = "a", location = Location(3, 5)),
-                                                    right = AST.Expression.IntLiteral(value = 1, location = Location(3, 9)),
-                                                ),
+                            AST.Block(
+                                blockItems =
+                                    listOf(
+                                        AST.BlockItem.Statement(
+                                            AST.Statement.Labeled(
+                                                label = LabelName("label"),
+                                                statement =
+                                                    AST.Statement.Expression(
+                                                        AST.Expression.Assignment(
+                                                            left = AST.Expression.Variable(name = "a", location = Location(3, 5)),
+                                                            right = AST.Expression.IntLiteral(value = 1, location = Location(3, 9)),
+                                                        ),
+                                                    ),
+                                                location = Location(2, 1),
                                             ),
-                                        location = Location(2, 1),
+                                        ),
+                                        AST.BlockItem.Statement(
+                                            AST.Statement.Goto(
+                                                label = LabelName("label"),
+                                                location = Location(4, 5),
+                                            ),
+                                        ),
                                     ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Goto(
-                                        label = LabelName("label"),
-                                        location = Location(4, 5),
-                                    ),
-                                ),
                             ),
                         location = Location(1, 1),
                     ),

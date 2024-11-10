@@ -45,7 +45,12 @@ private class VariableResolver {
         functionDefinition: AST.FunctionDefinition,
     ): Either<SemanticAnalysisError, AST.FunctionDefinition> =
         either {
-            functionDefinition.copy(body = functionDefinition.body.map { resolveBlockItem(it).bind() })
+            functionDefinition.copy(body = resolveBlock(functionDefinition.body).bind())
+        }
+
+    private fun resolveBlock(block: AST.Block): Either<SemanticAnalysisError, AST.Block> =
+        either {
+            block.copy(blockItems = block.blockItems.map { resolveBlockItem(it).bind() })
         }
 
     private fun resolveBlockItem(blockItem: AST.BlockItem): Either<SemanticAnalysisError, AST.BlockItem> =
@@ -102,6 +107,7 @@ private class VariableResolver {
                     )
                 }
                 is AST.Statement.Goto -> statement
+                is AST.Statement.Compound -> TODO()
             }
         }
 
@@ -236,7 +242,7 @@ private fun validateLabelsAreUnique(program: AST.Program) =
     }
 
 private fun findAllLabeledStatements(program: AST.Program): List<AST.Statement.Labeled> =
-    program.functionDefinition.body.filterIsInstance<AST.BlockItem.Statement>()
+    program.functionDefinition.body.blockItems.filterIsInstance<AST.BlockItem.Statement>()
         .map(AST.BlockItem.Statement::statement)
         .flatMap(::findAllLabeledStatements)
 
@@ -250,6 +256,7 @@ private fun findAllLabeledStatements(statement: AST.Statement): List<AST.Stateme
         is AST.Statement.Labeled -> listOf(statement) + findAllLabeledStatements(statement.statement)
         is AST.Statement.Null -> emptyList()
         is AST.Statement.Return -> emptyList()
+        is AST.Statement.Compound -> TODO()
     }
 
 private fun validateGotos(
@@ -266,7 +273,7 @@ private fun validateGotos(
 }
 
 private fun findAllGotos(program: AST.Program): List<AST.Statement.Goto> =
-    program.functionDefinition.body.filterIsInstance<AST.BlockItem.Statement>()
+    program.functionDefinition.body.blockItems.filterIsInstance<AST.BlockItem.Statement>()
         .map(AST.BlockItem.Statement::statement)
         .flatMap(::findAllGotos)
 
@@ -278,4 +285,5 @@ private fun findAllGotos(statement: AST.Statement): List<AST.Statement.Goto> =
         is AST.Statement.Labeled -> findAllGotos(statement.statement)
         is AST.Statement.Null -> emptyList()
         is AST.Statement.Return -> emptyList()
+        is AST.Statement.Compound -> TODO()
     }

@@ -15,7 +15,7 @@ private class TackyGenerator(initialVariableCount: Int) {
     private fun nextLabelName(prefix: String): LabelName = LabelName("$prefix.${labelCount++}")
 
     fun generateProgram(program: AST.Program): Tacky.Program {
-        program.functionDefinition.body.forEach { generateBlockItem(it) }
+        program.functionDefinition.body.blockItems.forEach { generateBlockItem(it) }
         instructions.add(
             Tacky.Instruction.Return(
                 value = Tacky.Value.IntConstant(0),
@@ -58,6 +58,7 @@ private class TackyGenerator(initialVariableCount: Int) {
             is AST.Statement.If -> generateIf(statement)
             is AST.Statement.Labeled -> generateLabeledStatement(statement)
             is AST.Statement.Goto -> generateGoto(statement)
+            is AST.Statement.Compound -> TODO()
         }
     }
 

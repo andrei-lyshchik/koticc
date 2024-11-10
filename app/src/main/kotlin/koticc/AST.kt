@@ -9,11 +9,18 @@ object AST {
 
     data class FunctionDefinition(
         val name: String,
-        val body: List<BlockItem>,
+        val body: Block,
         override val location: Location,
     ) : LocationAware
 
-    sealed interface BlockItem {
+    data class Block(
+        val blockItems: List<BlockItem>,
+    ) : LocationAware {
+        override val location: Location
+            get() = blockItems.firstOrNull()?.location ?: Location(0, 0)
+    }
+
+    sealed interface BlockItem : LocationAware {
         data class Declaration(val declaration: AST.Declaration) : BlockItem, LocationAware {
             override val location: Location = declaration.location
         }
@@ -58,6 +65,13 @@ object AST {
             val label: LabelName,
             override val location: Location,
         ) : Statement
+
+        data class Compound(
+            val block: Block,
+        ) : Statement {
+            override val location: Location
+                get() = block.location
+        }
     }
 
     sealed interface Expression : LocationAware {

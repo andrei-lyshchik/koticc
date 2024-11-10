@@ -73,19 +73,25 @@ private class Parser(
             expectToken(Token.OpenParen).bind()
             expectToken(Token.Void).bind()
             expectToken(Token.CloseParen).bind()
-            expectToken(Token.OpenBrace).bind()
 
-            val body = mutableListOf<AST.BlockItem>()
-            while (peekToken()?.value != Token.CloseBrace) {
-                body.add(parseBlockItem().bind())
-            }
-            expectToken(Token.CloseBrace).bind()
+            val body = parseBlock().bind()
 
             return AST.FunctionDefinition(
                 name = nameToken.value.value,
                 body = body,
                 location = returnTypeToken.location,
             ).right()
+        }
+
+    private fun parseBlock(): Either<ParserError, AST.Block> =
+        either {
+            expectToken(Token.OpenBrace).bind()
+            val body = mutableListOf<AST.BlockItem>()
+            while (peekToken()?.value != Token.CloseBrace) {
+                body.add(parseBlockItem().bind())
+            }
+            expectToken(Token.CloseBrace).bind()
+            AST.Block(body)
         }
 
     private fun parseBlockItem(): Either<ParserError, AST.BlockItem> =
@@ -161,6 +167,10 @@ private class Parser(
                     val labelToken = expectIdentifier().bind()
                     expectToken(Token.Semicolon).bind()
                     AST.Statement.Goto(LabelName(labelToken.value.value), gotoToken.location)
+                }
+                Token.OpenBrace -> {
+                    val block = parseBlock().bind()
+                    AST.Statement.Compound(block)
                 }
                 else -> {
                     val expression = parseExpression(0).bind()

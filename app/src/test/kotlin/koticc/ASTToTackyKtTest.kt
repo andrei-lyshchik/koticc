@@ -16,13 +16,16 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Statement(
-                                            AST.Statement.Return(
-                                                AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                Location(1, 0),
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Statement(
+                                                    AST.Statement.Return(
+                                                        AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                        Location(1, 0),
+                                                    ),
+                                                ),
                                             ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -70,16 +73,19 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Statement(
-                                            AST.Statement.Expression(
-                                                AST.Expression.Unary(
-                                                    operator = astUnaryOperator,
-                                                    operand = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                    location = Location(1, 0),
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Statement(
+                                                    AST.Statement.Expression(
+                                                        AST.Expression.Unary(
+                                                            operator = astUnaryOperator,
+                                                            operand = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                            location = Location(1, 0),
+                                                        ),
+                                                    ),
                                                 ),
                                             ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -142,16 +148,19 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Statement(
-                                            AST.Statement.Expression(
-                                                AST.Expression.Binary(
-                                                    operator = astBinaryOperator,
-                                                    left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                    right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Statement(
+                                                    AST.Statement.Expression(
+                                                        AST.Expression.Binary(
+                                                            operator = astBinaryOperator,
+                                                            left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                            right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                        ),
+                                                    ),
                                                 ),
                                             ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -192,26 +201,29 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Statement(
-                                            AST.Statement.Expression(
-                                                AST.Expression.Binary(
-                                                    operator = AST.BinaryOperator.Add,
-                                                    left =
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Statement(
+                                                    AST.Statement.Expression(
                                                         AST.Expression.Binary(
-                                                            operator = AST.BinaryOperator.Multiply,
-                                                            left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                            right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                            operator = AST.BinaryOperator.Add,
+                                                            left =
+                                                                AST.Expression.Binary(
+                                                                    operator = AST.BinaryOperator.Multiply,
+                                                                    left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                                    right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                                ),
+                                                            right =
+                                                                AST.Expression.Binary(
+                                                                    operator = AST.BinaryOperator.Divide,
+                                                                    left = AST.Expression.IntLiteral(3, Location(1, 0)),
+                                                                    right = AST.Expression.IntLiteral(4, Location(1, 0)),
+                                                                ),
                                                         ),
-                                                    right =
-                                                        AST.Expression.Binary(
-                                                            operator = AST.BinaryOperator.Divide,
-                                                            left = AST.Expression.IntLiteral(3, Location(1, 0)),
-                                                            right = AST.Expression.IntLiteral(4, Location(1, 0)),
-                                                        ),
+                                                    ),
                                                 ),
                                             ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -264,26 +276,29 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Statement(
-                                            AST.Statement.Expression(
-                                                AST.Expression.Binary(
-                                                    operator = AST.BinaryOperator.LogicalAnd,
-                                                    left =
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Statement(
+                                                    AST.Statement.Expression(
                                                         AST.Expression.Binary(
-                                                            operator = AST.BinaryOperator.Equal,
-                                                            left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                            right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                            operator = AST.BinaryOperator.LogicalAnd,
+                                                            left =
+                                                                AST.Expression.Binary(
+                                                                    operator = AST.BinaryOperator.Equal,
+                                                                    left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                                    right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                                ),
+                                                            right =
+                                                                AST.Expression.Binary(
+                                                                    operator = AST.BinaryOperator.NotEqual,
+                                                                    left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                                    right = AST.Expression.IntLiteral(3, Location(1, 0)),
+                                                                ),
                                                         ),
-                                                    right =
-                                                        AST.Expression.Binary(
-                                                            operator = AST.BinaryOperator.NotEqual,
-                                                            left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                            right = AST.Expression.IntLiteral(3, Location(1, 0)),
-                                                        ),
+                                                    ),
                                                 ),
                                             ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -349,26 +364,29 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Statement(
-                                            AST.Statement.Expression(
-                                                AST.Expression.Binary(
-                                                    operator = AST.BinaryOperator.LogicalOr,
-                                                    left =
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Statement(
+                                                    AST.Statement.Expression(
                                                         AST.Expression.Binary(
-                                                            operator = AST.BinaryOperator.Equal,
-                                                            left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                            right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                            operator = AST.BinaryOperator.LogicalOr,
+                                                            left =
+                                                                AST.Expression.Binary(
+                                                                    operator = AST.BinaryOperator.Equal,
+                                                                    left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                                    right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                                ),
+                                                            right =
+                                                                AST.Expression.Binary(
+                                                                    operator = AST.BinaryOperator.NotEqual,
+                                                                    left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                                    right = AST.Expression.IntLiteral(3, Location(1, 0)),
+                                                                ),
                                                         ),
-                                                    right =
-                                                        AST.Expression.Binary(
-                                                            operator = AST.BinaryOperator.NotEqual,
-                                                            left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                            right = AST.Expression.IntLiteral(3, Location(1, 0)),
-                                                        ),
+                                                    ),
                                                 ),
                                             ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -434,14 +452,17 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Declaration(
-                                            AST.Declaration(
-                                                name = "x",
-                                                initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                location = Location(1, 0),
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Declaration(
+                                                    AST.Declaration(
+                                                        name = "x",
+                                                        initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                        location = Location(1, 0),
+                                                    ),
+                                                ),
                                             ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -480,14 +501,17 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Declaration(
-                                            AST.Declaration(
-                                                name = "x",
-                                                initializer = null,
-                                                location = Location(1, 0),
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Declaration(
+                                                    AST.Declaration(
+                                                        name = "x",
+                                                        initializer = null,
+                                                        location = Location(1, 0),
+                                                    ),
+                                                ),
                                             ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -522,19 +546,22 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Declaration(
-                                            AST.Declaration(
-                                                name = "x",
-                                                initializer =
-                                                    AST.Expression.Binary(
-                                                        operator = AST.BinaryOperator.Add,
-                                                        left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                        right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Declaration(
+                                                    AST.Declaration(
+                                                        name = "x",
+                                                        initializer =
+                                                            AST.Expression.Binary(
+                                                                operator = AST.BinaryOperator.Add,
+                                                                left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                                right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                            ),
+                                                        location = Location(1, 0),
                                                     ),
-                                                location = Location(1, 0),
+                                                ),
                                             ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -579,22 +606,25 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Declaration(
-                                            AST.Declaration(
-                                                name = "x",
-                                                initializer = null,
-                                                location = Location(1, 0),
-                                            ),
-                                        ),
-                                        AST.BlockItem.Statement(
-                                            AST.Statement.Expression(
-                                                AST.Expression.Assignment(
-                                                    left = AST.Expression.Variable("x", Location(1, 0)),
-                                                    right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Declaration(
+                                                    AST.Declaration(
+                                                        name = "x",
+                                                        initializer = null,
+                                                        location = Location(1, 0),
+                                                    ),
+                                                ),
+                                                AST.BlockItem.Statement(
+                                                    AST.Statement.Expression(
+                                                        AST.Expression.Assignment(
+                                                            left = AST.Expression.Variable("x", Location(1, 0)),
+                                                            right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                        ),
+                                                    ),
                                                 ),
                                             ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -650,23 +680,26 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Declaration(
-                                            AST.Declaration(
-                                                name = "x",
-                                                initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                location = Location(1, 0),
-                                            ),
-                                        ),
-                                        AST.BlockItem.Statement(
-                                            AST.Statement.Expression(
-                                                AST.Expression.CompoundAssignment(
-                                                    operator = astCompoundAssignmentOperator,
-                                                    left = AST.Expression.Variable("x", Location(1, 0)),
-                                                    right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Declaration(
+                                                    AST.Declaration(
+                                                        name = "x",
+                                                        initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                        location = Location(1, 0),
+                                                    ),
+                                                ),
+                                                AST.BlockItem.Statement(
+                                                    AST.Statement.Expression(
+                                                        AST.Expression.CompoundAssignment(
+                                                            operator = astCompoundAssignmentOperator,
+                                                            left = AST.Expression.Variable("x", Location(1, 0)),
+                                                            right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                        ),
+                                                    ),
                                                 ),
                                             ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -724,41 +757,44 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Declaration(
-                                            AST.Declaration(
-                                                name = "x",
-                                                initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                location = Location(1, 0),
-                                            ),
-                                        ),
-                                        AST.BlockItem.Declaration(
-                                            AST.Declaration(
-                                                name = "y",
-                                                initializer =
-                                                    AST.Expression.Binary(
-                                                        operator = AST.BinaryOperator.Add,
-                                                        left =
-                                                            AST.Expression.Postfix(
-                                                                operator = postfixOperator,
-                                                                operand = AST.Expression.Variable("x", Location(1, 0)),
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Declaration(
+                                                    AST.Declaration(
+                                                        name = "x",
+                                                        initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                        location = Location(1, 0),
+                                                    ),
+                                                ),
+                                                AST.BlockItem.Declaration(
+                                                    AST.Declaration(
+                                                        name = "y",
+                                                        initializer =
+                                                            AST.Expression.Binary(
+                                                                operator = AST.BinaryOperator.Add,
+                                                                left =
+                                                                    AST.Expression.Postfix(
+                                                                        operator = postfixOperator,
+                                                                        operand = AST.Expression.Variable("x", Location(1, 0)),
+                                                                    ),
+                                                                right = AST.Expression.IntLiteral(2, Location(1, 0)),
                                                             ),
-                                                        right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                        location = Location(1, 0),
                                                     ),
-                                                location = Location(1, 0),
-                                            ),
-                                        ),
-                                        AST.BlockItem.Statement(
-                                            AST.Statement.Return(
-                                                expression =
-                                                    AST.Expression.Binary(
-                                                        operator = AST.BinaryOperator.Add,
-                                                        left = AST.Expression.Variable("x", Location(1, 0)),
-                                                        right = AST.Expression.Variable("y", Location(1, 0)),
+                                                ),
+                                                AST.BlockItem.Statement(
+                                                    AST.Statement.Return(
+                                                        expression =
+                                                            AST.Expression.Binary(
+                                                                operator = AST.BinaryOperator.Add,
+                                                                left = AST.Expression.Variable("x", Location(1, 0)),
+                                                                right = AST.Expression.Variable("y", Location(1, 0)),
+                                                            ),
+                                                        location = Location(1, 0),
                                                     ),
-                                                location = Location(1, 0),
+                                                ),
                                             ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -824,45 +860,48 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Declaration(
-                                            AST.Declaration(
-                                                name = "x",
-                                                initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                location = Location(1, 0),
-                                            ),
-                                        ),
-                                        AST.BlockItem.Declaration(
-                                            AST.Declaration(
-                                                name = "y",
-                                                initializer = AST.Expression.IntLiteral(0, Location(1, 0)),
-                                                location = Location(1, 0),
-                                            ),
-                                        ),
-                                        AST.BlockItem.Statement(
-                                            AST.Statement.If(
-                                                condition =
-                                                    AST.Expression.Binary(
-                                                        operator = AST.BinaryOperator.Equal,
-                                                        left = AST.Expression.Variable("x", Location(1, 0)),
-                                                        right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Declaration(
+                                                    AST.Declaration(
+                                                        name = "x",
+                                                        initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                        location = Location(1, 0),
                                                     ),
-                                                thenStatement =
-                                                    AST.Statement.Expression(
-                                                        AST.Expression.Assignment(
-                                                            left = AST.Expression.Variable("y", Location(1, 0)),
-                                                            right = AST.Expression.IntLiteral(2, Location(1, 0)),
-                                                        ),
+                                                ),
+                                                AST.BlockItem.Declaration(
+                                                    AST.Declaration(
+                                                        name = "y",
+                                                        initializer = AST.Expression.IntLiteral(0, Location(1, 0)),
+                                                        location = Location(1, 0),
                                                     ),
-                                                elseStatement = null,
+                                                ),
+                                                AST.BlockItem.Statement(
+                                                    AST.Statement.If(
+                                                        condition =
+                                                            AST.Expression.Binary(
+                                                                operator = AST.BinaryOperator.Equal,
+                                                                left = AST.Expression.Variable("x", Location(1, 0)),
+                                                                right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                            ),
+                                                        thenStatement =
+                                                            AST.Statement.Expression(
+                                                                AST.Expression.Assignment(
+                                                                    left = AST.Expression.Variable("y", Location(1, 0)),
+                                                                    right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                                ),
+                                                            ),
+                                                        elseStatement = null,
+                                                    ),
+                                                ),
+                                                AST.BlockItem.Statement(
+                                                    AST.Statement.Return(
+                                                        expression = AST.Expression.Variable("y", Location(1, 0)),
+                                                        location = Location(1, 0),
+                                                    ),
+                                                ),
                                             ),
-                                        ),
-                                        AST.BlockItem.Statement(
-                                            AST.Statement.Return(
-                                                expression = AST.Expression.Variable("y", Location(1, 0)),
-                                                location = Location(1, 0),
-                                            ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -921,51 +960,54 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Declaration(
-                                            AST.Declaration(
-                                                name = "x",
-                                                initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                location = Location(1, 0),
-                                            ),
-                                        ),
-                                        AST.BlockItem.Declaration(
-                                            AST.Declaration(
-                                                name = "y",
-                                                initializer = AST.Expression.IntLiteral(0, Location(1, 0)),
-                                                location = Location(1, 0),
-                                            ),
-                                        ),
-                                        AST.BlockItem.Statement(
-                                            AST.Statement.If(
-                                                condition =
-                                                    AST.Expression.Binary(
-                                                        operator = AST.BinaryOperator.Equal,
-                                                        left = AST.Expression.Variable("x", Location(1, 0)),
-                                                        right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Declaration(
+                                                    AST.Declaration(
+                                                        name = "x",
+                                                        initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                        location = Location(1, 0),
                                                     ),
-                                                thenStatement =
-                                                    AST.Statement.Expression(
-                                                        AST.Expression.Assignment(
-                                                            left = AST.Expression.Variable("y", Location(1, 0)),
-                                                            right = AST.Expression.IntLiteral(2, Location(1, 0)),
-                                                        ),
+                                                ),
+                                                AST.BlockItem.Declaration(
+                                                    AST.Declaration(
+                                                        name = "y",
+                                                        initializer = AST.Expression.IntLiteral(0, Location(1, 0)),
+                                                        location = Location(1, 0),
                                                     ),
-                                                elseStatement =
-                                                    AST.Statement.Expression(
-                                                        AST.Expression.Assignment(
-                                                            left = AST.Expression.Variable("y", Location(1, 0)),
-                                                            right = AST.Expression.IntLiteral(3, Location(1, 0)),
-                                                        ),
+                                                ),
+                                                AST.BlockItem.Statement(
+                                                    AST.Statement.If(
+                                                        condition =
+                                                            AST.Expression.Binary(
+                                                                operator = AST.BinaryOperator.Equal,
+                                                                left = AST.Expression.Variable("x", Location(1, 0)),
+                                                                right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                            ),
+                                                        thenStatement =
+                                                            AST.Statement.Expression(
+                                                                AST.Expression.Assignment(
+                                                                    left = AST.Expression.Variable("y", Location(1, 0)),
+                                                                    right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                                ),
+                                                            ),
+                                                        elseStatement =
+                                                            AST.Statement.Expression(
+                                                                AST.Expression.Assignment(
+                                                                    left = AST.Expression.Variable("y", Location(1, 0)),
+                                                                    right = AST.Expression.IntLiteral(3, Location(1, 0)),
+                                                                ),
+                                                            ),
                                                     ),
+                                                ),
+                                                AST.BlockItem.Statement(
+                                                    AST.Statement.Return(
+                                                        expression = AST.Expression.Variable("y", Location(1, 0)),
+                                                        location = Location(1, 0),
+                                                    ),
+                                                ),
                                             ),
-                                        ),
-                                        AST.BlockItem.Statement(
-                                            AST.Statement.Return(
-                                                expression = AST.Expression.Variable("y", Location(1, 0)),
-                                                location = Location(1, 0),
-                                            ),
-                                        ),
                                     ),
                                 location = Location(0, 0),
                             ),
@@ -1032,51 +1074,54 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Declaration(
-                                            declaration =
-                                                AST.Declaration(
-                                                    name = "a.0",
-                                                    initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
-                                                    location = Location(2, 5),
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Declaration(
+                                                    declaration =
+                                                        AST.Declaration(
+                                                            name = "a.0",
+                                                            initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                                            location = Location(2, 5),
+                                                        ),
                                                 ),
-                                        ),
-                                        AST.BlockItem.Declaration(
-                                            declaration =
-                                                AST.Declaration(
-                                                    name = "b.1",
-                                                    initializer = null,
-                                                    location = Location(3, 5),
+                                                AST.BlockItem.Declaration(
+                                                    declaration =
+                                                        AST.Declaration(
+                                                            name = "b.1",
+                                                            initializer = null,
+                                                            location = Location(3, 5),
+                                                        ),
                                                 ),
-                                        ),
-                                        AST.BlockItem.Statement(
-                                            statement =
-                                                AST.Statement.Expression(
-                                                    expression =
-                                                        AST.Expression.Assignment(
-                                                            left = AST.Expression.Variable("a.0", Location(3, 13)),
-                                                            right =
-                                                                AST.Expression.Conditional(
-                                                                    condition =
-                                                                        AST.Expression.Binary(
-                                                                            operator = AST.BinaryOperator.Equal,
-                                                                            left = AST.Expression.Variable("a.0", Location(3, 13)),
-                                                                            right = AST.Expression.IntLiteral(1, Location(3, 17)),
-                                                                        ),
-                                                                    thenExpression =
-                                                                        AST.Expression.Assignment(
-                                                                            left = AST.Expression.Variable("b.1", Location(4, 5)),
-                                                                            right = AST.Expression.IntLiteral(2, Location(4, 9)),
-                                                                        ),
-                                                                    elseExpression =
-                                                                        AST.Expression.Assignment(
-                                                                            left = AST.Expression.Variable("b.1", Location(5, 5)),
-                                                                            right = AST.Expression.IntLiteral(3, Location(5, 9)),
+                                                AST.BlockItem.Statement(
+                                                    statement =
+                                                        AST.Statement.Expression(
+                                                            expression =
+                                                                AST.Expression.Assignment(
+                                                                    left = AST.Expression.Variable("a.0", Location(3, 13)),
+                                                                    right =
+                                                                        AST.Expression.Conditional(
+                                                                            condition =
+                                                                                AST.Expression.Binary(
+                                                                                    operator = AST.BinaryOperator.Equal,
+                                                                                    left = AST.Expression.Variable("a.0", Location(3, 13)),
+                                                                                    right = AST.Expression.IntLiteral(1, Location(3, 17)),
+                                                                                ),
+                                                                            thenExpression =
+                                                                                AST.Expression.Assignment(
+                                                                                    left = AST.Expression.Variable("b.1", Location(4, 5)),
+                                                                                    right = AST.Expression.IntLiteral(2, Location(4, 9)),
+                                                                                ),
+                                                                            elseExpression =
+                                                                                AST.Expression.Assignment(
+                                                                                    left = AST.Expression.Variable("b.1", Location(5, 5)),
+                                                                                    right = AST.Expression.IntLiteral(3, Location(5, 9)),
+                                                                                ),
                                                                         ),
                                                                 ),
                                                         ),
                                                 ),
-                                        ),
+                                            ),
                                     ),
                                 location = Location(1, 1),
                             ),
@@ -1150,32 +1195,35 @@ class ASTToTackyKtTest {
                             AST.FunctionDefinition(
                                 name = "main",
                                 body =
-                                    listOf(
-                                        AST.BlockItem.Declaration(
-                                            declaration =
-                                                AST.Declaration(
-                                                    name = "x",
-                                                    initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                    location = Location(1, 0),
-                                                ),
-                                        ),
-                                        AST.BlockItem.Statement(
-                                            statement =
-                                                AST.Statement.Labeled(
-                                                    label = LabelName("label"),
-                                                    statement =
-                                                        AST.Statement.Expression(
-                                                            AST.Expression.Assignment(
-                                                                left = AST.Expression.Variable("x", Location(2, 0)),
-                                                                right = AST.Expression.IntLiteral(2, Location(2, 0)),
-                                                            ),
+                                    AST.Block(
+                                        blockItems =
+                                            listOf(
+                                                AST.BlockItem.Declaration(
+                                                    declaration =
+                                                        AST.Declaration(
+                                                            name = "x",
+                                                            initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                            location = Location(1, 0),
                                                         ),
-                                                    location = Location(2, 0),
                                                 ),
-                                        ),
-                                        AST.BlockItem.Statement(
-                                            statement = AST.Statement.Goto(label = LabelName("label"), location = Location(3, 0)),
-                                        ),
+                                                AST.BlockItem.Statement(
+                                                    statement =
+                                                        AST.Statement.Labeled(
+                                                            label = LabelName("label"),
+                                                            statement =
+                                                                AST.Statement.Expression(
+                                                                    AST.Expression.Assignment(
+                                                                        left = AST.Expression.Variable("x", Location(2, 0)),
+                                                                        right = AST.Expression.IntLiteral(2, Location(2, 0)),
+                                                                    ),
+                                                                ),
+                                                            location = Location(2, 0),
+                                                        ),
+                                                ),
+                                                AST.BlockItem.Statement(
+                                                    statement = AST.Statement.Goto(label = LabelName("label"), location = Location(3, 0)),
+                                                ),
+                                            ),
                                     ),
                                 location = Location(0, 0),
                             ),
