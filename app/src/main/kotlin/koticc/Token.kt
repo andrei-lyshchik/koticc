@@ -15,6 +15,8 @@ sealed interface Token {
 
     data object Else : Token
 
+    data object Goto : Token
+
     // types
     data object IntKeyword : Token
 
@@ -105,7 +107,7 @@ sealed interface Token {
 
     data object DoubleMinus : Token
 
-    // conditional operator
+    // conditional operator / goto label
 
     data object QuestionMark : Token
 

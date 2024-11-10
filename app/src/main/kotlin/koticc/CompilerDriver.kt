@@ -38,7 +38,7 @@ fun runCompilerDriver(
             return@either
         }
 
-        val validAST = validate(ast).bind()
+        val validAST = semanticAnalysis(ast).bind()
         if (partialMode == PartialMode.Validate) {
             return@either
         }

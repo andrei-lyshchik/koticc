@@ -2,6 +2,7 @@ package koticc
 
 import arrow.core.Either
 import arrow.core.raise.either
+import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
 
 data class ValidASTProgram(
@@ -16,38 +17,48 @@ data class SemanticAnalysisError(
     override fun message(): String = "semantic analysis error, at ${location.toHumanReadableString()}: $message"
 }
 
-fun validate(program: AST.Program): Either<SemanticAnalysisError, ValidASTProgram> = SemanticAnalysisContext().validateProgram(program)
+fun semanticAnalysis(program: AST.Program): Either<SemanticAnalysisError, ValidASTProgram> =
+    either {
+        val variableResolverResult = VariableResolver().resolveProgram(program).bind()
+        validateLabels(variableResolverResult.program).bind()
+        ValidASTProgram(variableResolverResult.program, variableResolverResult.variableCount)
+    }
 
-private class SemanticAnalysisContext {
-    val variableMapping: MutableMap<String, DeclaredVariable> = mutableMapOf()
+private data class VariableResolverResult(
+    val program: AST.Program,
+    val variableCount: Int,
+)
 
-    fun validateProgram(program: AST.Program): Either<SemanticAnalysisError, ValidASTProgram> =
+private class VariableResolver {
+    private val variableMapping: MutableMap<String, DeclaredVariable> = mutableMapOf()
+
+    fun resolveProgram(program: AST.Program): Either<SemanticAnalysisError, VariableResolverResult> =
         either {
             val validProgram =
                 program.copy(
-                    functionDefinition = validateFunctionDefinition(program.functionDefinition).bind(),
+                    functionDefinition = resolveFunctionDefinition(program.functionDefinition).bind(),
                 )
-            ValidASTProgram(validProgram, variableMapping.size)
+            VariableResolverResult(validProgram, variableMapping.size)
         }
 
-    private fun validateFunctionDefinition(
+    private fun resolveFunctionDefinition(
         functionDefinition: AST.FunctionDefinition,
     ): Either<SemanticAnalysisError, AST.FunctionDefinition> =
         either {
-            functionDefinition.copy(body = functionDefinition.body.map { validateBlockItem(it).bind() })
+            functionDefinition.copy(body = functionDefinition.body.map { resolveBlockItem(it).bind() })
         }
 
-    private fun validateBlockItem(blockItem: AST.BlockItem): Either<SemanticAnalysisError, AST.BlockItem> =
+    private fun resolveBlockItem(blockItem: AST.BlockItem): Either<SemanticAnalysisError, AST.BlockItem> =
         either {
             when (blockItem) {
                 is AST.BlockItem.Declaration ->
-                    AST.BlockItem.Declaration(validateDeclaration(blockItem.declaration).bind())
+                    AST.BlockItem.Declaration(resolveDeclaration(blockItem.declaration).bind())
                 is AST.BlockItem.Statement ->
                     AST.BlockItem.Statement(validateStatement(blockItem.statement).bind())
             }
         }
 
-    private fun validateDeclaration(declaration: AST.Declaration): Either<SemanticAnalysisError, AST.Declaration> =
+    private fun resolveDeclaration(declaration: AST.Declaration): Either<SemanticAnalysisError, AST.Declaration> =
         either {
             val newName = "${declaration.name}.${variableMapping.size}"
             variableMapping[declaration.name]?.let {
@@ -60,7 +71,7 @@ private class SemanticAnalysisContext {
                 )
             }
             variableMapping[declaration.name] = DeclaredVariable(newName, declaration.location)
-            declaration.copy(name = newName, initializer = declaration.initializer?.let { validateExpression(it).bind() })
+            declaration.copy(name = newName, initializer = declaration.initializer?.let { resolveExpression(it).bind() })
         }
 
     private fun validateStatement(statement: AST.Statement): Either<SemanticAnalysisError, AST.Statement> =
@@ -68,25 +79,33 @@ private class SemanticAnalysisContext {
             when (statement) {
                 is AST.Statement.Return ->
                     AST.Statement.Return(
-                        expression = validateExpression(statement.expression).bind(),
+                        expression = resolveExpression(statement.expression).bind(),
                         location = statement.location,
                     )
                 is AST.Statement.Expression ->
                     AST.Statement.Expression(
-                        expression = validateExpression(statement.expression).bind(),
+                        expression = resolveExpression(statement.expression).bind(),
                     )
                 is AST.Statement.Null -> statement
                 is AST.Statement.If -> {
                     AST.Statement.If(
-                        condition = validateExpression(statement.condition).bind(),
+                        condition = resolveExpression(statement.condition).bind(),
                         thenStatement = validateStatement(statement.thenStatement).bind(),
                         elseStatement = statement.elseStatement?.let { validateStatement(it).bind() },
                     )
                 }
+                is AST.Statement.Labeled -> {
+                    AST.Statement.Labeled(
+                        label = statement.label,
+                        statement = validateStatement(statement.statement).bind(),
+                        location = statement.location,
+                    )
+                }
+                is AST.Statement.Goto -> statement
             }
         }
 
-    private fun validateExpression(expression: AST.Expression): Either<SemanticAnalysisError, AST.Expression> =
+    private fun resolveExpression(expression: AST.Expression): Either<SemanticAnalysisError, AST.Expression> =
         either {
             when (expression) {
                 is AST.Expression.IntLiteral -> expression
@@ -100,41 +119,41 @@ private class SemanticAnalysisContext {
                 is AST.Expression.Unary -> {
                     AST.Expression.Unary(
                         operator = expression.operator,
-                        operand = validateExpression(expression.operand).bind(),
+                        operand = resolveExpression(expression.operand).bind(),
                         location = expression.location,
                     )
                 }
                 is AST.Expression.Binary -> {
                     AST.Expression.Binary(
                         operator = expression.operator,
-                        left = validateExpression(expression.left).bind(),
-                        right = validateExpression(expression.right).bind(),
+                        left = resolveExpression(expression.left).bind(),
+                        right = resolveExpression(expression.right).bind(),
                     )
                 }
                 is AST.Expression.Assignment -> {
-                    validateAssignment(expression).bind()
+                    resolveAssignment(expression).bind()
                 }
 
                 is AST.Expression.CompoundAssignment -> {
-                    validateCompoundAssignment(expression).bind()
+                    resolveCompoundAssignment(expression).bind()
                 }
                 is AST.Expression.Postfix -> {
-                    validatePostfix(expression).bind()
+                    resolvePostfix(expression).bind()
                 }
                 is AST.Expression.Conditional -> {
                     AST.Expression.Conditional(
-                        condition = validateExpression(expression.condition).bind(),
-                        thenExpression = validateExpression(expression.thenExpression).bind(),
-                        elseExpression = validateExpression(expression.elseExpression).bind(),
+                        condition = resolveExpression(expression.condition).bind(),
+                        thenExpression = resolveExpression(expression.thenExpression).bind(),
+                        elseExpression = resolveExpression(expression.elseExpression).bind(),
                     )
                 }
             }
         }
 
-    private fun validateAssignment(assignment: AST.Expression.Assignment): Either<SemanticAnalysisError, AST.Expression.Assignment> =
+    private fun resolveAssignment(assignment: AST.Expression.Assignment): Either<SemanticAnalysisError, AST.Expression.Assignment> =
         either {
             val left =
-                when (val result = validateExpression(assignment.left).bind()) {
+                when (val result = resolveExpression(assignment.left).bind()) {
                     is AST.Expression.Variable -> result
                     else ->
                         raise(
@@ -145,17 +164,17 @@ private class SemanticAnalysisContext {
                             ),
                         )
                 }
-            val right = validateExpression(assignment.right).bind()
+            val right = resolveExpression(assignment.right).bind()
 
             AST.Expression.Assignment(left, right)
         }
 
-    private fun validateCompoundAssignment(
+    private fun resolveCompoundAssignment(
         assignment: AST.Expression.CompoundAssignment,
     ): Either<SemanticAnalysisError, AST.Expression.CompoundAssignment> =
         either {
             val left =
-                when (val result = validateExpression(assignment.left).bind()) {
+                when (val result = resolveExpression(assignment.left).bind()) {
                     is AST.Expression.Variable -> result
                     else ->
                         raise(
@@ -166,15 +185,15 @@ private class SemanticAnalysisContext {
                             ),
                         )
                 }
-            val right = validateExpression(assignment.right).bind()
+            val right = resolveExpression(assignment.right).bind()
 
             AST.Expression.CompoundAssignment(assignment.operator, left, right)
         }
 
-    private fun validatePostfix(postfix: AST.Expression.Postfix): Either<SemanticAnalysisError, AST.Expression.Postfix> =
+    private fun resolvePostfix(postfix: AST.Expression.Postfix): Either<SemanticAnalysisError, AST.Expression.Postfix> =
         either {
             val operand =
-                when (val result = validateExpression(postfix.operand).bind()) {
+                when (val result = resolveExpression(postfix.operand).bind()) {
                     is AST.Expression.Variable -> result
                     else ->
                         raise(
@@ -187,6 +206,76 @@ private class SemanticAnalysisContext {
                 }
             AST.Expression.Postfix(postfix.operator, operand)
         }
+
+    private data class DeclaredVariable(val newName: String, val location: Location)
 }
 
-private data class DeclaredVariable(val newName: String, val location: Location)
+private fun validateLabels(program: AST.Program): Either<SemanticAnalysisError, AST.Program> =
+    either {
+        val labelMapping = validateLabelsAreUnique(program).bind()
+        validateGotos(program, labelMapping).bind()
+        program
+    }
+
+private fun validateLabelsAreUnique(program: AST.Program) =
+    either<SemanticAnalysisError, Map<LabelName, Location>> {
+        val labelMapping = mutableMapOf<LabelName, Location>()
+        findAllLabeledStatements(program)
+            .forEach { labeledStatement ->
+                val existingLocation = labelMapping[labeledStatement.label]
+                ensure(existingLocation == null) {
+                    SemanticAnalysisError(
+                        "label '${labeledStatement.label.value}' already declared at" +
+                            " ${labelMapping[labeledStatement.label]!!.toHumanReadableString()}",
+                        labeledStatement.location,
+                    )
+                }
+                labelMapping[labeledStatement.label] = labeledStatement.location
+            }
+        labelMapping
+    }
+
+private fun findAllLabeledStatements(program: AST.Program): List<AST.Statement.Labeled> =
+    program.functionDefinition.body.filterIsInstance<AST.BlockItem.Statement>()
+        .map(AST.BlockItem.Statement::statement)
+        .flatMap(::findAllLabeledStatements)
+
+private fun findAllLabeledStatements(statement: AST.Statement): List<AST.Statement.Labeled> =
+    when (statement) {
+        is AST.Statement.Expression -> emptyList()
+        is AST.Statement.Goto -> emptyList()
+        is AST.Statement.If ->
+            findAllLabeledStatements(statement.thenStatement) +
+                (statement.elseStatement?.let { findAllLabeledStatements(it) } ?: emptyList())
+        is AST.Statement.Labeled -> listOf(statement) + findAllLabeledStatements(statement.statement)
+        is AST.Statement.Null -> emptyList()
+        is AST.Statement.Return -> emptyList()
+    }
+
+private fun validateGotos(
+    program: AST.Program,
+    labelMapping: Map<LabelName, Location>,
+) = either {
+    findAllGotos(program)
+        .forEach { goto ->
+            val existingLocation = labelMapping[goto.label]
+            ensureNotNull(existingLocation) {
+                SemanticAnalysisError("goto to undeclared label '${goto.label.value}'", goto.location)
+            }
+        }
+}
+
+private fun findAllGotos(program: AST.Program): List<AST.Statement.Goto> =
+    program.functionDefinition.body.filterIsInstance<AST.BlockItem.Statement>()
+        .map(AST.BlockItem.Statement::statement)
+        .flatMap(::findAllGotos)
+
+private fun findAllGotos(statement: AST.Statement): List<AST.Statement.Goto> =
+    when (statement) {
+        is AST.Statement.Expression -> emptyList()
+        is AST.Statement.Goto -> listOf(statement)
+        is AST.Statement.If -> findAllGotos(statement.thenStatement) + (statement.elseStatement?.let(::findAllGotos) ?: emptyList())
+        is AST.Statement.Labeled -> findAllGotos(statement.statement)
+        is AST.Statement.Null -> emptyList()
+        is AST.Statement.Return -> emptyList()
+    }

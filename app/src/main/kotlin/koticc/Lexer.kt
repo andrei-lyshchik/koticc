@@ -198,10 +198,10 @@ fun lexer(input: String): Either<CompilerError, List<TokenWithLocation>> =
                     char == '?' -> result.add(TokenWithLocation(Token.QuestionMark, Location(line, current + 1)))
                     char == ':' -> result.add(TokenWithLocation(Token.Colon, Location(line, current + 1)))
                     char.isWhitespace() -> {}
-                    char.isLetter() -> {
+                    char.isIdentifierStart() -> {
                         val start = current
                         while (current + 1 < lineContent.length &&
-                            (lineContent[current + 1].isLetterOrDigit() || lineContent[current + 1] == '_')
+                            (lineContent[current + 1].isIdentifierPart())
                         ) {
                             current++
                         }
@@ -211,6 +211,7 @@ fun lexer(input: String): Either<CompilerError, List<TokenWithLocation>> =
                             "return" -> result.add(TokenWithLocation(Token.Return, Location(line, start + 1)))
                             "if" -> result.add(TokenWithLocation(Token.If, Location(line, start + 1)))
                             "else" -> result.add(TokenWithLocation(Token.Else, Location(line, start + 1)))
+                            "goto" -> result.add(TokenWithLocation(Token.Goto, Location(line, start + 1)))
                             else ->
                                 result.add(
                                     TokenWithLocation(Token.Identifier(identifier), Location(line, start + 1)),
@@ -225,5 +226,9 @@ fun lexer(input: String): Either<CompilerError, List<TokenWithLocation>> =
 
         result
     }
+
+private fun Char.isIdentifierStart() = isLetter() || this == '_'
+
+private fun Char.isIdentifierPart() = isLetterOrDigit() || this == '_'
 
 private fun String.parseInt() = Either.catchOrThrow<NumberFormatException, Int> { toInt() }

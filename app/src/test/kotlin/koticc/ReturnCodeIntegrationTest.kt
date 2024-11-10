@@ -28,6 +28,7 @@ class ReturnCodeIntegrationTest {
         "/programs/increments_decrements.c",
         "/programs/if.c",
         "/programs/conditional_ternary.c",
+        "/programs/labels.c",
     )
 
     @ParameterizedTest

@@ -39,7 +39,7 @@ int main(void) {
         val input =
             """
             abc cde_fgh 123 void return int (){};=-+~*/%^&| << >> < > <= >= != && || ! += -=
-            *= /= %= &= ^= |= <<= >>= ++ -- if else ifnot elsenot ? :
+            *= /= %= &= ^= |= <<= >>= ++ -- if else ifnot elsenot ? : goto _id
             """.trimIndent()
 
         assertEquals(
@@ -93,6 +93,8 @@ int main(void) {
                 Token.Identifier("elsenot"),
                 Token.QuestionMark,
                 Token.Colon,
+                Token.Goto,
+                Token.Identifier("_id"),
             ).right(),
             lexer(input).map { tokens -> tokens.map { it.value } },
         )

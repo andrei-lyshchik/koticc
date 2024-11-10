@@ -32,6 +32,8 @@ private class Parser(
 
     private fun peekToken(): TokenWithLocation? = tokens.getOrNull(current)
 
+    private fun peekTokenAfterPeek(): TokenWithLocation? = tokens.getOrNull(current + 1)
+
     private fun nextToken(): TokenWithLocation? {
         if (current >= tokens.size) {
             return null
@@ -141,6 +143,24 @@ private class Parser(
                             null
                         }
                     AST.Statement.If(condition, thenStatement, elseStatement)
+                }
+                is Token.Identifier -> {
+                    if (peekTokenAfterPeek()?.value == Token.Colon) {
+                        val labelToken = expectIdentifier().bind()
+                        expectToken(Token.Colon).bind()
+                        val statement = parseStatement().bind()
+                        AST.Statement.Labeled(LabelName(labelToken.value.value), statement, labelToken.location)
+                    } else {
+                        val expression = parseExpression(0).bind()
+                        expectToken(Token.Semicolon).bind()
+                        AST.Statement.Expression(expression)
+                    }
+                }
+                Token.Goto -> {
+                    val gotoToken = expectToken(Token.Goto).bind()
+                    val labelToken = expectIdentifier().bind()
+                    expectToken(Token.Semicolon).bind()
+                    AST.Statement.Goto(LabelName(labelToken.value.value), gotoToken.location)
                 }
                 else -> {
                     val expression = parseExpression(0).bind()

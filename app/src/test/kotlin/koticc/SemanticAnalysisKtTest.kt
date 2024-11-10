@@ -114,7 +114,7 @@ class SemanticAnalysisKtTest {
                 variableCount = 2,
             )
 
-        assertEquals(expected.right(), validate(input))
+        assertEquals(expected.right(), semanticAnalysis(input))
     }
 
     @Test
@@ -144,7 +144,7 @@ class SemanticAnalysisKtTest {
         val expected =
             SemanticAnalysisError("undeclared variable 'a'", Location(2, 5))
 
-        assertEquals(expected.left(), validate(input))
+        assertEquals(expected.left(), semanticAnalysis(input))
     }
 
     @Test
@@ -182,7 +182,7 @@ class SemanticAnalysisKtTest {
         val expected =
             SemanticAnalysisError("variable 'a' already declared at line 2, column 5", Location(3, 5))
 
-        assertEquals(expected.left(), validate(input))
+        assertEquals(expected.left(), semanticAnalysis(input))
     }
 
     @Test
@@ -217,7 +217,7 @@ class SemanticAnalysisKtTest {
                 Location(2, 5),
             )
 
-        assertEquals(expected.left(), validate(input))
+        assertEquals(expected.left(), semanticAnalysis(input))
     }
 
     @ParameterizedTest
@@ -256,7 +256,7 @@ class SemanticAnalysisKtTest {
                 Location(2, 5),
             )
 
-        assertEquals(expected.left(), validate(input))
+        assertEquals(expected.left(), semanticAnalysis(input))
     }
 
     @ParameterizedTest
@@ -290,7 +290,7 @@ class SemanticAnalysisKtTest {
                 Location(2, 5),
             )
 
-        assertEquals(expected.left(), validate(input))
+        assertEquals(expected.left(), semanticAnalysis(input))
     }
 
     @ParameterizedTest
@@ -360,7 +360,7 @@ class SemanticAnalysisKtTest {
                 variableCount = 1,
             )
 
-        assertEquals(expected.right(), validate(input))
+        assertEquals(expected.right(), semanticAnalysis(input))
     }
 
     @Test
@@ -467,7 +467,7 @@ class SemanticAnalysisKtTest {
                 variableCount = 3,
             )
 
-        assertEquals(expected.right(), validate(input))
+        assertEquals(expected.right(), semanticAnalysis(input))
     }
 
     @Test
@@ -536,7 +536,7 @@ class SemanticAnalysisKtTest {
                 variableCount = 1,
             )
 
-        assertEquals(expected.right(), validate(input))
+        assertEquals(expected.right(), semanticAnalysis(input))
     }
 
     @Test
@@ -671,7 +671,7 @@ class SemanticAnalysisKtTest {
                 variableCount = 1,
             )
 
-        assertEquals(expected.right(), validate(input))
+        assertEquals(expected.right(), semanticAnalysis(input))
     }
 
     @Test
@@ -784,6 +784,232 @@ class SemanticAnalysisKtTest {
                 variableCount = 2,
             )
 
-        assertEquals(expected.right(), validate(input))
+        assertEquals(expected.right(), semanticAnalysis(input))
+    }
+
+    @Test
+    fun `should handle labeled statement`() {
+        val input =
+            AST.Program(
+                functionDefinition =
+                    AST.FunctionDefinition(
+                        name = "main",
+                        body =
+                            listOf(
+                                AST.BlockItem.Declaration(
+                                    declaration =
+                                        AST.Declaration(
+                                            name = "a",
+                                            initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                            location = Location(2, 5),
+                                        ),
+                                ),
+                                AST.BlockItem.Statement(
+                                    statement =
+                                        AST.Statement.Labeled(
+                                            label = LabelName("label"),
+                                            statement =
+                                                AST.Statement.Expression(
+                                                    expression =
+                                                        AST.Expression.Assignment(
+                                                            left = AST.Expression.Variable("a", Location(3, 5)),
+                                                            right = AST.Expression.IntLiteral(2, Location(3, 9)),
+                                                        ),
+                                                ),
+                                            location = Location(3, 1),
+                                        ),
+                                ),
+                            ),
+                        location = Location(1, 1),
+                    ),
+            )
+
+        val expected =
+            ValidASTProgram(
+                value =
+                    AST.Program(
+                        functionDefinition =
+                            AST.FunctionDefinition(
+                                name = "main",
+                                body =
+                                    listOf(
+                                        AST.BlockItem.Declaration(
+                                            declaration =
+                                                AST.Declaration(
+                                                    name = "a.0",
+                                                    initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                                    location = Location(2, 5),
+                                                ),
+                                        ),
+                                        AST.BlockItem.Statement(
+                                            statement =
+                                                AST.Statement.Labeled(
+                                                    label = LabelName("label"),
+                                                    statement =
+                                                        AST.Statement.Expression(
+                                                            expression =
+                                                                AST.Expression.Assignment(
+                                                                    left = AST.Expression.Variable("a.0", Location(3, 5)),
+                                                                    right = AST.Expression.IntLiteral(2, Location(3, 9)),
+                                                                ),
+                                                        ),
+                                                    location = Location(3, 1),
+                                                ),
+                                        ),
+                                    ),
+                                location = Location(1, 1),
+                            ),
+                    ),
+                variableCount = 1,
+            )
+
+        assertEquals(expected.right(), semanticAnalysis(input))
+    }
+
+    @Test
+    fun `should return error if goto label is not declared`() {
+        val input =
+            AST.Program(
+                functionDefinition =
+                    AST.FunctionDefinition(
+                        name = "main",
+                        body =
+                            listOf(
+                                AST.BlockItem.Statement(
+                                    statement =
+                                        AST.Statement.Goto(
+                                            label = LabelName("label"),
+                                            location = Location(2, 5),
+                                        ),
+                                ),
+                            ),
+                        location = Location(1, 1),
+                    ),
+            )
+
+        val expected = SemanticAnalysisError("goto to undeclared label 'label'", Location(2, 5))
+
+        assertEquals(expected.left(), semanticAnalysis(input))
+    }
+
+    @Test
+    fun `should return error if labels on labeled statements are not unique`() {
+        val input =
+            AST.Program(
+                functionDefinition =
+                    AST.FunctionDefinition(
+                        name = "main",
+                        body =
+                            listOf(
+                                AST.BlockItem.Statement(
+                                    statement =
+                                        AST.Statement.Labeled(
+                                            label = LabelName("label"),
+                                            statement = AST.Statement.Null(Location(2, 1)),
+                                            location = Location(2, 1),
+                                        ),
+                                ),
+                                AST.BlockItem.Statement(
+                                    statement =
+                                        AST.Statement.Labeled(
+                                            label = LabelName("label"),
+                                            statement = AST.Statement.Null(Location(3, 1)),
+                                            location = Location(3, 1),
+                                        ),
+                                ),
+                            ),
+                        location = Location(1, 1),
+                    ),
+            )
+
+        val expected = SemanticAnalysisError("label 'label' already declared at line 2, column 1", Location(3, 1))
+
+        assertEquals(expected.left(), semanticAnalysis(input))
+    }
+
+    @Test
+    fun `should consider labels inside if else`() {
+        val input =
+            AST.Program(
+                functionDefinition =
+                    AST.FunctionDefinition(
+                        name = "main",
+                        body =
+                            listOf(
+                                AST.BlockItem.Statement(
+                                    statement =
+                                        AST.Statement.If(
+                                            condition = AST.Expression.IntLiteral(1, Location(2, 5)),
+                                            thenStatement =
+                                                AST.Statement.Labeled(
+                                                    label = LabelName("label_if"),
+                                                    statement = AST.Statement.Null(Location(3, 1)),
+                                                    location = Location(3, 1),
+                                                ),
+                                            elseStatement =
+                                                AST.Statement.Labeled(
+                                                    label = LabelName("label_else"),
+                                                    statement = AST.Statement.Null(Location(4, 1)),
+                                                    location = Location(4, 1),
+                                                ),
+                                        ),
+                                ),
+                                AST.BlockItem.Statement(
+                                    statement =
+                                        AST.Statement.Goto(
+                                            label = LabelName("label_if"),
+                                            location = Location(5, 5),
+                                        ),
+                                ),
+                                AST.BlockItem.Statement(
+                                    statement =
+                                        AST.Statement.Goto(
+                                            label = LabelName("label_else"),
+                                            location = Location(6, 5),
+                                        ),
+                                ),
+                            ),
+                        location = Location(1, 1),
+                    ),
+            )
+
+        val expected =
+            ValidASTProgram(
+                value = input,
+                variableCount = 0,
+            )
+
+        assertEquals(expected.right(), semanticAnalysis(input))
+    }
+
+    @Test
+    fun `should consider non top level gotos`() {
+        val input =
+            AST.Program(
+                functionDefinition =
+                    AST.FunctionDefinition(
+                        name = "main",
+                        body =
+                            listOf(
+                                AST.BlockItem.Statement(
+                                    statement =
+                                        AST.Statement.If(
+                                            condition = AST.Expression.IntLiteral(1, Location(3, 5)),
+                                            thenStatement =
+                                                AST.Statement.Goto(
+                                                    label = LabelName("non_existing_label"),
+                                                    location = Location(4, 5),
+                                                ),
+                                            elseStatement = AST.Statement.Null(Location(5, 1)),
+                                        ),
+                                ),
+                            ),
+                        location = Location(1, 1),
+                    ),
+            )
+
+        val expected = SemanticAnalysisError("goto to undeclared label 'non_existing_label'", Location(4, 5))
+
+        assertEquals(expected.left(), semanticAnalysis(input))
     }
 }

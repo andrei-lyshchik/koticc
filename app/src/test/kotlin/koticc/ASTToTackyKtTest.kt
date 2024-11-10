@@ -1139,4 +1139,74 @@ class ASTToTackyKtTest {
             tacky,
         )
     }
+
+    @Test
+    fun `should produce tacky for labeled statements and goto`() {
+        val input =
+            ValidASTProgram(
+                value =
+                    AST.Program(
+                        functionDefinition =
+                            AST.FunctionDefinition(
+                                name = "main",
+                                body =
+                                    listOf(
+                                        AST.BlockItem.Declaration(
+                                            declaration =
+                                                AST.Declaration(
+                                                    name = "x",
+                                                    initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                    location = Location(1, 0),
+                                                ),
+                                        ),
+                                        AST.BlockItem.Statement(
+                                            statement =
+                                                AST.Statement.Labeled(
+                                                    label = LabelName("label"),
+                                                    statement =
+                                                        AST.Statement.Expression(
+                                                            AST.Expression.Assignment(
+                                                                left = AST.Expression.Variable("x", Location(2, 0)),
+                                                                right = AST.Expression.IntLiteral(2, Location(2, 0)),
+                                                            ),
+                                                        ),
+                                                    location = Location(2, 0),
+                                                ),
+                                        ),
+                                        AST.BlockItem.Statement(
+                                            statement = AST.Statement.Goto(label = LabelName("label"), location = Location(3, 0)),
+                                        ),
+                                    ),
+                                location = Location(0, 0),
+                            ),
+                    ),
+                variableCount = 1,
+            )
+
+        val tacky = programASTToTacky(input)
+
+        assertEquals(
+            Tacky.Program(
+                functionDefinition =
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                            listOf(
+                                Tacky.Instruction.Copy(
+                                    src = Tacky.Value.IntConstant(1),
+                                    dst = Tacky.Value.Variable("x"),
+                                ),
+                                Tacky.Instruction.Label(LabelName("label")),
+                                Tacky.Instruction.Copy(
+                                    src = Tacky.Value.IntConstant(2),
+                                    dst = Tacky.Value.Variable("x"),
+                                ),
+                                Tacky.Instruction.Jump(LabelName("label")),
+                                Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
+                            ),
+                    ),
+            ),
+            tacky,
+        )
+    }
 }

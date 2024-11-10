@@ -47,6 +47,17 @@ object AST {
             override val location: Location
                 get() = condition.location
         }
+
+        data class Labeled(
+            val label: LabelName,
+            val statement: Statement,
+            override val location: Location,
+        ) : Statement
+
+        data class Goto(
+            val label: LabelName,
+            override val location: Location,
+        ) : Statement
     }
 
     sealed interface Expression : LocationAware {

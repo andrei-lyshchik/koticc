@@ -756,6 +756,51 @@ int main(void) {
     }
 
     @Test
+    fun `should parse labeled statement and goto`() {
+        val input =
+            """
+            int main(void) {
+            label:
+                a = 1;
+                goto label;
+            }
+            """.trimIndent()
+
+        val expected =
+            AST.Program(
+                functionDefinition =
+                    AST.FunctionDefinition(
+                        name = "main",
+                        body =
+                            listOf(
+                                AST.BlockItem.Statement(
+                                    AST.Statement.Labeled(
+                                        label = LabelName("label"),
+                                        statement =
+                                            AST.Statement.Expression(
+                                                AST.Expression.Assignment(
+                                                    left = AST.Expression.Variable(name = "a", location = Location(3, 5)),
+                                                    right = AST.Expression.IntLiteral(value = 1, location = Location(3, 9)),
+                                                ),
+                                            ),
+                                        location = Location(2, 1),
+                                    ),
+                                ),
+                                AST.BlockItem.Statement(
+                                    AST.Statement.Goto(
+                                        label = LabelName("label"),
+                                        location = Location(4, 5),
+                                    ),
+                                ),
+                            ),
+                        location = Location(1, 1),
+                    ),
+            ).right()
+
+        assertEquals(expected, parseInput(input))
+    }
+
+    @Test
     fun `should return error for unexpected token while parsing expression`() {
         val input =
             """

@@ -56,7 +56,22 @@ private class TackyGenerator(initialVariableCount: Int) {
             is AST.Statement.Expression -> generateExpression(statement.expression)
             is AST.Statement.Null -> Unit
             is AST.Statement.If -> generateIf(statement)
+            is AST.Statement.Labeled -> generateLabeledStatement(statement)
+            is AST.Statement.Goto -> generateGoto(statement)
         }
+    }
+
+    private fun generateGoto(statement: AST.Statement.Goto) {
+        instructions.add(
+            Tacky.Instruction.Jump(statement.label),
+        )
+    }
+
+    private fun generateLabeledStatement(statement: AST.Statement.Labeled) {
+        instructions.add(
+            Tacky.Instruction.Label(statement.label),
+        )
+        generateStatement(statement.statement)
     }
 
     private fun generateReturn(statement: AST.Statement.Return) {
