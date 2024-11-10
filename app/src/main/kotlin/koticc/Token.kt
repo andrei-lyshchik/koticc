@@ -17,6 +17,16 @@ sealed interface Token {
 
     data object Goto : Token
 
+    data object Do : Token
+
+    data object While : Token
+
+    data object For : Token
+
+    data object Break : Token
+
+    data object Continue : Token
+
     // types
     data object IntKeyword : Token
 

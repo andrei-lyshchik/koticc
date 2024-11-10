@@ -212,6 +212,11 @@ fun lexer(input: String): Either<CompilerError, List<TokenWithLocation>> =
                             "if" -> result.add(TokenWithLocation(Token.If, Location(line, start + 1)))
                             "else" -> result.add(TokenWithLocation(Token.Else, Location(line, start + 1)))
                             "goto" -> result.add(TokenWithLocation(Token.Goto, Location(line, start + 1)))
+                            "do" -> result.add(TokenWithLocation(Token.Do, Location(line, start + 1)))
+                            "while" -> result.add(TokenWithLocation(Token.While, Location(line, start + 1)))
+                            "for" -> result.add(TokenWithLocation(Token.For, Location(line, start + 1)))
+                            "break" -> result.add(TokenWithLocation(Token.Break, Location(line, start + 1)))
+                            "continue" -> result.add(TokenWithLocation(Token.Continue, Location(line, start + 1)))
                             else ->
                                 result.add(
                                     TokenWithLocation(Token.Identifier(identifier), Location(line, start + 1)),

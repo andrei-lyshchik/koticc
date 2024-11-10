@@ -40,6 +40,7 @@ int main(void) {
             """
             abc cde_fgh 123 void return int (){};=-+~*/%^&| << >> < > <= >= != && || ! += -=
             *= /= %= &= ^= |= <<= >>= ++ -- if else ifnot elsenot ? : goto _id
+            do while for break continue
             """.trimIndent()
 
         assertEquals(
@@ -95,6 +96,11 @@ int main(void) {
                 Token.Colon,
                 Token.Goto,
                 Token.Identifier("_id"),
+                Token.Do,
+                Token.While,
+                Token.For,
+                Token.Break,
+                Token.Continue,
             ).right(),
             lexer(input).map { tokens -> tokens.map { it.value } },
         )
