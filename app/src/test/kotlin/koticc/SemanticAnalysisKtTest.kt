@@ -118,6 +118,7 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 2,
+                loopLabelCount = 0,
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -385,6 +386,7 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 1,
+                loopLabelCount = 0,
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -498,6 +500,7 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 3,
+                loopLabelCount = 0,
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -573,6 +576,7 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 1,
+                loopLabelCount = 0,
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -714,6 +718,7 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 1,
+                loopLabelCount = 0,
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -833,6 +838,7 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 2,
+                loopLabelCount = 0,
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -918,6 +924,7 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 1,
+                loopLabelCount = 0,
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -1043,6 +1050,7 @@ class SemanticAnalysisKtTest {
             ValidASTProgram(
                 value = input,
                 variableCount = 0,
+                loopLabelCount = 0,
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -1186,6 +1194,7 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 2,
+                loopLabelCount = 0,
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -1310,6 +1319,7 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 1,
+                loopLabelCount = 0,
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -1420,6 +1430,7 @@ class SemanticAnalysisKtTest {
                 ),
             ),
             variableCount = 2,
+            loopLabelCount = 0,
         )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -1475,6 +1486,7 @@ class SemanticAnalysisKtTest {
         val expected = ValidASTProgram(
             value = input,
             variableCount = 0,
+            loopLabelCount = 0,
         )
 
         assertEquals(expected.right(), semanticAnalysis(input))

@@ -1,14 +1,14 @@
 package koticc
 
 fun programASTToTacky(validASTProgram: ValidASTProgram): Tacky.Program {
-    val generator = TackyGenerator(validASTProgram.variableCount)
+    val generator = TackyGenerator(initialVariableCount = validASTProgram.variableCount, initialLabelCount = 0)
     return generator.generateProgram(validASTProgram.value)
 }
 
-private class TackyGenerator(initialVariableCount: Int) {
+private class TackyGenerator(initialVariableCount: Int, initialLabelCount: Int) {
     private var variableCount = initialVariableCount
     private val instructions: MutableList<Tacky.Instruction> = mutableListOf()
-    private var labelCount = 0
+    private var labelCount = initialLabelCount
 
     private fun nextVariable(): Tacky.Value.Variable = Tacky.Value.Variable("tmp.${variableCount++}")
 
@@ -59,6 +59,11 @@ private class TackyGenerator(initialVariableCount: Int) {
             is AST.Statement.Labeled -> generateLabeledStatement(statement)
             is AST.Statement.Goto -> generateGoto(statement)
             is AST.Statement.Compound -> generateBlock(statement.block)
+            is AST.Statement.DoWhile -> TODO()
+            is AST.Statement.While -> TODO()
+            is AST.Statement.For -> TODO()
+            is AST.Statement.Break -> TODO()
+            is AST.Statement.Continue -> TODO()
         }
     }
 

@@ -31,6 +31,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 0,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(program)
@@ -91,6 +92,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 0,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(program)
@@ -166,6 +168,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 0,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(program)
@@ -229,6 +232,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 0,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(program)
@@ -304,6 +308,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 0,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(program)
@@ -392,6 +397,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 0,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(program)
@@ -468,6 +474,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 1,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(program)
@@ -517,6 +524,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 1,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(program)
@@ -567,6 +575,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 123,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(program)
@@ -630,6 +639,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 1,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(program)
@@ -705,6 +715,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 1,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(program)
@@ -800,6 +811,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 2,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(program)
@@ -907,6 +919,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 2,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(input)
@@ -1013,6 +1026,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 2,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(input)
@@ -1127,6 +1141,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 2,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(input)
@@ -1229,6 +1244,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 1,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(input)
@@ -1305,6 +1321,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 1,
+                loopLabelCount = 0,
             )
 
         val tacky = programASTToTacky(input)

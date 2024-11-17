@@ -12,6 +12,7 @@ open class VarargArgumentsProvider(
         arguments.map {
             when (it) {
                 is Pair<*, *> -> Arguments.of(it.first, it.second)
+                is Arguments -> it
                 else -> Arguments.of(it)
             }
         }

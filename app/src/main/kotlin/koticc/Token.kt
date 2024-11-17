@@ -87,6 +87,7 @@ sealed interface Token {
 
     data object DoublePipe : Token
 
+    // punctuation
     data object Exclamation : Token
 
     // compound assignment

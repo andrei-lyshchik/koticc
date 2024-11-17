@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename")
+
 package koticc
 
 import arrow.core.Either
@@ -8,7 +10,7 @@ data class LexerError(val message: String, val location: Location) : CompilerErr
     override fun message(): String = "lexer error, at ${location.toHumanReadableString()}: $message"
 }
 
-fun lexer(input: String): Either<CompilerError, List<TokenWithLocation>> =
+fun lexer(input: String): Either<LexerError, List<TokenWithLocation>> =
     either {
         val result = mutableListOf<TokenWithLocation>()
         input.lineSequence().withIndex().forEach { (lineIndex, lineContent) ->

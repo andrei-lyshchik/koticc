@@ -8,6 +8,7 @@ import arrow.core.raise.ensureNotNull
 data class ValidASTProgram(
     val value: AST.Program,
     val variableCount: Int,
+    val loopLabelCount: Int,
 )
 
 data class SemanticAnalysisError(
@@ -20,8 +21,13 @@ data class SemanticAnalysisError(
 fun semanticAnalysis(program: AST.Program): Either<SemanticAnalysisError, ValidASTProgram> =
     either {
         val variableResolverResult = VariableResolver().resolveProgram(program).bind()
-        validateLabels(variableResolverResult.program).bind()
-        ValidASTProgram(variableResolverResult.program, variableResolverResult.variableCount)
+        validateGotoLabels(variableResolverResult.program).bind()
+        val loopLabelResolverResult = LoopLabelResolver().resolveLoops(variableResolverResult.program).bind()
+        ValidASTProgram(
+            value = loopLabelResolverResult.program,
+            variableCount = variableResolverResult.variableCount,
+            loopLabelCount = loopLabelResolverResult.loopLabelCount,
+        )
     }
 
 private data class VariableResolverResult(
@@ -70,7 +76,6 @@ private class VariableResolver {
 
     private fun resolveDeclaration(declaration: AST.Declaration, variableMapping: MutableMap<String, DeclaredVariable>): Either<SemanticAnalysisError, AST.Declaration> =
         either {
-            val newName = "${declaration.name}.${variableCount++}"
             variableMapping[declaration.name]?.takeIf { it.declaredInThisScope }?.let {
                 raise(
                     SemanticAnalysisError(
@@ -80,6 +85,7 @@ private class VariableResolver {
                     ),
                 )
             }
+            val newName = "${declaration.name}.${variableCount++}"
             variableMapping[declaration.name] = DeclaredVariable(newName, declaration.location, declaredInThisScope = true)
             declaration.copy(name = newName, initializer = declaration.initializer?.let { resolveExpression(it, variableMapping).bind() })
         }
@@ -113,6 +119,53 @@ private class VariableResolver {
                 }
                 is AST.Statement.Goto -> statement
                 is AST.Statement.Compound -> AST.Statement.Compound(resolveBlock(statement.block, variableMapping).bind())
+                is AST.Statement.DoWhile -> {
+                    AST.Statement.DoWhile(
+                        body = resolveStatement(statement.body, variableMapping).bind(),
+                        condition = resolveExpression(statement.condition, variableMapping).bind(),
+                        breakLabel = null,
+                        continueLabel = null,
+                        location = statement.location,
+                    )
+                }
+                is AST.Statement.While -> AST.Statement.While(
+                    condition = resolveExpression(statement.condition, variableMapping).bind(),
+                    body = resolveStatement(statement.body, variableMapping).bind(),
+                    breakLabel = null,
+                    continueLabel = null,
+                    location = statement.location,
+                )
+                is AST.Statement.For -> {
+                    val headerVariableMapping = variableMapping.copyForNestedBlock()
+                    val initializer = when (statement.initializer) {
+                        is AST.ForInitializer.Declaration ->
+                            AST.ForInitializer.Declaration(
+                                resolveDeclaration(statement.initializer.declaration, headerVariableMapping).bind(),
+                            )
+
+                        is AST.ForInitializer.Expression ->
+                            AST.ForInitializer.Expression(
+                                resolveExpression(statement.initializer.expression, headerVariableMapping).bind(),
+                            )
+
+                        null -> null
+                    }
+                    val condition = statement.condition?.let { resolveExpression(it, headerVariableMapping).bind() }
+                    val post = statement.post?.let { resolveExpression(it, headerVariableMapping).bind() }
+                    val body = resolveStatement(statement.body, headerVariableMapping).bind()
+                    AST.Statement.For(
+                        initializer = initializer,
+                        condition = condition,
+                        post = post,
+                        body = body,
+                        breakLabel = null,
+                        continueLabel = null,
+                        location = statement.location,
+                    )
+                }
+
+                is AST.Statement.Break -> statement
+                is AST.Statement.Continue -> statement
             }
         }
 
@@ -228,7 +281,7 @@ private class VariableResolver {
         mapValues { (key, value) -> value.copy(declaredInThisScope = false) }.toMutableMap()
 }
 
-private fun validateLabels(program: AST.Program): Either<SemanticAnalysisError, AST.Program> =
+private fun validateGotoLabels(program: AST.Program): Either<SemanticAnalysisError, AST.Program> =
     either {
         val labelMapping = validateLabelsAreUnique(program).bind()
         validateGotos(program, labelMapping).bind()
@@ -273,6 +326,11 @@ private fun findAllLabeledStatements(statement: AST.Statement): List<AST.Stateme
                 .filterIsInstance<AST.BlockItem.Statement>()
                 .map(AST.BlockItem.Statement::statement)
                 .flatMap(::findAllLabeledStatements)
+        is AST.Statement.DoWhile -> findAllLabeledStatements(statement.body)
+        is AST.Statement.While -> findAllLabeledStatements(statement.body)
+        is AST.Statement.For -> findAllLabeledStatements(statement.body)
+        is AST.Statement.Break -> emptyList()
+        is AST.Statement.Continue -> emptyList()
     }
 
 private fun validateGotos(
@@ -306,4 +364,139 @@ private fun findAllGotos(statement: AST.Statement): List<AST.Statement.Goto> =
                 .filterIsInstance<AST.BlockItem.Statement>()
                 .map(AST.BlockItem.Statement::statement)
                 .flatMap(::findAllGotos)
+        is AST.Statement.DoWhile -> findAllGotos(statement.body)
+        is AST.Statement.While -> findAllGotos(statement.body)
+        is AST.Statement.For -> findAllGotos(statement.body)
+        is AST.Statement.Break -> emptyList()
+        is AST.Statement.Continue -> emptyList()
     }
+
+private data class LoopLabelResolverResult(
+    val program: AST.Program,
+    val loopLabelCount: Int,
+)
+
+private class LoopLabelResolver {
+    private var labelCount: Int = 0
+
+    fun resolveLoops(program: AST.Program): Either<SemanticAnalysisError, LoopLabelResolverResult> =
+        either {
+            val newProgram = program.copy(
+                functionDefinition = resolveFunctionDefinition(program.functionDefinition).bind(),
+            )
+            LoopLabelResolverResult(
+                program = newProgram,
+                loopLabelCount = labelCount,
+            )
+        }
+
+    private fun resolveFunctionDefinition(
+        functionDefinition: AST.FunctionDefinition,
+    ): Either<SemanticAnalysisError, AST.FunctionDefinition> =
+        either {
+            functionDefinition.copy(body = resolveBlock(functionDefinition.body, null).bind())
+        }
+
+    private fun resolveBlock(
+        block: AST.Block,
+        loopLabels: CurrentLoopLabels?,
+    ): Either<SemanticAnalysisError, AST.Block> =
+        either {
+            block.copy(blockItems = block.blockItems.map { resolveBlockItem(it, loopLabels).bind() })
+        }
+
+    private fun resolveBlockItem(blockItem: AST.BlockItem, loopLabels: CurrentLoopLabels?): Either<SemanticAnalysisError, AST.BlockItem> =
+        either {
+            when (blockItem) {
+                is AST.BlockItem.Declaration -> blockItem
+                is AST.BlockItem.Statement -> AST.BlockItem.Statement(resolveStatement(blockItem.statement, loopLabels = loopLabels).bind())
+            }
+        }
+
+    private fun resolveStatement(statement: AST.Statement, loopLabels: CurrentLoopLabels?): Either<SemanticAnalysisError, AST.Statement> =
+        either {
+            when (statement) {
+                is AST.Statement.Return -> statement
+                is AST.Statement.Expression -> statement
+                is AST.Statement.Null -> statement
+                is AST.Statement.If -> {
+                    AST.Statement.If(
+                        condition = statement.condition,
+                        thenStatement = resolveStatement(statement.thenStatement, loopLabels).bind(),
+                        elseStatement = statement.elseStatement?.let { resolveStatement(it, loopLabels).bind() },
+                    )
+                }
+                is AST.Statement.Labeled -> {
+                    AST.Statement.Labeled(
+                        label = statement.label,
+                        statement = resolveStatement(statement.statement, loopLabels).bind(),
+                        location = statement.location,
+                    )
+                }
+                is AST.Statement.Goto -> statement
+                is AST.Statement.Compound -> {
+                    AST.Statement.Compound(resolveBlock(statement.block, loopLabels).bind())
+                }
+                is AST.Statement.DoWhile -> {
+                    val nextLoopLabels = nextCurrentLoopLabels("do_while")
+                    AST.Statement.DoWhile(
+                        body = resolveStatement(statement.body, nextLoopLabels).bind(),
+                        condition = statement.condition,
+                        breakLabel = nextLoopLabels.breakLabel,
+                        continueLabel = nextLoopLabels.continueLabel,
+                        location = statement.location,
+                    )
+                }
+                is AST.Statement.While -> {
+                    val nextLoopLabels = nextCurrentLoopLabels("while")
+                    AST.Statement.While(
+                        condition = statement.condition,
+                        body = resolveStatement(statement.body, nextLoopLabels).bind(),
+                        breakLabel = nextLoopLabels.breakLabel,
+                        continueLabel = nextLoopLabels.continueLabel,
+                        location = statement.location,
+                    )
+                }
+                is AST.Statement.For -> {
+                    val nextLoopLabels = nextCurrentLoopLabels("for")
+                    AST.Statement.For(
+                        initializer = statement.initializer,
+                        condition = statement.condition,
+                        post = statement.post,
+                        body = resolveStatement(statement.body, nextLoopLabels).bind(),
+                        breakLabel = nextLoopLabels.breakLabel,
+                        continueLabel = nextLoopLabels.continueLabel,
+                        location = statement.location,
+                    )
+                }
+                is AST.Statement.Break -> {
+                    ensureNotNull(loopLabels) {
+                        SemanticAnalysisError("break statement outside of loop", statement.location)
+                    }
+                    AST.Statement.Break(
+                        label = loopLabels.breakLabel,
+                        location = statement.location,
+                    )
+                }
+                is AST.Statement.Continue -> {
+                    ensureNotNull(loopLabels) {
+                        SemanticAnalysisError("continue statement outside of loop", statement.location)
+                    }
+                    AST.Statement.Continue(
+                        label = loopLabels.continueLabel,
+                        location = statement.location,
+                    )
+                }
+            }
+        }
+
+    private fun nextCurrentLoopLabels(prefix: String) = CurrentLoopLabels(
+        breakLabel = LabelName("$prefix.break.$labelCount"),
+        continueLabel = LabelName("$prefix.continue.$labelCount"),
+    ).also { labelCount++ }
+
+    private data class CurrentLoopLabels(
+        val breakLabel: LabelName,
+        val continueLabel: LabelName,
+    )
+}

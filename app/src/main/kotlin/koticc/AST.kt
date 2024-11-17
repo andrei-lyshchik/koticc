@@ -48,8 +48,8 @@ object AST {
 
         data class If(
             val condition: AST.Expression,
-            val thenStatement: AST.Statement,
-            val elseStatement: AST.Statement?,
+            val thenStatement: Statement,
+            val elseStatement: Statement?,
         ) : Statement {
             override val location: Location
                 get() = condition.location
@@ -71,6 +71,59 @@ object AST {
         ) : Statement {
             override val location: Location
                 get() = block.location
+        }
+
+        data class DoWhile(
+            val body: Statement,
+            val condition: AST.Expression,
+            // these are null after parsing, and filled in during semantic analysis
+            val continueLabel: LabelName?,
+            val breakLabel: LabelName?,
+            override val location: Location,
+        ) : Statement
+
+        data class While(
+            val condition: AST.Expression,
+            val body: Statement,
+            // these are null after parsing, and filled in during semantic analysis
+            val continueLabel: LabelName?,
+            val breakLabel: LabelName?,
+            override val location: Location,
+        ) : Statement
+
+        data class For(
+            val initializer: ForInitializer?,
+            val condition: AST.Expression?,
+            val post: AST.Expression?,
+            val body: Statement,
+            // these are null after parsing, and filled in during semantic analysis
+            val continueLabel: LabelName?,
+            val breakLabel: LabelName?,
+            override val location: Location,
+        ) : Statement
+
+        data class Break(
+            // null after parsing, will be filled in during semantic analysis
+            val label: LabelName?,
+            override val location: Location,
+        ) : Statement
+
+        data class Continue(
+            // null after parsing, will be filled in during semantic analysis
+            val label: LabelName?,
+            override val location: Location,
+        ) : Statement
+    }
+
+    sealed interface ForInitializer : LocationAware {
+        data class Declaration(val declaration: AST.Declaration) : ForInitializer {
+            override val location: Location
+                get() = declaration.location
+        }
+
+        data class Expression(val expression: AST.Expression) : ForInitializer {
+            override val location: Location
+                get() = expression.location
         }
     }
 

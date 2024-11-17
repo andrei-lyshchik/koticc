@@ -172,12 +172,85 @@ private class Parser(
                     val block = parseBlock().bind()
                     AST.Statement.Compound(block)
                 }
+                Token.Do -> {
+                    val doToken = expectToken(Token.Do).bind()
+                    val statement = parseStatement().bind()
+                    expectToken(Token.While).bind()
+                    expectToken(Token.OpenParen).bind()
+                    val condition = parseExpression(0).bind()
+                    expectToken(Token.CloseParen).bind()
+                    expectToken(Token.Semicolon).bind()
+                    AST.Statement.DoWhile(
+                        body = statement,
+                        condition = condition,
+                        breakLabel = null,
+                        continueLabel = null,
+                        location = doToken.location,
+                    )
+                }
+                Token.While -> {
+                    val whileToken = expectToken(Token.While).bind()
+                    expectToken(Token.OpenParen).bind()
+                    val condition = parseExpression(0).bind()
+                    expectToken(Token.CloseParen).bind()
+                    val body = parseStatement().bind()
+                    AST.Statement.While(
+                        condition = condition,
+                        body = body,
+                        breakLabel = null,
+                        continueLabel = null,
+                        location = whileToken.location,
+                    )
+                }
+                Token.For -> {
+                    val forToken = expectToken(Token.For).bind()
+                    expectToken(Token.OpenParen).bind()
+                    val initializer = when (peekToken()?.value) {
+                        Token.IntKeyword -> AST.ForInitializer.Declaration(parseDeclaration().bind())
+                        else -> parseOptionalExpression(Token.Semicolon).bind()?.let(AST.ForInitializer::Expression)
+                    }
+                    val condition =
+                        parseOptionalExpression(Token.Semicolon).bind()
+                    val post =
+                        parseOptionalExpression(Token.CloseParen).bind()
+                    val body = parseStatement().bind()
+                    AST.Statement.For(
+                        initializer = initializer,
+                        condition = condition,
+                        post = post,
+                        body = body,
+                        breakLabel = null,
+                        continueLabel = null,
+                        location = forToken.location,
+                    )
+                }
+                Token.Break -> {
+                    val breakToken = expectToken(Token.Break).bind()
+                    expectToken(Token.Semicolon).bind()
+                    AST.Statement.Break(label = null, breakToken.location)
+                }
+                Token.Continue -> {
+                    val continueToken = expectToken(Token.Continue).bind()
+                    expectToken(Token.Semicolon).bind()
+                    AST.Statement.Continue(label = null, continueToken.location)
+                }
                 else -> {
                     val expression = parseExpression(0).bind()
                     expectToken(Token.Semicolon).bind()
                     AST.Statement.Expression(expression)
                 }
             }
+        }
+
+    private fun parseOptionalExpression(endToken: Token): Either<ParserError, AST.Expression?> =
+        either {
+            val expression = if (peekToken()?.value == endToken) {
+                null
+            } else {
+                parseExpression(0).bind()
+            }
+            expectToken(endToken).bind()
+            expression
         }
 
     private fun parseExpression(minPrecedence: Int): Either<ParserError, AST.Expression> =
