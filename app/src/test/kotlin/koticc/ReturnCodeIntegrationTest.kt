@@ -30,6 +30,7 @@ class ReturnCodeIntegrationTest {
         "/programs/conditional_ternary.c",
         "/programs/labels.c",
         "/programs/nested_blocks.c",
+        "/programs/loops.c",
     )
 
     @ParameterizedTest

@@ -76,18 +76,16 @@ object AST {
         data class DoWhile(
             val body: Statement,
             val condition: AST.Expression,
-            // these are null after parsing, and filled in during semantic analysis
-            val continueLabel: LabelName?,
-            val breakLabel: LabelName?,
+            // this is null after parsing, and filled in during semantic analysis
+            val loopId: LoopId?,
             override val location: Location,
         ) : Statement
 
         data class While(
             val condition: AST.Expression,
             val body: Statement,
-            // these are null after parsing, and filled in during semantic analysis
-            val continueLabel: LabelName?,
-            val breakLabel: LabelName?,
+            // this is null after parsing, and filled in during semantic analysis
+            val loopId: LoopId?,
             override val location: Location,
         ) : Statement
 
@@ -96,24 +94,26 @@ object AST {
             val condition: AST.Expression?,
             val post: AST.Expression?,
             val body: Statement,
-            // these are null after parsing, and filled in during semantic analysis
-            val continueLabel: LabelName?,
-            val breakLabel: LabelName?,
+            // this is null after parsing, and filled in during semantic analysis
+            val loopId: LoopId?,
             override val location: Location,
         ) : Statement
 
         data class Break(
             // null after parsing, will be filled in during semantic analysis
-            val label: LabelName?,
+            val loopId: LoopId?,
             override val location: Location,
         ) : Statement
 
         data class Continue(
             // null after parsing, will be filled in during semantic analysis
-            val label: LabelName?,
+            val loopId: LoopId?,
             override val location: Location,
         ) : Statement
     }
+
+    @JvmInline
+    value class LoopId(val value: Int)
 
     sealed interface ForInitializer : LocationAware {
         data class Declaration(val declaration: AST.Declaration) : ForInitializer {

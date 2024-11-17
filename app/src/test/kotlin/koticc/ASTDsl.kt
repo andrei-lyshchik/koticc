@@ -60,21 +60,20 @@ class BlockBuilder {
     fun do_(block: BlockBuilder.() -> Unit) =
         setCurrentBlockItemBuilder(DoWhileBuilder(BlockBuilder().apply(block).build()))
 
-    fun while_(condition: AST.Expression, loopIndex: Int? = null, block: BlockBuilder.() -> Unit) {
+    fun while_(condition: AST.Expression, loopId: Int? = null, block: BlockBuilder.() -> Unit) {
         addBlockItem(
             AST.BlockItem.Statement(
                 AST.Statement.While(
                     condition = condition,
                     body = AST.Statement.Compound(BlockBuilder().apply(block).build()),
-                    continueLabel = loopIndex?.let { LabelName("while.continue.$loopIndex") },
-                    breakLabel = loopIndex?.let { LabelName("while.break.$loopIndex") },
+                    loopId = loopId?.let(AST::LoopId),
                     location = DUMMY_LOCATION,
                 ),
             ),
         )
     }
 
-    fun for_(initializer: AST.ForInitializer?, condition: AST.Expression?, post: AST.Expression?, loopIndex: Int? = null, block: BlockBuilder.() -> Unit) {
+    fun for_(initializer: AST.ForInitializer?, condition: AST.Expression?, post: AST.Expression?, loopId: Int? = null, block: BlockBuilder.() -> Unit) {
         addBlockItem(
             AST.BlockItem.Statement(
                 AST.Statement.For(
@@ -82,30 +81,29 @@ class BlockBuilder {
                     condition = condition,
                     post = post,
                     body = AST.Statement.Compound(BlockBuilder().apply(block).build()),
-                    continueLabel = loopIndex?.let { LabelName("for.continue.$loopIndex") },
-                    breakLabel = loopIndex?.let { LabelName("for.break.$loopIndex") },
+                    loopId = loopId?.let(AST::LoopId),
                     location = DUMMY_LOCATION,
                 ),
             ),
         )
     }
 
-    fun break_(labelNameValue: String? = null) {
+    fun break_(loopId: Int? = null) {
         addBlockItem(
             AST.BlockItem.Statement(
                 AST.Statement.Break(
-                    label = labelNameValue?.let { LabelName(labelNameValue) },
+                    loopId = loopId?.let(AST::LoopId),
                     location = DUMMY_LOCATION,
                 ),
             ),
         )
     }
 
-    fun continue_(labelNameValue: String? = null) {
+    fun continue_(loopId: Int? = null) {
         addBlockItem(
             AST.BlockItem.Statement(
                 AST.Statement.Continue(
-                    label = labelNameValue?.let { LabelName(labelNameValue) },
+                    loopId = loopId?.let(AST::LoopId),
                     location = DUMMY_LOCATION,
                 ),
             ),
@@ -157,11 +155,11 @@ class IfBuilder(val condition: AST.Expression, thenBlock: BlockBuilder.() -> Uni
 
 class DoWhileBuilder(val body: AST.Block) : BlockItemBuilder {
     private var condition: AST.Expression? = null
-    private var loopIndex: Int? = null
+    private var loopId: Int? = null
 
-    fun while_(condition: AST.Expression, labelLoopIndex: Int? = null) {
+    fun while_(condition: AST.Expression, loopId: Int? = null) {
         this.condition = condition
-        this.loopIndex = labelLoopIndex
+        this.loopId = loopId
     }
 
     override fun build(): AST.BlockItem {
@@ -169,8 +167,7 @@ class DoWhileBuilder(val body: AST.Block) : BlockItemBuilder {
             AST.Statement.DoWhile(
                 body = AST.Statement.Compound(body),
                 condition = condition ?: error("No condition"),
-                continueLabel = loopIndex?.let { LabelName("do_while.continue.$loopIndex") },
-                breakLabel = loopIndex?.let { LabelName("do_while.break.$loopIndex") },
+                loopId = loopId?.let(AST::LoopId),
                 location = DUMMY_LOCATION,
             ),
         )

@@ -183,8 +183,7 @@ private class Parser(
                     AST.Statement.DoWhile(
                         body = statement,
                         condition = condition,
-                        breakLabel = null,
-                        continueLabel = null,
+                        loopId = null,
                         location = doToken.location,
                     )
                 }
@@ -197,8 +196,7 @@ private class Parser(
                     AST.Statement.While(
                         condition = condition,
                         body = body,
-                        breakLabel = null,
-                        continueLabel = null,
+                        loopId = null,
                         location = whileToken.location,
                     )
                 }
@@ -219,20 +217,19 @@ private class Parser(
                         condition = condition,
                         post = post,
                         body = body,
-                        breakLabel = null,
-                        continueLabel = null,
+                        loopId = null,
                         location = forToken.location,
                     )
                 }
                 Token.Break -> {
                     val breakToken = expectToken(Token.Break).bind()
                     expectToken(Token.Semicolon).bind()
-                    AST.Statement.Break(label = null, breakToken.location)
+                    AST.Statement.Break(loopId = null, breakToken.location)
                 }
                 Token.Continue -> {
                     val continueToken = expectToken(Token.Continue).bind()
                     expectToken(Token.Semicolon).bind()
-                    AST.Statement.Continue(label = null, continueToken.location)
+                    AST.Statement.Continue(loopId = null, continueToken.location)
                 }
                 else -> {
                     val expression = parseExpression(0).bind()

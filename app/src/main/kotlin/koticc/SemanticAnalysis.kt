@@ -8,7 +8,6 @@ import arrow.core.raise.ensureNotNull
 data class ValidASTProgram(
     val value: AST.Program,
     val variableCount: Int,
-    val loopLabelCount: Int,
 )
 
 data class SemanticAnalysisError(
@@ -22,11 +21,10 @@ fun semanticAnalysis(program: AST.Program): Either<SemanticAnalysisError, ValidA
     either {
         val variableResolverResult = VariableResolver().resolveProgram(program).bind()
         validateGotoLabels(variableResolverResult.program).bind()
-        val loopLabelResolverResult = LoopLabelResolver().resolveLoops(variableResolverResult.program).bind()
+        val programWithResolvedLoopIds = LoopIdResolver().resolveLoopIds(variableResolverResult.program).bind()
         ValidASTProgram(
-            value = loopLabelResolverResult.program,
+            value = programWithResolvedLoopIds,
             variableCount = variableResolverResult.variableCount,
-            loopLabelCount = loopLabelResolverResult.loopLabelCount,
         )
     }
 
@@ -123,16 +121,14 @@ private class VariableResolver {
                     AST.Statement.DoWhile(
                         body = resolveStatement(statement.body, variableMapping).bind(),
                         condition = resolveExpression(statement.condition, variableMapping).bind(),
-                        breakLabel = null,
-                        continueLabel = null,
+                        loopId = statement.loopId,
                         location = statement.location,
                     )
                 }
                 is AST.Statement.While -> AST.Statement.While(
                     condition = resolveExpression(statement.condition, variableMapping).bind(),
                     body = resolveStatement(statement.body, variableMapping).bind(),
-                    breakLabel = null,
-                    continueLabel = null,
+                    loopId = statement.loopId,
                     location = statement.location,
                 )
                 is AST.Statement.For -> {
@@ -158,8 +154,7 @@ private class VariableResolver {
                         condition = condition,
                         post = post,
                         body = body,
-                        breakLabel = null,
-                        continueLabel = null,
+                        loopId = statement.loopId,
                         location = statement.location,
                     )
                 }
@@ -278,7 +273,7 @@ private class VariableResolver {
     private data class DeclaredVariable(val newName: String, val location: Location, val declaredInThisScope: Boolean)
 
     private fun MutableMap<String, DeclaredVariable>.copyForNestedBlock() =
-        mapValues { (key, value) -> value.copy(declaredInThisScope = false) }.toMutableMap()
+        mapValues { (_, value) -> value.copy(declaredInThisScope = false) }.toMutableMap()
 }
 
 private fun validateGotoLabels(program: AST.Program): Either<SemanticAnalysisError, AST.Program> =
@@ -371,23 +366,15 @@ private fun findAllGotos(statement: AST.Statement): List<AST.Statement.Goto> =
         is AST.Statement.Continue -> emptyList()
     }
 
-private data class LoopLabelResolverResult(
-    val program: AST.Program,
-    val loopLabelCount: Int,
-)
+private class LoopIdResolver {
+    private var loopIdCount: Int = 0
 
-private class LoopLabelResolver {
-    private var labelCount: Int = 0
-
-    fun resolveLoops(program: AST.Program): Either<SemanticAnalysisError, LoopLabelResolverResult> =
+    fun resolveLoopIds(program: AST.Program): Either<SemanticAnalysisError, AST.Program> =
         either {
             val newProgram = program.copy(
                 functionDefinition = resolveFunctionDefinition(program.functionDefinition).bind(),
             )
-            LoopLabelResolverResult(
-                program = newProgram,
-                loopLabelCount = labelCount,
-            )
+            newProgram
         }
 
     private fun resolveFunctionDefinition(
@@ -399,21 +386,21 @@ private class LoopLabelResolver {
 
     private fun resolveBlock(
         block: AST.Block,
-        loopLabels: CurrentLoopLabels?,
+        loopId: AST.LoopId?,
     ): Either<SemanticAnalysisError, AST.Block> =
         either {
-            block.copy(blockItems = block.blockItems.map { resolveBlockItem(it, loopLabels).bind() })
+            block.copy(blockItems = block.blockItems.map { resolveBlockItem(it, loopId).bind() })
         }
 
-    private fun resolveBlockItem(blockItem: AST.BlockItem, loopLabels: CurrentLoopLabels?): Either<SemanticAnalysisError, AST.BlockItem> =
+    private fun resolveBlockItem(blockItem: AST.BlockItem, loopId: AST.LoopId?): Either<SemanticAnalysisError, AST.BlockItem> =
         either {
             when (blockItem) {
                 is AST.BlockItem.Declaration -> blockItem
-                is AST.BlockItem.Statement -> AST.BlockItem.Statement(resolveStatement(blockItem.statement, loopLabels = loopLabels).bind())
+                is AST.BlockItem.Statement -> AST.BlockItem.Statement(resolveStatement(blockItem.statement, loopId = loopId).bind())
             }
         }
 
-    private fun resolveStatement(statement: AST.Statement, loopLabels: CurrentLoopLabels?): Either<SemanticAnalysisError, AST.Statement> =
+    private fun resolveStatement(statement: AST.Statement, loopId: AST.LoopId?): Either<SemanticAnalysisError, AST.Statement> =
         either {
             when (statement) {
                 is AST.Statement.Return -> statement
@@ -422,81 +409,70 @@ private class LoopLabelResolver {
                 is AST.Statement.If -> {
                     AST.Statement.If(
                         condition = statement.condition,
-                        thenStatement = resolveStatement(statement.thenStatement, loopLabels).bind(),
-                        elseStatement = statement.elseStatement?.let { resolveStatement(it, loopLabels).bind() },
+                        thenStatement = resolveStatement(statement.thenStatement, loopId).bind(),
+                        elseStatement = statement.elseStatement?.let { resolveStatement(it, loopId).bind() },
                     )
                 }
                 is AST.Statement.Labeled -> {
                     AST.Statement.Labeled(
                         label = statement.label,
-                        statement = resolveStatement(statement.statement, loopLabels).bind(),
+                        statement = resolveStatement(statement.statement, loopId).bind(),
                         location = statement.location,
                     )
                 }
                 is AST.Statement.Goto -> statement
                 is AST.Statement.Compound -> {
-                    AST.Statement.Compound(resolveBlock(statement.block, loopLabels).bind())
+                    AST.Statement.Compound(resolveBlock(statement.block, loopId).bind())
                 }
                 is AST.Statement.DoWhile -> {
-                    val nextLoopLabels = nextCurrentLoopLabels("do_while")
+                    val nextLoopId = nextLoopId()
                     AST.Statement.DoWhile(
-                        body = resolveStatement(statement.body, nextLoopLabels).bind(),
+                        body = resolveStatement(statement.body, nextLoopId).bind(),
                         condition = statement.condition,
-                        breakLabel = nextLoopLabels.breakLabel,
-                        continueLabel = nextLoopLabels.continueLabel,
+                        loopId = nextLoopId,
                         location = statement.location,
                     )
                 }
                 is AST.Statement.While -> {
-                    val nextLoopLabels = nextCurrentLoopLabels("while")
+                    val nextLoopId = nextLoopId()
                     AST.Statement.While(
                         condition = statement.condition,
-                        body = resolveStatement(statement.body, nextLoopLabels).bind(),
-                        breakLabel = nextLoopLabels.breakLabel,
-                        continueLabel = nextLoopLabels.continueLabel,
+                        body = resolveStatement(statement.body, nextLoopId).bind(),
+                        loopId = nextLoopId,
                         location = statement.location,
                     )
                 }
                 is AST.Statement.For -> {
-                    val nextLoopLabels = nextCurrentLoopLabels("for")
+                    val nextLoopId = nextLoopId()
                     AST.Statement.For(
                         initializer = statement.initializer,
                         condition = statement.condition,
                         post = statement.post,
-                        body = resolveStatement(statement.body, nextLoopLabels).bind(),
-                        breakLabel = nextLoopLabels.breakLabel,
-                        continueLabel = nextLoopLabels.continueLabel,
+                        body = resolveStatement(statement.body, nextLoopId).bind(),
+                        loopId = nextLoopId,
                         location = statement.location,
                     )
                 }
                 is AST.Statement.Break -> {
-                    ensureNotNull(loopLabels) {
+                    ensureNotNull(loopId) {
                         SemanticAnalysisError("break statement outside of loop", statement.location)
                     }
                     AST.Statement.Break(
-                        label = loopLabels.breakLabel,
+                        loopId = loopId,
                         location = statement.location,
                     )
                 }
                 is AST.Statement.Continue -> {
-                    ensureNotNull(loopLabels) {
+                    ensureNotNull(loopId) {
                         SemanticAnalysisError("continue statement outside of loop", statement.location)
                     }
                     AST.Statement.Continue(
-                        label = loopLabels.continueLabel,
+                        loopId = loopId,
                         location = statement.location,
                     )
                 }
             }
         }
 
-    private fun nextCurrentLoopLabels(prefix: String) = CurrentLoopLabels(
-        breakLabel = LabelName("$prefix.break.$labelCount"),
-        continueLabel = LabelName("$prefix.continue.$labelCount"),
-    ).also { labelCount++ }
-
-    private data class CurrentLoopLabels(
-        val breakLabel: LabelName,
-        val continueLabel: LabelName,
-    )
+    private fun nextLoopId() = AST.LoopId(loopIdCount++)
 }

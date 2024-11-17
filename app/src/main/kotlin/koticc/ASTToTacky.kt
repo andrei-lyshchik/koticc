@@ -1,14 +1,14 @@
 package koticc
 
 fun programASTToTacky(validASTProgram: ValidASTProgram): Tacky.Program {
-    val generator = TackyGenerator(initialVariableCount = validASTProgram.variableCount, initialLabelCount = 0)
+    val generator = TackyGenerator(initialVariableCount = validASTProgram.variableCount)
     return generator.generateProgram(validASTProgram.value)
 }
 
-private class TackyGenerator(initialVariableCount: Int, initialLabelCount: Int) {
+private class TackyGenerator(initialVariableCount: Int) {
     private var variableCount = initialVariableCount
     private val instructions: MutableList<Tacky.Instruction> = mutableListOf()
-    private var labelCount = initialLabelCount
+    private var labelCount = 0
 
     private fun nextVariable(): Tacky.Value.Variable = Tacky.Value.Variable("tmp.${variableCount++}")
 
@@ -59,11 +59,11 @@ private class TackyGenerator(initialVariableCount: Int, initialLabelCount: Int) 
             is AST.Statement.Labeled -> generateLabeledStatement(statement)
             is AST.Statement.Goto -> generateGoto(statement)
             is AST.Statement.Compound -> generateBlock(statement.block)
-            is AST.Statement.DoWhile -> TODO()
-            is AST.Statement.While -> TODO()
-            is AST.Statement.For -> TODO()
-            is AST.Statement.Break -> TODO()
-            is AST.Statement.Continue -> TODO()
+            is AST.Statement.DoWhile -> generateDoWhile(statement)
+            is AST.Statement.While -> generateWhile(statement)
+            is AST.Statement.For -> generateFor(statement)
+            is AST.Statement.Break -> generateBreak(statement)
+            is AST.Statement.Continue -> generateContinue(statement)
         }
     }
 
@@ -90,6 +90,115 @@ private class TackyGenerator(initialVariableCount: Int, initialLabelCount: Int) 
                 value = generateExpression(statement.expression),
             ),
         )
+    }
+
+    private fun loopStartLabel(loopId: AST.LoopId): LabelName = LabelName("loop_start.${loopId.value}")
+    private fun loopEndLabel(loopId: AST.LoopId): LabelName = LabelName("loop_end.${loopId.value}")
+    private fun loopContinueLabel(loopId: AST.LoopId): LabelName = LabelName("loop_continue.${loopId.value}")
+
+    private fun generateContinue(continueStatement: AST.Statement.Continue) {
+        val loopId = requireNotNull(continueStatement.loopId) {
+            "loopId must be filled in during semantic analysis"
+        }
+        instructions.add(
+            Tacky.Instruction.Jump(loopContinueLabel(loopId)),
+        )
+    }
+
+    private fun generateBreak(breakStatement: AST.Statement.Break) {
+        val loopId = requireNotNull(breakStatement.loopId) {
+            "loopId must be filled in during semantic analysis"
+        }
+        instructions.add(
+            Tacky.Instruction.Jump(loopEndLabel(loopId)),
+        )
+    }
+
+    private fun generateDoWhile(doWhile: AST.Statement.DoWhile) {
+        val loopId = requireNotNull(doWhile.loopId) {
+            "loopId must be filled in during semantic analysis"
+        }
+        val startLabel = loopStartLabel(loopId)
+        instructions.add(
+            Tacky.Instruction.Label(startLabel),
+        )
+        generateStatement(doWhile.body)
+        instructions.add(Tacky.Instruction.Label(loopContinueLabel(loopId)))
+        val condition = generateExpression(doWhile.condition)
+        instructions.add(
+            Tacky.Instruction.JumpIfNotZero(
+                src = condition,
+                target = startLabel,
+            ),
+        )
+        instructions.add(
+            Tacky.Instruction.Label(loopEndLabel(loopId)),
+        )
+    }
+
+    private fun generateWhile(whileStatement: AST.Statement.While) {
+        val loopId = requireNotNull(whileStatement.loopId) {
+            "loopId must be filled in during semantic analysis"
+        }
+        val startLabel = loopStartLabel(loopId)
+        instructions.add(
+            Tacky.Instruction.Label(startLabel),
+        )
+        val condition = generateExpression(whileStatement.condition)
+        instructions.add(
+            Tacky.Instruction.JumpIfZero(
+                src = condition,
+                target = loopEndLabel(loopId),
+            ),
+        )
+        generateStatement(whileStatement.body)
+        instructions.add(
+            Tacky.Instruction.Label(loopContinueLabel(loopId)),
+        )
+        instructions.add(
+            Tacky.Instruction.Jump(startLabel),
+        )
+        instructions.add(
+            Tacky.Instruction.Label(loopEndLabel(loopId)),
+        )
+    }
+
+    private fun generateFor(forStatement: AST.Statement.For) {
+        val loopId = requireNotNull(forStatement.loopId) {
+            "loopId must be filled in during semantic analysis"
+        }
+        forStatement.initializer?.let { generateForInitializer(it) }
+        val startLabel = loopStartLabel(loopId)
+        instructions.add(
+            Tacky.Instruction.Label(startLabel),
+        )
+        val condition = forStatement.condition?.let { generateExpression(it) }
+        if (condition != null) {
+            instructions.add(
+                Tacky.Instruction.JumpIfZero(
+                    src = condition,
+                    target = loopEndLabel(loopId),
+                ),
+            )
+        }
+        generateStatement(forStatement.body)
+        instructions.add(
+            Tacky.Instruction.Label(loopContinueLabel(loopId)),
+        )
+        forStatement.post?.let { generateExpression(it) }
+        instructions.add(
+            Tacky.Instruction.Jump(startLabel),
+        )
+        instructions.add(
+            Tacky.Instruction.Label(loopEndLabel(loopId)),
+        )
+    }
+
+    private fun generateForInitializer(forInitializer: AST.ForInitializer) {
+        when (forInitializer) {
+            is AST.ForInitializer.Expression -> generateExpression(forInitializer.expression)
+            is AST.ForInitializer.Declaration -> generateDeclaration(forInitializer.declaration)
+        }
     }
 
     private fun generateExpression(expression: AST.Expression): Tacky.Value =

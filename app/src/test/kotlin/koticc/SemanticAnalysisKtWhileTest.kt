@@ -27,17 +27,16 @@ class SemanticAnalysisKtWhileTest {
                 value = program {
                     functionDefinition("main") {
                         int("a.0") assign 1.e
-                        while_("a.0".e lt 10.e, loopIndex = 0) {
+                        while_("a.0".e lt 10.e, loopId = 0) {
                             e("a.0".e plusAssign 1.e)
                         }
-                        while_("a.0".e lt 40.e, loopIndex = 1) {
+                        while_("a.0".e lt 40.e, loopId = 1) {
                             e("a.0".e plusMultiply 2.e)
                         }
                         return_("a.0".e)
                     }
                 },
                 variableCount = 1,
-                loopLabelCount = 2,
             ).right(),
             actual = actual,
         )
@@ -79,29 +78,28 @@ class SemanticAnalysisKtWhileTest {
                 value = program {
                     functionDefinition("main") {
                         int("a.0") assign 1.e
-                        while_("a.0".e lt 10.e, loopIndex = 0) {
+                        while_("a.0".e lt 10.e, loopId = 0) {
                             e("a.0".e plusAssign 1.e)
                             if_("a.0".e eq 5.e) {
-                                break_("while.break.0")
+                                break_(0)
                             }
                             if_("a.0".e eq 3.e) {
-                                continue_("while.continue.0")
+                                continue_(0)
                             }
                         }
-                        while_("a.0".e lt 40.e, loopIndex = 1) {
+                        while_("a.0".e lt 40.e, loopId = 1) {
                             e("a.0".e plusAssign 1.e)
                             if_("a.0".e eq 10.e) {
-                                break_("while.break.1")
+                                break_(1)
                             }
                             if_("a.0".e eq 8.e) {
-                                continue_("while.continue.1")
+                                continue_(1)
                             }
                         }
                         return_("a.0".e)
                     }
                 },
                 variableCount = 1,
-                loopLabelCount = 2,
             ).right(),
             actual = actual,
         )
@@ -135,23 +133,22 @@ class SemanticAnalysisKtWhileTest {
                 value = program {
                     functionDefinition("main") {
                         int("a.0") assign 1.e
-                        while_(1.e, loopIndex = 0) {
+                        while_(1.e, loopId = 0) {
                             e("a.0".e plusAssign 1.e)
-                            while_(1.e, loopIndex = 1) {
+                            while_(1.e, loopId = 1) {
                                 e("a.0".e plusAssign 2.e)
                                 if_("a.0".e gt 10.e) {
-                                    break_("while.break.1")
+                                    break_(1)
                                 }
                             }
                             if_("a.0".e gt 20.e) {
-                                break_("while.break.0")
+                                break_(0)
                             }
                         }
                         return_("a.0".e)
                     }
                 },
                 variableCount = 1,
-                loopLabelCount = 2,
             ).right(),
             actual = actual,
         )

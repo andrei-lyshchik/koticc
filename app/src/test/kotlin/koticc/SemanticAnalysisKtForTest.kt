@@ -32,7 +32,7 @@ class SemanticAnalysisKtForTest {
                             initDecl("i.1", 0.e),
                             "i.1".e lt 10.e,
                             "i.1".e plusAssign 1.e,
-                            loopIndex = 0,
+                            loopId = 0,
                         ) {
                             e("a.0".e plusAssign "i.1".e)
                         }
@@ -40,7 +40,6 @@ class SemanticAnalysisKtForTest {
                     }
                 },
                 variableCount = 2,
-                loopLabelCount = 1,
             ).right(),
             actual = actual,
         )
@@ -92,35 +91,34 @@ class SemanticAnalysisKtForTest {
                             initDecl("i.1", 0.e),
                             "i.1".e lt 10.e,
                             "i.1".e plusAssign 1.e,
-                            loopIndex = 0,
+                            loopId = 0,
                         ) {
                             e("a.0".e plusAssign "i.1".e)
                             if_("a.0".e eq 5.e) {
-                                break_("for.break.0")
+                                break_(0)
                             }
                             if_("a.0".e eq 3.e) {
-                                continue_("for.continue.0")
+                                continue_(0)
                             }
                         }
                         for_(
                             initDecl("i.2", 0.e),
                             "i.2".e lt 10.e,
                             "i.2".e plusAssign 1.e,
-                            loopIndex = 1,
+                            loopId = 1,
                         ) {
                             e("a.0".e plusAssign "i.2".e)
                             if_("a.0".e eq 20.e) {
-                                break_("for.break.1")
+                                break_(1)
                             }
                             if_("a.0".e eq 10.e) {
-                                continue_("for.continue.1")
+                                continue_(1)
                             }
                         }
                         return_("a.0".e)
                     }
                 },
                 variableCount = 3,
-                loopLabelCount = 2,
             ).right(),
             actual = actual,
         )
@@ -172,35 +170,34 @@ class SemanticAnalysisKtForTest {
                             initDecl("i.1", 0.e),
                             "i.1".e lt 10.e,
                             "i.1".e plusAssign 1.e,
-                            loopIndex = 0,
+                            loopId = 0,
                         ) {
                             e("a.0".e plusAssign "i.1".e)
                             for_(
                                 initDecl("j.2", 0.e),
                                 "j.2".e lt 10.e,
                                 "j.2".e plusAssign 1.e,
-                                loopIndex = 1,
+                                loopId = 1,
                             ) {
                                 e("a.0".e plusAssign "j.2".e)
                                 if_("a.0".e eq 5.e) {
-                                    break_("for.break.1")
+                                    break_(1)
                                 }
                                 if_("a.0".e eq 3.e) {
-                                    continue_("for.continue.1")
+                                    continue_(1)
                                 }
                             }
                             if_("a.0".e eq 20.e) {
-                                break_("for.break.0")
+                                break_(0)
                             }
                             if_("a.0".e eq 10.e) {
-                                continue_("for.continue.0")
+                                continue_(0)
                             }
                         }
                         return_("a.0".e)
                     }
                 },
                 variableCount = 3,
-                loopLabelCount = 2,
             ).right(),
             actual = actual,
         )
@@ -239,7 +236,7 @@ class SemanticAnalysisKtForTest {
                             initDecl("i.2", 3.e),
                             "i.2".e lt 10.e,
                             "i.2".e plusAssign 1.e,
-                            loopIndex = 0,
+                            loopId = 0,
                         ) {
                             int("i.3") assign 4.e
                             e("a.0".e plusAssign "i.3".e)
@@ -248,7 +245,6 @@ class SemanticAnalysisKtForTest {
                     }
                 },
                 variableCount = 4,
-                loopLabelCount = 1,
             ).right(),
             actual = actual,
         )
