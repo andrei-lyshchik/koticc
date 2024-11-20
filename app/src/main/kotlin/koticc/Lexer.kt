@@ -219,6 +219,9 @@ fun lexer(input: String): Either<LexerError, List<TokenWithLocation>> =
                             "for" -> result.add(TokenWithLocation(Token.For, Location(line, start + 1)))
                             "break" -> result.add(TokenWithLocation(Token.Break, Location(line, start + 1)))
                             "continue" -> result.add(TokenWithLocation(Token.Continue, Location(line, start + 1)))
+                            "case" -> result.add(TokenWithLocation(Token.Case, Location(line, start + 1)))
+                            "default" -> result.add(TokenWithLocation(Token.Default, Location(line, start + 1)))
+                            "switch" -> result.add(TokenWithLocation(Token.Switch, Location(line, start + 1)))
                             else ->
                                 result.add(
                                     TokenWithLocation(Token.Identifier(identifier), Location(line, start + 1)),

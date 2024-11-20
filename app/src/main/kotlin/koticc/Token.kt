@@ -27,6 +27,12 @@ sealed interface Token {
 
     data object Continue : Token
 
+    data object Case : Token
+
+    data object Default : Token
+
+    data object Switch : Token
+
     // types
     data object IntKeyword : Token
 
