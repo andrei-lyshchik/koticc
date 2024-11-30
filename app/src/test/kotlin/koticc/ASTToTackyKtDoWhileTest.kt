@@ -56,7 +56,7 @@ class ASTToTackyKtDoWhileTest {
                         if_("a.0".e eq 5.e) {
                             continue_(0)
                         } else_ {
-                            break_(0)
+                            breakLoop(0)
                         }
                     }.while_("a.0".e lt 10.e, loopId = 0)
                     return_("a.0".e)

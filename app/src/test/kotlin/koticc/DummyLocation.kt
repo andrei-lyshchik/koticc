@@ -48,6 +48,11 @@ fun AST.Statement.withDummyLocations(): AST.Statement = when (this) {
     is AST.Statement.Labeled -> copy(statement = statement.withDummyLocations())
     is AST.Statement.Null -> copy(location = DUMMY_LOCATION)
     is AST.Statement.While -> copy(body = body.withDummyLocations(), condition = condition.withDummyLocations(), location = DUMMY_LOCATION)
+    is AST.Statement.Case -> copy(expression = expression.withDummyLocations(), body = body.withDummyLocations(), location = DUMMY_LOCATION)
+    is AST.Statement.Default -> copy(body = body.withDummyLocations(), location = DUMMY_LOCATION)
+    is AST.Statement.Switch -> copy(body = body.withDummyLocations(), expression = expression.withDummyLocations(), location = DUMMY_LOCATION)
+    is AST.Statement.BreakLoop -> copy(location = DUMMY_LOCATION)
+    is AST.Statement.BreakSwitch -> copy(location = DUMMY_LOCATION)
 }
 
 fun AST.ForInitializer.withDummyLocations(): AST.ForInitializer =

@@ -88,11 +88,32 @@ class BlockBuilder {
         )
     }
 
-    fun break_(loopId: Int? = null) {
+    fun break_() {
         addBlockItem(
             AST.BlockItem.Statement(
                 AST.Statement.Break(
-                    loopId = loopId?.let(AST::LoopId),
+                    location = DUMMY_LOCATION,
+                ),
+            ),
+        )
+    }
+
+    fun breakLoop(loopId: Int) {
+        addBlockItem(
+            AST.BlockItem.Statement(
+                AST.Statement.BreakLoop(
+                    loopId = AST.LoopId(loopId),
+                    location = DUMMY_LOCATION,
+                ),
+            ),
+        )
+    }
+
+    fun breakSwitch(switchId: Int) {
+        addBlockItem(
+            AST.BlockItem.Statement(
+                AST.Statement.BreakSwitch(
+                    switchId = AST.SwitchId(switchId),
                     location = DUMMY_LOCATION,
                 ),
             ),
@@ -110,6 +131,61 @@ class BlockBuilder {
         )
     }
 
+    fun switch(
+        expression: AST.Expression,
+        switchId: Int? = null,
+        caseExpressions: Map<Int, Int>? = null,
+        hasDefault: Boolean = false,
+        block: BlockBuilder.() -> Unit,
+    ) {
+        addBlockItem(
+            AST.BlockItem.Statement(
+                AST.Statement.Switch(
+                    expression = expression,
+                    body = AST.Statement.Compound(BlockBuilder().apply(block).build()),
+                    location = DUMMY_LOCATION,
+                    switchId = switchId?.let(AST::SwitchId),
+                    caseExpressions = caseExpressions?.mapValues { AST.CaseId(it.value) },
+                    hasDefault = hasDefault,
+                ),
+            ),
+        )
+    }
+
+    fun case(
+        expression: AST.Expression,
+        caseId: Int? = null,
+        switchId: Int? = null,
+        block: BlockBuilder.() -> Unit,
+    ) {
+        addBlockItem(
+            AST.BlockItem.Statement(
+                AST.Statement.Case(
+                    expression = expression,
+                    body = BlockBuilder().apply(block).build().toSingleStatement(),
+                    location = DUMMY_LOCATION,
+                    caseId = caseId?.let(AST::CaseId),
+                    switchId = switchId?.let(AST::SwitchId),
+                ),
+            ),
+        )
+    }
+
+    fun default(
+        switchId: Int? = null,
+        block: BlockBuilder.() -> Unit,
+    ) {
+        addBlockItem(
+            AST.BlockItem.Statement(
+                AST.Statement.Default(
+                    body = BlockBuilder().apply(block).build().toSingleStatement(),
+                    location = DUMMY_LOCATION,
+                    switchId = switchId?.let(AST::SwitchId),
+                ),
+            ),
+        )
+    }
+
     fun build(): AST.Block {
         currentBlockItemBuilder?.let {
             blockItems.add(it.build())
@@ -117,6 +193,15 @@ class BlockBuilder {
         return AST.Block(blockItems)
     }
 }
+
+fun AST.Block.toSingleStatement(): AST.Statement =
+    when {
+        blockItems.size == 1 -> when (val blockItem = blockItems[0]) {
+            is AST.BlockItem.Statement -> blockItem.statement
+            else -> AST.Statement.Compound(this)
+        }
+        else -> AST.Statement.Compound(this)
+    }
 
 interface BlockItemBuilder {
     fun build(): AST.BlockItem

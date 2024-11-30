@@ -18,6 +18,7 @@ class ReturnCodeIntegrationTest {
     }
 
     class TestCases : VarargArgumentsProvider(
+        "/programs/switch.c",
         "/programs/binary.c",
         "/programs/bitwise.c",
         "/programs/comparisons.c",

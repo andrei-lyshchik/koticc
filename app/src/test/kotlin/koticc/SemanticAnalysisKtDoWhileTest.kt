@@ -81,7 +81,7 @@ class SemanticAnalysisKtDoWhileTest {
                         do_ {
                             e("a.0".e plusAssign 1.e)
                             if_("a.0".e eq 5.e) {
-                                break_(0)
+                                breakLoop(0)
                             }
                             if_("a.0".e eq 3.e) {
                                 continue_(0)
@@ -90,7 +90,7 @@ class SemanticAnalysisKtDoWhileTest {
                         do_ {
                             e("a.0".e plusAssign 1.e)
                             if_("a.0".e eq 10.e) {
-                                break_(1)
+                                breakLoop(1)
                             }
                             if_("a.0".e eq 8.e) {
                                 continue_(1)
@@ -138,11 +138,11 @@ class SemanticAnalysisKtDoWhileTest {
                             do_ {
                                 e("a.0".e plusAssign 2.e)
                                 if_("a.0".e gt 10.e) {
-                                    break_(1)
+                                    breakLoop(1)
                                 }
                             }.while_(1.e, loopId = 1)
                             if_("a.0".e gt 20.e) {
-                                break_(0)
+                                breakLoop(0)
                             }
                         }.while_(1.e, loopId = 0)
                         return_("a.0".e)

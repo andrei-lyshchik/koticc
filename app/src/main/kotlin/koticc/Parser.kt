@@ -224,12 +224,50 @@ private class Parser(
                 Token.Break -> {
                     val breakToken = expectToken(Token.Break).bind()
                     expectToken(Token.Semicolon).bind()
-                    AST.Statement.Break(loopId = null, breakToken.location)
+                    AST.Statement.Break(breakToken.location)
                 }
                 Token.Continue -> {
                     val continueToken = expectToken(Token.Continue).bind()
                     expectToken(Token.Semicolon).bind()
                     AST.Statement.Continue(loopId = null, continueToken.location)
+                }
+                Token.Switch -> {
+                    val switchToken = expectToken(Token.Switch).bind()
+                    expectToken(Token.OpenParen).bind()
+                    val expression = parseExpression(0).bind()
+                    expectToken(Token.CloseParen).bind()
+                    val body = parseStatement().bind()
+                    AST.Statement.Switch(
+                        expression = expression,
+                        body = body,
+                        location = switchToken.location,
+                        switchId = null,
+                        caseExpressions = null,
+                        hasDefault = false,
+                    )
+                }
+                Token.Case -> {
+                    val caseToken = expectToken(Token.Case).bind()
+                    val expression = parseExpression(0).bind()
+                    expectToken(Token.Colon).bind()
+                    val body = parseStatement().bind()
+                    AST.Statement.Case(
+                        expression = expression,
+                        body = body,
+                        location = caseToken.location,
+                        switchId = null,
+                        caseId = null,
+                    )
+                }
+                Token.Default -> {
+                    val defaultToken = expectToken(Token.Default).bind()
+                    expectToken(Token.Colon).bind()
+                    val body = parseStatement().bind()
+                    AST.Statement.Default(
+                        body = body,
+                        location = defaultToken.location,
+                        switchId = null,
+                    )
                 }
                 else -> {
                     val expression = parseExpression(0).bind()
@@ -536,10 +574,4 @@ private sealed interface BinaryOperatorLike {
     ) : BinaryOperatorLike
 
     data object Conditional : BinaryOperatorLike
-}
-
-private sealed interface Associativity {
-    data object Left : Associativity
-
-    data object Right : Associativity
 }

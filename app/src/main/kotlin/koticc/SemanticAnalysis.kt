@@ -21,9 +21,9 @@ fun semanticAnalysis(program: AST.Program): Either<SemanticAnalysisError, ValidA
     either {
         val variableResolverResult = VariableResolver().resolveProgram(program).bind()
         validateGotoLabels(variableResolverResult.program).bind()
-        val programWithResolvedLoopIds = LoopIdResolver().resolveLoopIds(variableResolverResult.program).bind()
+        val programWithResolvedLoopsAndSwitches = LoopAndSwitchResolver().resolveLoopsAndSwitches(variableResolverResult.program).bind()
         ValidASTProgram(
-            value = programWithResolvedLoopIds,
+            value = programWithResolvedLoopsAndSwitches,
             variableCount = variableResolverResult.variableCount,
         )
     }
@@ -161,6 +161,20 @@ private class VariableResolver {
 
                 is AST.Statement.Break -> statement
                 is AST.Statement.Continue -> statement
+                is AST.Statement.Case -> statement.copy(
+                    expression = resolveExpression(statement.expression, variableMapping).bind(),
+                    body = resolveStatement(statement.body, variableMapping).bind(),
+                )
+                is AST.Statement.Default -> statement.copy(
+                    body = resolveStatement(statement.body, variableMapping).bind(),
+                )
+                is AST.Statement.Switch -> statement.copy(
+                    expression = resolveExpression(statement.expression, variableMapping).bind(),
+                    body = resolveStatement(statement.body, variableMapping).bind(),
+                    caseExpressions = statement.caseExpressions?.mapKeys { (key, _) -> key },
+                )
+                is AST.Statement.BreakLoop -> statement
+                is AST.Statement.BreakSwitch -> statement
             }
         }
 
@@ -302,7 +316,10 @@ private fun validateLabelsAreUnique(program: AST.Program) =
     }
 
 private fun findAllLabeledStatements(program: AST.Program): List<AST.Statement.Labeled> =
-    program.functionDefinition.body.blockItems.filterIsInstance<AST.BlockItem.Statement>()
+    findAllLabeledStatements(program.functionDefinition.body)
+
+private fun findAllLabeledStatements(block: AST.Block): List<AST.Statement.Labeled> =
+    block.blockItems.filterIsInstance<AST.BlockItem.Statement>()
         .map(AST.BlockItem.Statement::statement)
         .flatMap(::findAllLabeledStatements)
 
@@ -317,15 +334,17 @@ private fun findAllLabeledStatements(statement: AST.Statement): List<AST.Stateme
         is AST.Statement.Null -> emptyList()
         is AST.Statement.Return -> emptyList()
         is AST.Statement.Compound ->
-            statement.block.blockItems
-                .filterIsInstance<AST.BlockItem.Statement>()
-                .map(AST.BlockItem.Statement::statement)
-                .flatMap(::findAllLabeledStatements)
+            findAllLabeledStatements(statement.block)
         is AST.Statement.DoWhile -> findAllLabeledStatements(statement.body)
         is AST.Statement.While -> findAllLabeledStatements(statement.body)
         is AST.Statement.For -> findAllLabeledStatements(statement.body)
         is AST.Statement.Break -> emptyList()
+        is AST.Statement.BreakLoop -> emptyList()
+        is AST.Statement.BreakSwitch -> emptyList()
         is AST.Statement.Continue -> emptyList()
+        is AST.Statement.Case -> findAllLabeledStatements(statement.body)
+        is AST.Statement.Default -> findAllLabeledStatements(statement.body)
+        is AST.Statement.Switch -> findAllLabeledStatements(statement.body)
     }
 
 private fun validateGotos(
@@ -342,9 +361,17 @@ private fun validateGotos(
 }
 
 private fun findAllGotos(program: AST.Program): List<AST.Statement.Goto> =
-    program.functionDefinition.body.blockItems.filterIsInstance<AST.BlockItem.Statement>()
-        .map(AST.BlockItem.Statement::statement)
+    findAllGotos(program.functionDefinition.body)
+
+private fun findAllGotos(block: AST.Block): List<AST.Statement.Goto> =
+    block.blockItems
         .flatMap(::findAllGotos)
+
+private fun findAllGotos(blockItem: AST.BlockItem): List<AST.Statement.Goto> =
+    when (blockItem) {
+        is AST.BlockItem.Declaration -> emptyList()
+        is AST.BlockItem.Statement -> findAllGotos(blockItem.statement)
+    }
 
 private fun findAllGotos(statement: AST.Statement): List<AST.Statement.Goto> =
     when (statement) {
@@ -354,22 +381,24 @@ private fun findAllGotos(statement: AST.Statement): List<AST.Statement.Goto> =
         is AST.Statement.Labeled -> findAllGotos(statement.statement)
         is AST.Statement.Null -> emptyList()
         is AST.Statement.Return -> emptyList()
-        is AST.Statement.Compound ->
-            statement.block.blockItems
-                .filterIsInstance<AST.BlockItem.Statement>()
-                .map(AST.BlockItem.Statement::statement)
-                .flatMap(::findAllGotos)
+        is AST.Statement.Compound -> findAllGotos(statement.block)
         is AST.Statement.DoWhile -> findAllGotos(statement.body)
         is AST.Statement.While -> findAllGotos(statement.body)
         is AST.Statement.For -> findAllGotos(statement.body)
         is AST.Statement.Break -> emptyList()
+        is AST.Statement.BreakLoop -> emptyList()
+        is AST.Statement.BreakSwitch -> emptyList()
         is AST.Statement.Continue -> emptyList()
+        is AST.Statement.Case -> findAllGotos(statement.body)
+        is AST.Statement.Default -> findAllGotos(statement.body)
+        is AST.Statement.Switch -> findAllGotos(statement.body)
     }
 
-private class LoopIdResolver {
+private class LoopAndSwitchResolver {
     private var loopIdCount: Int = 0
+    private var switchIdCount: Int = 0
 
-    fun resolveLoopIds(program: AST.Program): Either<SemanticAnalysisError, AST.Program> =
+    fun resolveLoopsAndSwitches(program: AST.Program): Either<SemanticAnalysisError, AST.Program> =
         either {
             val newProgram = program.copy(
                 functionDefinition = resolveFunctionDefinition(program.functionDefinition).bind(),
@@ -381,26 +410,26 @@ private class LoopIdResolver {
         functionDefinition: AST.FunctionDefinition,
     ): Either<SemanticAnalysisError, AST.FunctionDefinition> =
         either {
-            functionDefinition.copy(body = resolveBlock(functionDefinition.body, null).bind())
+            functionDefinition.copy(body = resolveBlock(functionDefinition.body, EmptyContext).bind())
         }
 
     private fun resolveBlock(
         block: AST.Block,
-        loopId: AST.LoopId?,
+        context: CurrentContext,
     ): Either<SemanticAnalysisError, AST.Block> =
         either {
-            block.copy(blockItems = block.blockItems.map { resolveBlockItem(it, loopId).bind() })
+            block.copy(blockItems = block.blockItems.map { resolveBlockItem(it, context).bind() })
         }
 
-    private fun resolveBlockItem(blockItem: AST.BlockItem, loopId: AST.LoopId?): Either<SemanticAnalysisError, AST.BlockItem> =
+    private fun resolveBlockItem(blockItem: AST.BlockItem, context: CurrentContext): Either<SemanticAnalysisError, AST.BlockItem> =
         either {
             when (blockItem) {
                 is AST.BlockItem.Declaration -> blockItem
-                is AST.BlockItem.Statement -> AST.BlockItem.Statement(resolveStatement(blockItem.statement, loopId = loopId).bind())
+                is AST.BlockItem.Statement -> AST.BlockItem.Statement(resolveStatement(blockItem.statement, context).bind())
             }
         }
 
-    private fun resolveStatement(statement: AST.Statement, loopId: AST.LoopId?): Either<SemanticAnalysisError, AST.Statement> =
+    private fun resolveStatement(statement: AST.Statement, context: CurrentContext): Either<SemanticAnalysisError, AST.Statement> =
         either {
             when (statement) {
                 is AST.Statement.Return -> statement
@@ -409,70 +438,163 @@ private class LoopIdResolver {
                 is AST.Statement.If -> {
                     AST.Statement.If(
                         condition = statement.condition,
-                        thenStatement = resolveStatement(statement.thenStatement, loopId).bind(),
-                        elseStatement = statement.elseStatement?.let { resolveStatement(it, loopId).bind() },
+                        thenStatement = resolveStatement(statement.thenStatement, context).bind(),
+                        elseStatement = statement.elseStatement?.let { resolveStatement(it, context).bind() },
                     )
                 }
                 is AST.Statement.Labeled -> {
                     AST.Statement.Labeled(
                         label = statement.label,
-                        statement = resolveStatement(statement.statement, loopId).bind(),
+                        statement = resolveStatement(statement.statement, context).bind(),
                         location = statement.location,
                     )
                 }
                 is AST.Statement.Goto -> statement
                 is AST.Statement.Compound -> {
-                    AST.Statement.Compound(resolveBlock(statement.block, loopId).bind())
+                    AST.Statement.Compound(resolveBlock(statement.block, context).bind())
                 }
                 is AST.Statement.DoWhile -> {
-                    val nextLoopId = nextLoopId()
+                    val contextWithLoop = context.withNextLoop()
                     AST.Statement.DoWhile(
-                        body = resolveStatement(statement.body, nextLoopId).bind(),
+                        body = resolveStatement(statement.body, contextWithLoop).bind(),
                         condition = statement.condition,
-                        loopId = nextLoopId,
+                        loopId = contextWithLoop.loopId,
                         location = statement.location,
                     )
                 }
                 is AST.Statement.While -> {
-                    val nextLoopId = nextLoopId()
+                    val contextWithLoop = context.withNextLoop()
                     AST.Statement.While(
                         condition = statement.condition,
-                        body = resolveStatement(statement.body, nextLoopId).bind(),
-                        loopId = nextLoopId,
+                        body = resolveStatement(statement.body, contextWithLoop).bind(),
+                        loopId = contextWithLoop.loopId,
                         location = statement.location,
                     )
                 }
                 is AST.Statement.For -> {
-                    val nextLoopId = nextLoopId()
+                    val contextWithLoop = context.withNextLoop()
                     AST.Statement.For(
                         initializer = statement.initializer,
                         condition = statement.condition,
                         post = statement.post,
-                        body = resolveStatement(statement.body, nextLoopId).bind(),
-                        loopId = nextLoopId,
+                        body = resolveStatement(statement.body, contextWithLoop).bind(),
+                        loopId = contextWithLoop.loopId,
                         location = statement.location,
                     )
                 }
                 is AST.Statement.Break -> {
-                    ensureNotNull(loopId) {
-                        SemanticAnalysisError("break statement outside of loop", statement.location)
+                    when (context) {
+                        is EmptyContext -> raise(SemanticAnalysisError("break statement outside of loop", statement.location))
+                        is ContextWithLoop -> AST.Statement.BreakLoop(
+                            loopId = context.loopId,
+                            location = statement.location,
+                        )
+                        is ContextWithSwitch -> AST.Statement.BreakSwitch(
+                            switchId = context.switchContext.id,
+                            location = statement.location,
+                        )
                     }
-                    AST.Statement.Break(
-                        loopId = loopId,
-                        location = statement.location,
-                    )
                 }
                 is AST.Statement.Continue -> {
-                    ensureNotNull(loopId) {
+                    ensureNotNull(context.loopId) {
                         SemanticAnalysisError("continue statement outside of loop", statement.location)
                     }
                     AST.Statement.Continue(
-                        loopId = loopId,
+                        loopId = context.loopId,
                         location = statement.location,
                     )
                 }
+
+                is AST.Statement.Case -> {
+                    val switchContext = ensureNotNull(context.switchContext) {
+                        SemanticAnalysisError("case outside of switch", statement.location)
+                    }
+                    val caseId = AST.CaseId(switchContext.caseExpressions.size)
+
+                    ensure(statement.expression is AST.Expression.IntLiteral) {
+                        SemanticAnalysisError("case expression must be an integer constant", statement.location)
+                    }
+
+                    ensure(!switchContext.caseExpressions.containsKey(statement.expression.value)) {
+                        SemanticAnalysisError("duplicate case expression: ${statement.expression.value}", statement.location)
+                    }
+
+                    switchContext.caseExpressions[statement.expression.value] = caseId
+                    statement.copy(
+                        body = resolveStatement(statement.body, context).bind(),
+                        switchId = switchContext.id,
+                        caseId = caseId,
+                    )
+                }
+                is AST.Statement.Default -> {
+                    val switchContext = ensureNotNull(context.switchContext) {
+                        SemanticAnalysisError("default outside of switch", statement.location)
+                    }
+                    ensure(!switchContext.hasDefault) {
+                        SemanticAnalysisError("duplicate default case", statement.location)
+                    }
+                    switchContext.hasDefault = true
+                    statement.copy(
+                        body = resolveStatement(statement.body, context).bind(),
+                        switchId = switchContext.id,
+                    )
+                }
+                is AST.Statement.Switch -> {
+                    val contextWithSwitch = context.withNextSwitch()
+                    val body = resolveStatement(statement.body, contextWithSwitch).bind()
+                    AST.Statement.Switch(
+                        expression = statement.expression,
+                        body = body,
+                        caseExpressions = contextWithSwitch.switchContext.caseExpressions,
+                        hasDefault = contextWithSwitch.switchContext.hasDefault,
+                        switchId = contextWithSwitch.switchContext.id,
+                        location = statement.location,
+                    )
+                }
+                is AST.Statement.BreakLoop -> error("Do not expect BreakLoop after parsing")
+                is AST.Statement.BreakSwitch -> error("Do not expect BreakSwitch after parsing")
             }
         }
 
-    private fun nextLoopId() = AST.LoopId(loopIdCount++)
+    private data class SwitchContext(
+        val id: AST.SwitchId,
+        val caseExpressions: MutableMap<Int, AST.CaseId>,
+        var hasDefault: Boolean,
+    )
+
+    private sealed interface CurrentContext {
+        val loopId: AST.LoopId?
+        val switchContext: SwitchContext?
+    }
+
+    private data object EmptyContext : CurrentContext {
+        override val loopId: AST.LoopId? = null
+        override val switchContext: SwitchContext? = null
+    }
+
+    private data class ContextWithLoop(
+        override val loopId: AST.LoopId,
+        override val switchContext: SwitchContext?,
+    ) : CurrentContext
+
+    private data class ContextWithSwitch(
+        override val switchContext: SwitchContext,
+        override val loopId: AST.LoopId?,
+    ) : CurrentContext
+
+    private fun CurrentContext.withNextSwitch() =
+        ContextWithSwitch(
+            switchContext = SwitchContext(
+                id = AST.SwitchId(switchIdCount++),
+                caseExpressions = mutableMapOf(),
+                hasDefault = false,
+            ),
+            loopId = loopId,
+        )
+
+    private fun CurrentContext.withNextLoop() =
+        ContextWithLoop(
+            loopId = AST.LoopId(loopIdCount++),
+            switchContext = switchContext,
+        )
 }

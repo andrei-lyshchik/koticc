@@ -99,9 +99,19 @@ object AST {
             override val location: Location,
         ) : Statement
 
+        // Would only exist after parsing, and would be transformed either to BreakLoop or to BreakSwitch during
+        // semantic analysis
         data class Break(
-            // null after parsing, will be filled in during semantic analysis
-            val loopId: LoopId?,
+            override val location: Location,
+        ) : Statement
+
+        data class BreakLoop(
+            val loopId: LoopId,
+            override val location: Location,
+        ) : Statement
+
+        data class BreakSwitch(
+            val switchId: SwitchId,
             override val location: Location,
         ) : Statement
 
@@ -110,10 +120,40 @@ object AST {
             val loopId: LoopId?,
             override val location: Location,
         ) : Statement
+
+        data class Switch(
+            val expression: AST.Expression,
+            val body: Statement,
+            override val location: Location,
+            val switchId: SwitchId?,
+            val caseExpressions: Map<Int, CaseId>?,
+            val hasDefault: Boolean,
+        ) : Statement
+
+        data class Case(
+            val expression: AST.Expression,
+            val body: Statement,
+            override val location: Location,
+            // null after parsing, will be filled in during semantic analysis
+            val switchId: SwitchId?,
+            val caseId: CaseId?,
+        ) : Statement
+
+        data class Default(
+            val body: Statement,
+            override val location: Location,
+            val switchId: SwitchId?,
+        ) : Statement
     }
 
     @JvmInline
     value class LoopId(val value: Int)
+
+    @JvmInline
+    value class SwitchId(val value: Int)
+
+    @JvmInline
+    value class CaseId(val value: Int)
 
     sealed interface ForInitializer : LocationAware {
         data class Declaration(val declaration: AST.Declaration) : ForInitializer {

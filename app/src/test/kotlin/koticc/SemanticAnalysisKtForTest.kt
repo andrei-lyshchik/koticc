@@ -95,7 +95,7 @@ class SemanticAnalysisKtForTest {
                         ) {
                             e("a.0".e plusAssign "i.1".e)
                             if_("a.0".e eq 5.e) {
-                                break_(0)
+                                breakLoop(0)
                             }
                             if_("a.0".e eq 3.e) {
                                 continue_(0)
@@ -109,7 +109,7 @@ class SemanticAnalysisKtForTest {
                         ) {
                             e("a.0".e plusAssign "i.2".e)
                             if_("a.0".e eq 20.e) {
-                                break_(1)
+                                breakLoop(1)
                             }
                             if_("a.0".e eq 10.e) {
                                 continue_(1)
@@ -181,14 +181,14 @@ class SemanticAnalysisKtForTest {
                             ) {
                                 e("a.0".e plusAssign "j.2".e)
                                 if_("a.0".e eq 5.e) {
-                                    break_(1)
+                                    breakLoop(1)
                                 }
                                 if_("a.0".e eq 3.e) {
                                     continue_(1)
                                 }
                             }
                             if_("a.0".e eq 20.e) {
-                                break_(0)
+                                breakLoop(0)
                             }
                             if_("a.0".e eq 10.e) {
                                 continue_(0)

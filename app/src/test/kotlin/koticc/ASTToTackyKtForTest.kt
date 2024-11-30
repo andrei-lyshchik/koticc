@@ -187,7 +187,7 @@ class ASTToTackyKtForTest {
                         if_("i.1".e eq 5.e) {
                             continue_(0)
                         } else_ {
-                            break_(0)
+                            breakLoop(0)
                         }
                     }
                 }

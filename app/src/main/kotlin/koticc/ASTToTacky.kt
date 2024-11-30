@@ -62,8 +62,13 @@ private class TackyGenerator(initialVariableCount: Int) {
             is AST.Statement.DoWhile -> generateDoWhile(statement)
             is AST.Statement.While -> generateWhile(statement)
             is AST.Statement.For -> generateFor(statement)
-            is AST.Statement.Break -> generateBreak(statement)
+            is AST.Statement.BreakLoop -> generateBreakLoop(statement)
             is AST.Statement.Continue -> generateContinue(statement)
+            is AST.Statement.Switch -> generateSwitch(statement)
+            is AST.Statement.Case -> generateCase(statement)
+            is AST.Statement.Default -> generateDefault(statement)
+            is AST.Statement.BreakSwitch -> generateBreakSwitch(statement)
+            is AST.Statement.Break -> error("Do not expect to see a break statement here, only break loop or break switch")
         }
     }
 
@@ -105,12 +110,9 @@ private class TackyGenerator(initialVariableCount: Int) {
         )
     }
 
-    private fun generateBreak(breakStatement: AST.Statement.Break) {
-        val loopId = requireNotNull(breakStatement.loopId) {
-            "loopId must be filled in during semantic analysis"
-        }
+    private fun generateBreakLoop(breakLoopStatement: AST.Statement.BreakLoop) {
         instructions.add(
-            Tacky.Instruction.Jump(loopEndLabel(loopId)),
+            Tacky.Instruction.Jump(loopEndLabel(breakLoopStatement.loopId)),
         )
     }
 
@@ -433,6 +435,85 @@ private class TackyGenerator(initialVariableCount: Int) {
             Tacky.Instruction.Label(elseLabel),
         )
     }
+
+    private fun generateSwitch(switch: AST.Statement.Switch) {
+        val expression = generateExpression(switch.expression)
+        requireNotNull(switch.switchId) {
+            "switchId must be filled in during semantic analysis"
+        }
+        requireNotNull(switch.caseExpressions) {
+            "caseExpressions must be filled in during semantic analysis"
+        }
+
+        switch.caseExpressions.forEach { (caseExpression, caseId) ->
+            val caseLabel = caseLabel(switch.switchId, caseId)
+            val caseValue = Tacky.Value.IntConstant(caseExpression)
+            val diff = nextVariable()
+            instructions.add(
+                Tacky.Instruction.Binary(
+                    operator = Tacky.BinaryOperator.Equal,
+                    left = expression,
+                    right = caseValue,
+                    dst = diff,
+                ),
+            )
+            instructions.add(
+                Tacky.Instruction.JumpIfNotZero(
+                    src = diff,
+                    target = caseLabel,
+                ),
+            )
+        }
+        if (switch.hasDefault) {
+            instructions.add(
+                Tacky.Instruction.Jump(defaultLabel(switch.switchId)),
+            )
+        } else {
+            instructions.add(
+                Tacky.Instruction.Jump(switchEndLabel(switch.switchId)),
+            )
+        }
+
+        generateStatement(switch.body)
+        instructions.add(
+            Tacky.Instruction.Label(switchEndLabel(switch.switchId)),
+        )
+    }
+
+    private fun generateCase(case: AST.Statement.Case) {
+        requireNotNull(case.switchId) {
+            "switchId must be filled in during semantic analysis"
+        }
+        requireNotNull(case.caseId) {
+            "caseId must be filled in during semantic analysis"
+        }
+        instructions.add(
+            Tacky.Instruction.Label(caseLabel(case.switchId, case.caseId)),
+        )
+        generateStatement(case.body)
+    }
+
+    private fun generateDefault(default: AST.Statement.Default) {
+        requireNotNull(default.switchId) {
+            "switchId must be filled in during semantic analysis"
+        }
+        instructions.add(
+            Tacky.Instruction.Label(defaultLabel(default.switchId)),
+        )
+        generateStatement(default.body)
+    }
+
+    private fun generateBreakSwitch(breakSwitch: AST.Statement.BreakSwitch) {
+        instructions.add(
+            Tacky.Instruction.Jump(switchEndLabel(breakSwitch.switchId)),
+        )
+    }
+
+    private fun caseLabel(switchId: AST.SwitchId, caseId: AST.CaseId) = LabelName("switch.${switchId.value}.case.${caseId.value}")
+
+    private fun defaultLabel(switchId: AST.SwitchId) = LabelName("switch.${switchId.value}.default")
+
+    private fun switchEndLabel(switchId: AST.SwitchId) = LabelName("switch.${switchId.value}.end")
 
     private fun AST.UnaryOperator.toTackyOperator(): Tacky.UnaryOperator =
         when (this) {
