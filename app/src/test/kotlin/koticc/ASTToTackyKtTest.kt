@@ -12,22 +12,25 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Return(
-                                        AST.Expression.IntLiteral(1, Location(1, 0)),
-                                        Location(1, 0),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Statement(
+                                        AST.Statement.Return(
+                                            AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            Location(1, 0),
+                                        ),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 0,
@@ -37,15 +40,17 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Return(
-                            value = Tacky.Value.IntConstant(1),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Return(
+                                value = Tacky.Value.IntConstant(1),
+                            ),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -69,25 +74,28 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Expression(
-                                        AST.Expression.Unary(
-                                            operator = astUnaryOperator,
-                                            operand = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                            location = Location(1, 0),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Statement(
+                                        AST.Statement.Expression(
+                                            AST.Expression.Unary(
+                                                operator = astUnaryOperator,
+                                                operand = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                location = Location(1, 0),
+                                            ),
                                         ),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 0,
@@ -97,17 +105,19 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Unary(
-                            operator = tackyUnaryOperator,
-                            src = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("tmp.0"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Unary(
+                                operator = tackyUnaryOperator,
+                                src = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("tmp.0"),
+                            ),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -144,25 +154,28 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Expression(
-                                        AST.Expression.Binary(
-                                            operator = astBinaryOperator,
-                                            left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                            right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Statement(
+                                        AST.Statement.Expression(
+                                            AST.Expression.Binary(
+                                                operator = astBinaryOperator,
+                                                left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                            ),
                                         ),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 0,
@@ -172,18 +185,20 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Binary(
-                            operator = tackyBinaryOperator,
-                            left = Tacky.Value.IntConstant(1),
-                            right = Tacky.Value.IntConstant(2),
-                            dst = Tacky.Value.Variable("tmp.0"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Binary(
+                                operator = tackyBinaryOperator,
+                                left = Tacky.Value.IntConstant(1),
+                                right = Tacky.Value.IntConstant(2),
+                                dst = Tacky.Value.Variable("tmp.0"),
+                            ),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -197,35 +212,38 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Expression(
-                                        AST.Expression.Binary(
-                                            operator = AST.BinaryOperator.Add,
-                                            left =
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Statement(
+                                        AST.Statement.Expression(
                                             AST.Expression.Binary(
-                                                operator = AST.BinaryOperator.Multiply,
-                                                left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                right = AST.Expression.IntLiteral(2, Location(1, 0)),
-                                            ),
-                                            right =
-                                            AST.Expression.Binary(
-                                                operator = AST.BinaryOperator.Divide,
-                                                left = AST.Expression.IntLiteral(3, Location(1, 0)),
-                                                right = AST.Expression.IntLiteral(4, Location(1, 0)),
+                                                operator = AST.BinaryOperator.Add,
+                                                left =
+                                                AST.Expression.Binary(
+                                                    operator = AST.BinaryOperator.Multiply,
+                                                    left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                    right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                ),
+                                                right =
+                                                AST.Expression.Binary(
+                                                    operator = AST.BinaryOperator.Divide,
+                                                    left = AST.Expression.IntLiteral(3, Location(1, 0)),
+                                                    right = AST.Expression.IntLiteral(4, Location(1, 0)),
+                                                ),
                                             ),
                                         ),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 0,
@@ -235,30 +253,32 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Binary(
-                            operator = Tacky.BinaryOperator.Multiply,
-                            left = Tacky.Value.IntConstant(1),
-                            right = Tacky.Value.IntConstant(2),
-                            dst = Tacky.Value.Variable("tmp.0"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Binary(
+                                operator = Tacky.BinaryOperator.Multiply,
+                                left = Tacky.Value.IntConstant(1),
+                                right = Tacky.Value.IntConstant(2),
+                                dst = Tacky.Value.Variable("tmp.0"),
+                            ),
+                            Tacky.Instruction.Binary(
+                                operator = Tacky.BinaryOperator.Divide,
+                                left = Tacky.Value.IntConstant(3),
+                                right = Tacky.Value.IntConstant(4),
+                                dst = Tacky.Value.Variable("tmp.1"),
+                            ),
+                            Tacky.Instruction.Binary(
+                                operator = Tacky.BinaryOperator.Add,
+                                left = Tacky.Value.Variable("tmp.0"),
+                                right = Tacky.Value.Variable("tmp.1"),
+                                dst = Tacky.Value.Variable("tmp.2"),
+                            ),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Binary(
-                            operator = Tacky.BinaryOperator.Divide,
-                            left = Tacky.Value.IntConstant(3),
-                            right = Tacky.Value.IntConstant(4),
-                            dst = Tacky.Value.Variable("tmp.1"),
-                        ),
-                        Tacky.Instruction.Binary(
-                            operator = Tacky.BinaryOperator.Add,
-                            left = Tacky.Value.Variable("tmp.0"),
-                            right = Tacky.Value.Variable("tmp.1"),
-                            dst = Tacky.Value.Variable("tmp.2"),
-                        ),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -272,35 +292,38 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Expression(
-                                        AST.Expression.Binary(
-                                            operator = AST.BinaryOperator.LogicalAnd,
-                                            left =
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Statement(
+                                        AST.Statement.Expression(
                                             AST.Expression.Binary(
-                                                operator = AST.BinaryOperator.Equal,
-                                                left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                right = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                            ),
-                                            right =
-                                            AST.Expression.Binary(
-                                                operator = AST.BinaryOperator.NotEqual,
-                                                left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                right = AST.Expression.IntLiteral(3, Location(1, 0)),
+                                                operator = AST.BinaryOperator.LogicalAnd,
+                                                left =
+                                                AST.Expression.Binary(
+                                                    operator = AST.BinaryOperator.Equal,
+                                                    left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                    right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                ),
+                                                right =
+                                                AST.Expression.Binary(
+                                                    operator = AST.BinaryOperator.NotEqual,
+                                                    left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                    right = AST.Expression.IntLiteral(3, Location(1, 0)),
+                                                ),
                                             ),
                                         ),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 0,
@@ -310,43 +333,45 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Binary(
-                            operator = Tacky.BinaryOperator.Equal,
-                            left = Tacky.Value.IntConstant(1),
-                            right = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("tmp.0"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Binary(
+                                operator = Tacky.BinaryOperator.Equal,
+                                left = Tacky.Value.IntConstant(1),
+                                right = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("tmp.0"),
+                            ),
+                            Tacky.Instruction.JumpIfZero(
+                                src = Tacky.Value.Variable("tmp.0"),
+                                target = LabelName("and_false.0"),
+                            ),
+                            Tacky.Instruction.Binary(
+                                operator = Tacky.BinaryOperator.NotEqual,
+                                left = Tacky.Value.IntConstant(1),
+                                right = Tacky.Value.IntConstant(3),
+                                dst = Tacky.Value.Variable("tmp.1"),
+                            ),
+                            Tacky.Instruction.JumpIfZero(
+                                src = Tacky.Value.Variable("tmp.1"),
+                                target = LabelName("and_false.0"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("tmp.2"),
+                            ),
+                            Tacky.Instruction.Jump(LabelName("and_end.1")),
+                            Tacky.Instruction.Label(LabelName("and_false.0")),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(0),
+                                dst = Tacky.Value.Variable("tmp.2"),
+                            ),
+                            Tacky.Instruction.Label(LabelName("and_end.1")),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.JumpIfZero(
-                            src = Tacky.Value.Variable("tmp.0"),
-                            target = LabelName("and_false.0"),
-                        ),
-                        Tacky.Instruction.Binary(
-                            operator = Tacky.BinaryOperator.NotEqual,
-                            left = Tacky.Value.IntConstant(1),
-                            right = Tacky.Value.IntConstant(3),
-                            dst = Tacky.Value.Variable("tmp.1"),
-                        ),
-                        Tacky.Instruction.JumpIfZero(
-                            src = Tacky.Value.Variable("tmp.1"),
-                            target = LabelName("and_false.0"),
-                        ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("tmp.2"),
-                        ),
-                        Tacky.Instruction.Jump(LabelName("and_end.1")),
-                        Tacky.Instruction.Label(LabelName("and_false.0")),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(0),
-                            dst = Tacky.Value.Variable("tmp.2"),
-                        ),
-                        Tacky.Instruction.Label(LabelName("and_end.1")),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -360,35 +385,38 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Expression(
-                                        AST.Expression.Binary(
-                                            operator = AST.BinaryOperator.LogicalOr,
-                                            left =
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Statement(
+                                        AST.Statement.Expression(
                                             AST.Expression.Binary(
-                                                operator = AST.BinaryOperator.Equal,
-                                                left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                right = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                            ),
-                                            right =
-                                            AST.Expression.Binary(
-                                                operator = AST.BinaryOperator.NotEqual,
-                                                left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                right = AST.Expression.IntLiteral(3, Location(1, 0)),
+                                                operator = AST.BinaryOperator.LogicalOr,
+                                                left =
+                                                AST.Expression.Binary(
+                                                    operator = AST.BinaryOperator.Equal,
+                                                    left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                    right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                ),
+                                                right =
+                                                AST.Expression.Binary(
+                                                    operator = AST.BinaryOperator.NotEqual,
+                                                    left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                    right = AST.Expression.IntLiteral(3, Location(1, 0)),
+                                                ),
                                             ),
                                         ),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 0,
@@ -398,43 +426,45 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Binary(
-                            operator = Tacky.BinaryOperator.Equal,
-                            left = Tacky.Value.IntConstant(1),
-                            right = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("tmp.0"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Binary(
+                                operator = Tacky.BinaryOperator.Equal,
+                                left = Tacky.Value.IntConstant(1),
+                                right = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("tmp.0"),
+                            ),
+                            Tacky.Instruction.JumpIfNotZero(
+                                src = Tacky.Value.Variable("tmp.0"),
+                                target = LabelName("or_true.0"),
+                            ),
+                            Tacky.Instruction.Binary(
+                                operator = Tacky.BinaryOperator.NotEqual,
+                                left = Tacky.Value.IntConstant(1),
+                                right = Tacky.Value.IntConstant(3),
+                                dst = Tacky.Value.Variable("tmp.1"),
+                            ),
+                            Tacky.Instruction.JumpIfNotZero(
+                                src = Tacky.Value.Variable("tmp.1"),
+                                target = LabelName("or_true.0"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(0),
+                                dst = Tacky.Value.Variable("tmp.2"),
+                            ),
+                            Tacky.Instruction.Jump(LabelName("or_end.1")),
+                            Tacky.Instruction.Label(LabelName("or_true.0")),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("tmp.2"),
+                            ),
+                            Tacky.Instruction.Label(LabelName("or_end.1")),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.JumpIfNotZero(
-                            src = Tacky.Value.Variable("tmp.0"),
-                            target = LabelName("or_true.0"),
-                        ),
-                        Tacky.Instruction.Binary(
-                            operator = Tacky.BinaryOperator.NotEqual,
-                            left = Tacky.Value.IntConstant(1),
-                            right = Tacky.Value.IntConstant(3),
-                            dst = Tacky.Value.Variable("tmp.1"),
-                        ),
-                        Tacky.Instruction.JumpIfNotZero(
-                            src = Tacky.Value.Variable("tmp.1"),
-                            target = LabelName("or_true.0"),
-                        ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(0),
-                            dst = Tacky.Value.Variable("tmp.2"),
-                        ),
-                        Tacky.Instruction.Jump(LabelName("or_end.1")),
-                        Tacky.Instruction.Label(LabelName("or_true.0")),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("tmp.2"),
-                        ),
-                        Tacky.Instruction.Label(LabelName("or_end.1")),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -448,23 +478,26 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    AST.Declaration(
-                                        name = "x",
-                                        initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                        location = Location(1, 0),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Declaration(
+                                        AST.Declaration.Variable(
+                                            name = "x",
+                                            initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            location = Location(1, 0),
+                                        ),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 1,
@@ -474,16 +507,18 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("x"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("x"),
+                            ),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -497,23 +532,26 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    AST.Declaration(
-                                        name = "x",
-                                        initializer = null,
-                                        location = Location(1, 0),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Declaration(
+                                        AST.Declaration.Variable(
+                                            name = "x",
+                                            initializer = null,
+                                            location = Location(1, 0),
+                                        ),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 1,
@@ -523,12 +561,14 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
+                        ),
                     ),
                 ),
             ),
@@ -542,28 +582,31 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    AST.Declaration(
-                                        name = "x",
-                                        initializer =
-                                        AST.Expression.Binary(
-                                            operator = AST.BinaryOperator.Add,
-                                            left = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                            right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Declaration(
+                                        AST.Declaration.Variable(
+                                            name = "x",
+                                            initializer =
+                                            AST.Expression.Binary(
+                                                operator = AST.BinaryOperator.Add,
+                                                left = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                            ),
+                                            location = Location(1, 0),
                                         ),
-                                        location = Location(1, 0),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 123,
@@ -573,22 +616,24 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Binary(
-                            operator = Tacky.BinaryOperator.Add,
-                            left = Tacky.Value.IntConstant(1),
-                            right = Tacky.Value.IntConstant(2),
-                            dst = Tacky.Value.Variable("tmp.123"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Binary(
+                                operator = Tacky.BinaryOperator.Add,
+                                left = Tacky.Value.IntConstant(1),
+                                right = Tacky.Value.IntConstant(2),
+                                dst = Tacky.Value.Variable("tmp.123"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.Variable("tmp.123"),
+                                dst = Tacky.Value.Variable("x"),
+                            ),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.Variable("tmp.123"),
-                            dst = Tacky.Value.Variable("x"),
-                        ),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -602,31 +647,34 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    AST.Declaration(
-                                        name = "x",
-                                        initializer = null,
-                                        location = Location(1, 0),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Declaration(
+                                        AST.Declaration.Variable(
+                                            name = "x",
+                                            initializer = null,
+                                            location = Location(1, 0),
+                                        ),
                                     ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Expression(
-                                        AST.Expression.Assignment(
-                                            left = AST.Expression.Variable("x", Location(1, 0)),
-                                            right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                    AST.BlockItem.Statement(
+                                        AST.Statement.Expression(
+                                            AST.Expression.Assignment(
+                                                left = AST.Expression.Variable("x", Location(1, 0)),
+                                                right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            ),
                                         ),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 1,
@@ -636,16 +684,18 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("x"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("x"),
+                            ),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -676,32 +726,35 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    AST.Declaration(
-                                        name = "x",
-                                        initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                        location = Location(1, 0),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Declaration(
+                                        AST.Declaration.Variable(
+                                            name = "x",
+                                            initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            location = Location(1, 0),
+                                        ),
                                     ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Expression(
-                                        AST.Expression.CompoundAssignment(
-                                            operator = astCompoundAssignmentOperator,
-                                            left = AST.Expression.Variable("x", Location(1, 0)),
-                                            right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                    AST.BlockItem.Statement(
+                                        AST.Statement.Expression(
+                                            AST.Expression.CompoundAssignment(
+                                                operator = astCompoundAssignmentOperator,
+                                                left = AST.Expression.Variable("x", Location(1, 0)),
+                                                right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                            ),
                                         ),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 1,
@@ -711,26 +764,28 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("x"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("x"),
+                            ),
+                            Tacky.Instruction.Binary(
+                                operator = tackyBinaryOperator,
+                                left = Tacky.Value.Variable("x"),
+                                right = Tacky.Value.IntConstant(2),
+                                dst = Tacky.Value.Variable("tmp.1"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.Variable("tmp.1"),
+                                dst = Tacky.Value.Variable("x"),
+                            ),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Binary(
-                            operator = tackyBinaryOperator,
-                            left = Tacky.Value.Variable("x"),
-                            right = Tacky.Value.IntConstant(2),
-                            dst = Tacky.Value.Variable("tmp.1"),
-                        ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.Variable("tmp.1"),
-                            dst = Tacky.Value.Variable("x"),
-                        ),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -753,50 +808,53 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    AST.Declaration(
-                                        name = "x",
-                                        initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                        location = Location(1, 0),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Declaration(
+                                        AST.Declaration.Variable(
+                                            name = "x",
+                                            initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            location = Location(1, 0),
+                                        ),
                                     ),
-                                ),
-                                AST.BlockItem.Declaration(
-                                    AST.Declaration(
-                                        name = "y",
-                                        initializer =
-                                        AST.Expression.Binary(
-                                            operator = AST.BinaryOperator.Add,
-                                            left =
-                                            AST.Expression.Postfix(
-                                                operator = postfixOperator,
-                                                operand = AST.Expression.Variable("x", Location(1, 0)),
+                                    AST.BlockItem.Declaration(
+                                        AST.Declaration.Variable(
+                                            name = "y",
+                                            initializer =
+                                            AST.Expression.Binary(
+                                                operator = AST.BinaryOperator.Add,
+                                                left =
+                                                AST.Expression.Postfix(
+                                                    operator = postfixOperator,
+                                                    operand = AST.Expression.Variable("x", Location(1, 0)),
+                                                ),
+                                                right = AST.Expression.IntLiteral(2, Location(1, 0)),
                                             ),
-                                            right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                            location = Location(1, 0),
                                         ),
-                                        location = Location(1, 0),
                                     ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Return(
-                                        expression =
-                                        AST.Expression.Binary(
-                                            operator = AST.BinaryOperator.Add,
-                                            left = AST.Expression.Variable("x", Location(1, 0)),
-                                            right = AST.Expression.Variable("y", Location(1, 0)),
+                                    AST.BlockItem.Statement(
+                                        AST.Statement.Return(
+                                            expression =
+                                            AST.Expression.Binary(
+                                                operator = AST.BinaryOperator.Add,
+                                                left = AST.Expression.Variable("x", Location(1, 0)),
+                                                right = AST.Expression.Variable("y", Location(1, 0)),
+                                            ),
+                                            location = Location(1, 0),
                                         ),
-                                        location = Location(1, 0),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 2,
@@ -806,43 +864,45 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("x"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("x"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.Variable("x"),
+                                dst = Tacky.Value.Variable("tmp.2"),
+                            ),
+                            Tacky.Instruction.Binary(
+                                operator = tackyBinaryOperator,
+                                left = Tacky.Value.Variable("x"),
+                                right = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("x"),
+                            ),
+                            Tacky.Instruction.Binary(
+                                operator = Tacky.BinaryOperator.Add,
+                                left = Tacky.Value.Variable("tmp.2"),
+                                right = Tacky.Value.IntConstant(2),
+                                dst = Tacky.Value.Variable("tmp.3"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.Variable("tmp.3"),
+                                dst = Tacky.Value.Variable("y"),
+                            ),
+                            Tacky.Instruction.Binary(
+                                operator = Tacky.BinaryOperator.Add,
+                                left = Tacky.Value.Variable("x"),
+                                right = Tacky.Value.Variable("y"),
+                                dst = Tacky.Value.Variable("tmp.4"),
+                            ),
+                            Tacky.Instruction.Return(Tacky.Value.Variable("tmp.4")),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.Variable("x"),
-                            dst = Tacky.Value.Variable("tmp.2"),
-                        ),
-                        Tacky.Instruction.Binary(
-                            operator = tackyBinaryOperator,
-                            left = Tacky.Value.Variable("x"),
-                            right = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("x"),
-                        ),
-                        Tacky.Instruction.Binary(
-                            operator = Tacky.BinaryOperator.Add,
-                            left = Tacky.Value.Variable("tmp.2"),
-                            right = Tacky.Value.IntConstant(2),
-                            dst = Tacky.Value.Variable("tmp.3"),
-                        ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.Variable("tmp.3"),
-                            dst = Tacky.Value.Variable("y"),
-                        ),
-                        Tacky.Instruction.Binary(
-                            operator = Tacky.BinaryOperator.Add,
-                            left = Tacky.Value.Variable("x"),
-                            right = Tacky.Value.Variable("y"),
-                            dst = Tacky.Value.Variable("tmp.4"),
-                        ),
-                        Tacky.Instruction.Return(Tacky.Value.Variable("tmp.4")),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -856,54 +916,57 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    AST.Declaration(
-                                        name = "x",
-                                        initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                        location = Location(1, 0),
-                                    ),
-                                ),
-                                AST.BlockItem.Declaration(
-                                    AST.Declaration(
-                                        name = "y",
-                                        initializer = AST.Expression.IntLiteral(0, Location(1, 0)),
-                                        location = Location(1, 0),
-                                    ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    AST.Statement.If(
-                                        condition =
-                                        AST.Expression.Binary(
-                                            operator = AST.BinaryOperator.Equal,
-                                            left = AST.Expression.Variable("x", Location(1, 0)),
-                                            right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Declaration(
+                                        AST.Declaration.Variable(
+                                            name = "x",
+                                            initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            location = Location(1, 0),
                                         ),
-                                        thenStatement =
-                                        AST.Statement.Expression(
-                                            AST.Expression.Assignment(
-                                                left = AST.Expression.Variable("y", Location(1, 0)),
-                                                right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                    ),
+                                    AST.BlockItem.Declaration(
+                                        AST.Declaration.Variable(
+                                            name = "y",
+                                            initializer = AST.Expression.IntLiteral(0, Location(1, 0)),
+                                            location = Location(1, 0),
+                                        ),
+                                    ),
+                                    AST.BlockItem.Statement(
+                                        AST.Statement.If(
+                                            condition =
+                                            AST.Expression.Binary(
+                                                operator = AST.BinaryOperator.Equal,
+                                                left = AST.Expression.Variable("x", Location(1, 0)),
+                                                right = AST.Expression.IntLiteral(1, Location(1, 0)),
                                             ),
+                                            thenStatement =
+                                            AST.Statement.Expression(
+                                                AST.Expression.Assignment(
+                                                    left = AST.Expression.Variable("y", Location(1, 0)),
+                                                    right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                ),
+                                            ),
+                                            elseStatement = null,
                                         ),
-                                        elseStatement = null,
                                     ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Return(
-                                        expression = AST.Expression.Variable("y", Location(1, 0)),
-                                        location = Location(1, 0),
+                                    AST.BlockItem.Statement(
+                                        AST.Statement.Return(
+                                            expression = AST.Expression.Variable("y", Location(1, 0)),
+                                            location = Location(1, 0),
+                                        ),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 2,
@@ -913,36 +976,38 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("x"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("x"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(0),
+                                dst = Tacky.Value.Variable("y"),
+                            ),
+                            Tacky.Instruction.Binary(
+                                operator = Tacky.BinaryOperator.Equal,
+                                left = Tacky.Value.Variable("x"),
+                                right = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("tmp.2"),
+                            ),
+                            Tacky.Instruction.JumpIfZero(
+                                src = Tacky.Value.Variable("tmp.2"),
+                                target = LabelName("if_else.0"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(2),
+                                dst = Tacky.Value.Variable("y"),
+                            ),
+                            Tacky.Instruction.Label(LabelName("if_else.0")),
+                            Tacky.Instruction.Return(Tacky.Value.Variable("y")),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(0),
-                            dst = Tacky.Value.Variable("y"),
-                        ),
-                        Tacky.Instruction.Binary(
-                            operator = Tacky.BinaryOperator.Equal,
-                            left = Tacky.Value.Variable("x"),
-                            right = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("tmp.2"),
-                        ),
-                        Tacky.Instruction.JumpIfZero(
-                            src = Tacky.Value.Variable("tmp.2"),
-                            target = LabelName("if_else.0"),
-                        ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(2),
-                            dst = Tacky.Value.Variable("y"),
-                        ),
-                        Tacky.Instruction.Label(LabelName("if_else.0")),
-                        Tacky.Instruction.Return(Tacky.Value.Variable("y")),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -956,60 +1021,63 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    AST.Declaration(
-                                        name = "x",
-                                        initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                        location = Location(1, 0),
-                                    ),
-                                ),
-                                AST.BlockItem.Declaration(
-                                    AST.Declaration(
-                                        name = "y",
-                                        initializer = AST.Expression.IntLiteral(0, Location(1, 0)),
-                                        location = Location(1, 0),
-                                    ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    AST.Statement.If(
-                                        condition =
-                                        AST.Expression.Binary(
-                                            operator = AST.BinaryOperator.Equal,
-                                            left = AST.Expression.Variable("x", Location(1, 0)),
-                                            right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Declaration(
+                                        AST.Declaration.Variable(
+                                            name = "x",
+                                            initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            location = Location(1, 0),
                                         ),
-                                        thenStatement =
-                                        AST.Statement.Expression(
-                                            AST.Expression.Assignment(
-                                                left = AST.Expression.Variable("y", Location(1, 0)),
-                                                right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                    ),
+                                    AST.BlockItem.Declaration(
+                                        AST.Declaration.Variable(
+                                            name = "y",
+                                            initializer = AST.Expression.IntLiteral(0, Location(1, 0)),
+                                            location = Location(1, 0),
+                                        ),
+                                    ),
+                                    AST.BlockItem.Statement(
+                                        AST.Statement.If(
+                                            condition =
+                                            AST.Expression.Binary(
+                                                operator = AST.BinaryOperator.Equal,
+                                                left = AST.Expression.Variable("x", Location(1, 0)),
+                                                right = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            ),
+                                            thenStatement =
+                                            AST.Statement.Expression(
+                                                AST.Expression.Assignment(
+                                                    left = AST.Expression.Variable("y", Location(1, 0)),
+                                                    right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                ),
+                                            ),
+                                            elseStatement =
+                                            AST.Statement.Expression(
+                                                AST.Expression.Assignment(
+                                                    left = AST.Expression.Variable("y", Location(1, 0)),
+                                                    right = AST.Expression.IntLiteral(3, Location(1, 0)),
+                                                ),
                                             ),
                                         ),
-                                        elseStatement =
-                                        AST.Statement.Expression(
-                                            AST.Expression.Assignment(
-                                                left = AST.Expression.Variable("y", Location(1, 0)),
-                                                right = AST.Expression.IntLiteral(3, Location(1, 0)),
-                                            ),
-                                        ),
                                     ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    AST.Statement.Return(
-                                        expression = AST.Expression.Variable("y", Location(1, 0)),
-                                        location = Location(1, 0),
+                                    AST.BlockItem.Statement(
+                                        AST.Statement.Return(
+                                            expression = AST.Expression.Variable("y", Location(1, 0)),
+                                            location = Location(1, 0),
+                                        ),
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 2,
@@ -1019,44 +1087,46 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("x"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("x"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(0),
+                                dst = Tacky.Value.Variable("y"),
+                            ),
+                            Tacky.Instruction.Binary(
+                                operator = Tacky.BinaryOperator.Equal,
+                                left = Tacky.Value.Variable("x"),
+                                right = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("tmp.2"),
+                            ),
+                            Tacky.Instruction.JumpIfZero(
+                                src = Tacky.Value.Variable("tmp.2"),
+                                target = LabelName("if_else.0"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(2),
+                                dst = Tacky.Value.Variable("y"),
+                            ),
+                            Tacky.Instruction.Jump(
+                                target = LabelName("if_end.1"),
+                            ),
+                            Tacky.Instruction.Label(LabelName("if_else.0")),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(3),
+                                dst = Tacky.Value.Variable("y"),
+                            ),
+                            Tacky.Instruction.Label(LabelName("if_end.1")),
+                            Tacky.Instruction.Return(Tacky.Value.Variable("y")),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(0),
-                            dst = Tacky.Value.Variable("y"),
-                        ),
-                        Tacky.Instruction.Binary(
-                            operator = Tacky.BinaryOperator.Equal,
-                            left = Tacky.Value.Variable("x"),
-                            right = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("tmp.2"),
-                        ),
-                        Tacky.Instruction.JumpIfZero(
-                            src = Tacky.Value.Variable("tmp.2"),
-                            target = LabelName("if_else.0"),
-                        ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(2),
-                            dst = Tacky.Value.Variable("y"),
-                        ),
-                        Tacky.Instruction.Jump(
-                            target = LabelName("if_end.1"),
-                        ),
-                        Tacky.Instruction.Label(LabelName("if_else.0")),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(3),
-                            dst = Tacky.Value.Variable("y"),
-                        ),
-                        Tacky.Instruction.Label(LabelName("if_end.1")),
-                        Tacky.Instruction.Return(Tacky.Value.Variable("y")),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -1070,60 +1140,63 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration(
-                                        name = "a.0",
-                                        initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
-                                        location = Location(2, 5),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Declaration(
+                                        declaration =
+                                        AST.Declaration.Variable(
+                                            name = "a.0",
+                                            initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                            location = Location(2, 5),
+                                        ),
                                     ),
-                                ),
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration(
-                                        name = "b.1",
-                                        initializer = null,
-                                        location = Location(3, 5),
+                                    AST.BlockItem.Declaration(
+                                        declaration =
+                                        AST.Declaration.Variable(
+                                            name = "b.1",
+                                            initializer = null,
+                                            location = Location(3, 5),
+                                        ),
                                     ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    statement =
-                                    AST.Statement.Expression(
-                                        expression =
-                                        AST.Expression.Assignment(
-                                            left = AST.Expression.Variable("a.0", Location(3, 13)),
-                                            right =
-                                            AST.Expression.Conditional(
-                                                condition =
-                                                AST.Expression.Binary(
-                                                    operator = AST.BinaryOperator.Equal,
-                                                    left = AST.Expression.Variable("a.0", Location(3, 13)),
-                                                    right = AST.Expression.IntLiteral(1, Location(3, 17)),
-                                                ),
-                                                thenExpression =
-                                                AST.Expression.Assignment(
-                                                    left = AST.Expression.Variable("b.1", Location(4, 5)),
-                                                    right = AST.Expression.IntLiteral(2, Location(4, 9)),
-                                                ),
-                                                elseExpression =
-                                                AST.Expression.Assignment(
-                                                    left = AST.Expression.Variable("b.1", Location(5, 5)),
-                                                    right = AST.Expression.IntLiteral(3, Location(5, 9)),
+                                    AST.BlockItem.Statement(
+                                        statement =
+                                        AST.Statement.Expression(
+                                            expression =
+                                            AST.Expression.Assignment(
+                                                left = AST.Expression.Variable("a.0", Location(3, 13)),
+                                                right =
+                                                AST.Expression.Conditional(
+                                                    condition =
+                                                    AST.Expression.Binary(
+                                                        operator = AST.BinaryOperator.Equal,
+                                                        left = AST.Expression.Variable("a.0", Location(3, 13)),
+                                                        right = AST.Expression.IntLiteral(1, Location(3, 17)),
+                                                    ),
+                                                    thenExpression =
+                                                    AST.Expression.Assignment(
+                                                        left = AST.Expression.Variable("b.1", Location(4, 5)),
+                                                        right = AST.Expression.IntLiteral(2, Location(4, 9)),
+                                                    ),
+                                                    elseExpression =
+                                                    AST.Expression.Assignment(
+                                                        left = AST.Expression.Variable("b.1", Location(5, 5)),
+                                                        right = AST.Expression.IntLiteral(3, Location(5, 9)),
+                                                    ),
                                                 ),
                                             ),
                                         ),
                                     ),
                                 ),
                             ),
+                            location = Location(1, 1),
                         ),
-                        location = Location(1, 1),
                     ),
                 ),
                 variableCount = 2,
@@ -1133,51 +1206,53 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("a.0"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("a.0"),
+                            ),
+                            Tacky.Instruction.Binary(
+                                operator = Tacky.BinaryOperator.Equal,
+                                left = Tacky.Value.Variable("a.0"),
+                                right = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("tmp.2"),
+                            ),
+                            Tacky.Instruction.JumpIfZero(
+                                src = Tacky.Value.Variable("tmp.2"),
+                                target = LabelName("cond_else.0"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(2),
+                                dst = Tacky.Value.Variable("b.1"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.Variable("b.1"),
+                                dst = Tacky.Value.Variable("tmp.3"),
+                            ),
+                            Tacky.Instruction.Jump(
+                                target = LabelName("cond_end.1"),
+                            ),
+                            Tacky.Instruction.Label(LabelName("cond_else.0")),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(3),
+                                dst = Tacky.Value.Variable("b.1"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.Variable("b.1"),
+                                dst = Tacky.Value.Variable("tmp.3"),
+                            ),
+                            Tacky.Instruction.Label(LabelName("cond_end.1")),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.Variable("tmp.3"),
+                                dst = Tacky.Value.Variable("a.0"),
+                            ),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Binary(
-                            operator = Tacky.BinaryOperator.Equal,
-                            left = Tacky.Value.Variable("a.0"),
-                            right = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("tmp.2"),
-                        ),
-                        Tacky.Instruction.JumpIfZero(
-                            src = Tacky.Value.Variable("tmp.2"),
-                            target = LabelName("cond_else.0"),
-                        ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(2),
-                            dst = Tacky.Value.Variable("b.1"),
-                        ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.Variable("b.1"),
-                            dst = Tacky.Value.Variable("tmp.3"),
-                        ),
-                        Tacky.Instruction.Jump(
-                            target = LabelName("cond_end.1"),
-                        ),
-                        Tacky.Instruction.Label(LabelName("cond_else.0")),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(3),
-                            dst = Tacky.Value.Variable("b.1"),
-                        ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.Variable("b.1"),
-                            dst = Tacky.Value.Variable("tmp.3"),
-                        ),
-                        Tacky.Instruction.Label(LabelName("cond_end.1")),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.Variable("tmp.3"),
-                            dst = Tacky.Value.Variable("a.0"),
-                        ),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -1191,41 +1266,44 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration(
-                                        name = "x",
-                                        initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                        location = Location(1, 0),
-                                    ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    statement =
-                                    AST.Statement.Labeled(
-                                        label = LabelName("label"),
-                                        statement =
-                                        AST.Statement.Expression(
-                                            AST.Expression.Assignment(
-                                                left = AST.Expression.Variable("x", Location(2, 0)),
-                                                right = AST.Expression.IntLiteral(2, Location(2, 0)),
-                                            ),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Declaration(
+                                        declaration =
+                                        AST.Declaration.Variable(
+                                            name = "x",
+                                            initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            location = Location(1, 0),
                                         ),
-                                        location = Location(2, 0),
                                     ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    statement = AST.Statement.Goto(label = LabelName("label"), location = Location(3, 0)),
+                                    AST.BlockItem.Statement(
+                                        statement =
+                                        AST.Statement.Labeled(
+                                            label = LabelName("label"),
+                                            statement =
+                                            AST.Statement.Expression(
+                                                AST.Expression.Assignment(
+                                                    left = AST.Expression.Variable("x", Location(2, 0)),
+                                                    right = AST.Expression.IntLiteral(2, Location(2, 0)),
+                                                ),
+                                            ),
+                                            location = Location(2, 0),
+                                        ),
+                                    ),
+                                    AST.BlockItem.Statement(
+                                        statement = AST.Statement.Goto(label = LabelName("label"), location = Location(3, 0)),
+                                    ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 1,
@@ -1235,22 +1313,24 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("x"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("x"),
+                            ),
+                            Tacky.Instruction.Label(LabelName("label")),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(2),
+                                dst = Tacky.Value.Variable("x"),
+                            ),
+                            Tacky.Instruction.Jump(LabelName("label")),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Label(LabelName("label")),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(2),
-                            dst = Tacky.Value.Variable("x"),
-                        ),
-                        Tacky.Instruction.Jump(LabelName("label")),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),
@@ -1264,34 +1344,37 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDefinition =
-                    AST.FunctionDefinition(
-                        name = "main",
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Statement(
-                                    statement =
-                                    AST.Statement.Compound(
-                                        block =
-                                        AST.Block(
-                                            blockItems =
-                                            listOf(
-                                                AST.BlockItem.Declaration(
-                                                    declaration =
-                                                    AST.Declaration(
-                                                        name = "x",
-                                                        initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
-                                                        location = Location(1, 0),
+                    functionDeclarations =
+                    listOf(
+                        AST.Declaration.Function(
+                            name = "main",
+                            parameters = emptyList(),
+                            body =
+                            AST.Block(
+                                blockItems =
+                                listOf(
+                                    AST.BlockItem.Statement(
+                                        statement =
+                                        AST.Statement.Compound(
+                                            block =
+                                            AST.Block(
+                                                blockItems =
+                                                listOf(
+                                                    AST.BlockItem.Declaration(
+                                                        declaration =
+                                                        AST.Declaration.Variable(
+                                                            name = "x",
+                                                            initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                            location = Location(1, 0),
+                                                        ),
                                                     ),
-                                                ),
-                                                AST.BlockItem.Statement(
-                                                    statement =
-                                                    AST.Statement.Expression(
-                                                        AST.Expression.Assignment(
-                                                            left = AST.Expression.Variable("x", Location(2, 0)),
-                                                            right = AST.Expression.IntLiteral(2, Location(2, 0)),
+                                                    AST.BlockItem.Statement(
+                                                        statement =
+                                                        AST.Statement.Expression(
+                                                            AST.Expression.Assignment(
+                                                                left = AST.Expression.Variable("x", Location(2, 0)),
+                                                                right = AST.Expression.IntLiteral(2, Location(2, 0)),
+                                                            ),
                                                         ),
                                                     ),
                                                 ),
@@ -1300,8 +1383,8 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            location = Location(0, 0),
                         ),
-                        location = Location(0, 0),
                     ),
                 ),
                 variableCount = 1,
@@ -1311,20 +1394,22 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
-                functionDefinition =
-                Tacky.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(1),
-                            dst = Tacky.Value.Variable("x"),
+                functionDefinitions =
+                listOf(
+                    Tacky.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(1),
+                                dst = Tacky.Value.Variable("x"),
+                            ),
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.IntConstant(2),
+                                dst = Tacky.Value.Variable("x"),
+                            ),
+                            Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                         ),
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.IntConstant(2),
-                            dst = Tacky.Value.Variable("x"),
-                        ),
-                        Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
                     ),
                 ),
             ),

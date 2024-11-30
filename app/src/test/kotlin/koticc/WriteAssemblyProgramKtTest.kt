@@ -117,9 +117,11 @@ class WriteAssemblyProgramKtTest {
     ) {
         val assemblyProgram =
             Assembly.Program(
-                Assembly.FunctionDefinition(
-                    name = "main",
-                    body = listOf(instruction),
+                listOf(
+                    Assembly.FunctionDefinition(
+                        name = "main",
+                        body = listOf(instruction),
+                    ),
                 ),
             )
         val output = assemblyToString(assemblyProgram)
@@ -144,9 +146,11 @@ class WriteAssemblyProgramKtTest {
     fun `should product correct output for ret`() {
         val assemblyProgram =
             Assembly.Program(
-                Assembly.FunctionDefinition(
-                    name = "main",
-                    body = listOf(Assembly.Instruction.Ret),
+                listOf(
+                    Assembly.FunctionDefinition(
+                        name = "main",
+                        body = listOf(Assembly.Instruction.Ret),
+                    ),
                 ),
             )
         val output = assemblyToString(assemblyProgram)
@@ -168,21 +172,23 @@ class WriteAssemblyProgramKtTest {
     fun `test for multiple instructions`() {
         val assembly =
             Assembly.Program(
-                functionDefinition =
-                Assembly.FunctionDefinition(
-                    name = "main",
-                    body =
-                    listOf(
-                        Assembly.Instruction.Label(LabelName("start")),
-                        Assembly.Instruction.Mov(
-                            src = Assembly.Operand.Immediate(42),
-                            dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                functionDefinitions =
+                listOf(
+                    Assembly.FunctionDefinition(
+                        name = "main",
+                        body =
+                        listOf(
+                            Assembly.Instruction.Label(LabelName("start")),
+                            Assembly.Instruction.Mov(
+                                src = Assembly.Operand.Immediate(42),
+                                dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                            ),
+                            Assembly.Instruction.Mov(
+                                src = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                                dst = Assembly.Operand.Register(Assembly.RegisterValue.Dx),
+                            ),
+                            Assembly.Instruction.Ret,
                         ),
-                        Assembly.Instruction.Mov(
-                            src = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
-                            dst = Assembly.Operand.Register(Assembly.RegisterValue.Dx),
-                        ),
-                        Assembly.Instruction.Ret,
                     ),
                 ),
             )

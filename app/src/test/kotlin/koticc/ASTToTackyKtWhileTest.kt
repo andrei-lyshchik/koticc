@@ -8,7 +8,7 @@ class ASTToTackyKtWhileTest {
     fun `should produce tacky for while`() {
         val input = ValidASTProgram(
             value = program {
-                functionDefinition("main") {
+                func("main") {
                     int("a.0") assign 1.e
                     while_("a.0".e lt 10.e, loopId = 0) {
                         e("a.0".e plusAssign 1.e)
@@ -47,7 +47,7 @@ class ASTToTackyKtWhileTest {
     fun `should produce tacky for while with continue and break`() {
         val input = ValidASTProgram(
             value = program {
-                functionDefinition("main") {
+                func("main") {
                     int("a.0") assign 1.e
                     while_("a.0".e lt 10.e, loopId = 0) {
                         e("a.0".e plusAssign 1.e)

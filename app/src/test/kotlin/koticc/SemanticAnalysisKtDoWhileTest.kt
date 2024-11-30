@@ -8,7 +8,7 @@ class SemanticAnalysisKtDoWhileTest {
     @Test
     fun `should assign labels to do while`() {
         val input = program {
-            functionDefinition("main") {
+            func("main") {
                 int("a") assign 1.e
                 do_ {
                     e("a".e plusAssign 1.e)
@@ -25,7 +25,7 @@ class SemanticAnalysisKtDoWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    functionDefinition("main") {
+                    func("main") {
                         int("a.0") assign 1.e
                         do_ {
                             e("a.0".e plusAssign 1.e)
@@ -45,7 +45,7 @@ class SemanticAnalysisKtDoWhileTest {
     @Test
     fun `should assign labels to break continue inside do while`() {
         val input = program {
-            functionDefinition("main") {
+            func("main") {
                 int("a") assign 1.e
                 do_ {
                     e("a".e plusAssign 1.e)
@@ -76,7 +76,7 @@ class SemanticAnalysisKtDoWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    functionDefinition("main") {
+                    func("main") {
                         int("a.0") assign 1.e
                         do_ {
                             e("a.0".e plusAssign 1.e)
@@ -108,7 +108,7 @@ class SemanticAnalysisKtDoWhileTest {
     @Test
     fun `should assign labels to break continue for nested do whiles`() {
         val input = program {
-            functionDefinition("main") {
+            func("main") {
                 int("a") assign 1.e
                 do_ {
                     e("a".e plusAssign 1.e)
@@ -131,7 +131,7 @@ class SemanticAnalysisKtDoWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    functionDefinition("main") {
+                    func("main") {
                         int("a.0") assign 1.e
                         do_ {
                             e("a.0".e plusAssign 1.e)

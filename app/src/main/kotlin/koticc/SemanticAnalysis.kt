@@ -40,16 +40,18 @@ private class VariableResolver {
         either {
             val validProgram =
                 program.copy(
-                    functionDefinition = resolveFunctionDefinition(program.functionDefinition).bind(),
+                    functionDeclarations = program.functionDeclarations.map {
+                        resolveFunctionDefinition(it).bind()
+                    },
                 )
             VariableResolverResult(validProgram, variableCount)
         }
 
     private fun resolveFunctionDefinition(
-        functionDefinition: AST.FunctionDefinition,
-    ): Either<SemanticAnalysisError, AST.FunctionDefinition> =
+        functionDeclaration: AST.Declaration.Function,
+    ): Either<SemanticAnalysisError, AST.Declaration.Function> =
         either {
-            functionDefinition.copy(body = resolveBlock(functionDefinition.body, variableMapping = mutableMapOf()).bind())
+            functionDeclaration.copy(body = functionDeclaration.body?.let { resolveBlock(it, variableMapping = mutableMapOf()).bind() })
         }
 
     private fun resolveBlock(
@@ -65,14 +67,20 @@ private class VariableResolver {
     private fun resolveBlockItem(blockItem: AST.BlockItem, variableMapping: MutableMap<String, DeclaredVariable>): Either<SemanticAnalysisError, AST.BlockItem> =
         either {
             when (blockItem) {
-                is AST.BlockItem.Declaration ->
-                    AST.BlockItem.Declaration(resolveDeclaration(blockItem.declaration, variableMapping).bind())
+                is AST.BlockItem.Declaration -> when (blockItem.declaration) {
+                    is AST.Declaration.Variable ->
+                        AST.BlockItem.Declaration(resolveVariableDeclaration(blockItem.declaration, variableMapping).bind())
+                    is AST.Declaration.Function -> blockItem
+                }
                 is AST.BlockItem.Statement ->
                     AST.BlockItem.Statement(resolveStatement(blockItem.statement, variableMapping).bind())
             }
         }
 
-    private fun resolveDeclaration(declaration: AST.Declaration, variableMapping: MutableMap<String, DeclaredVariable>): Either<SemanticAnalysisError, AST.Declaration> =
+    private fun resolveVariableDeclaration(
+        declaration: AST.Declaration.Variable,
+        variableMapping: MutableMap<String, DeclaredVariable>,
+    ): Either<SemanticAnalysisError, AST.Declaration.Variable> =
         either {
             variableMapping[declaration.name]?.takeIf { it.declaredInThisScope }?.let {
                 raise(
@@ -136,7 +144,7 @@ private class VariableResolver {
                     val initializer = when (statement.initializer) {
                         is AST.ForInitializer.Declaration ->
                             AST.ForInitializer.Declaration(
-                                resolveDeclaration(statement.initializer.declaration, headerVariableMapping).bind(),
+                                resolveVariableDeclaration(statement.initializer.declaration, headerVariableMapping).bind(),
                             )
 
                         is AST.ForInitializer.Expression ->
@@ -218,6 +226,11 @@ private class VariableResolver {
                         condition = resolveExpression(expression.condition, variableMapping).bind(),
                         thenExpression = resolveExpression(expression.thenExpression, variableMapping).bind(),
                         elseExpression = resolveExpression(expression.elseExpression, variableMapping).bind(),
+                    )
+                }
+                is AST.Expression.FunctionCall -> {
+                    expression.copy(
+                        arguments = expression.arguments.map { resolveExpression(it, variableMapping).bind() },
                     )
                 }
             }
@@ -316,7 +329,7 @@ private fun validateLabelsAreUnique(program: AST.Program) =
     }
 
 private fun findAllLabeledStatements(program: AST.Program): List<AST.Statement.Labeled> =
-    findAllLabeledStatements(program.functionDefinition.body)
+    program.functionDeclarations.flatMap { it.body?.let(::findAllLabeledStatements) ?: emptyList() }
 
 private fun findAllLabeledStatements(block: AST.Block): List<AST.Statement.Labeled> =
     block.blockItems.filterIsInstance<AST.BlockItem.Statement>()
@@ -361,7 +374,9 @@ private fun validateGotos(
 }
 
 private fun findAllGotos(program: AST.Program): List<AST.Statement.Goto> =
-    findAllGotos(program.functionDefinition.body)
+    program.functionDeclarations.flatMap {
+        it.body?.let(::findAllGotos) ?: emptyList()
+    }
 
 private fun findAllGotos(block: AST.Block): List<AST.Statement.Goto> =
     block.blockItems
@@ -401,16 +416,16 @@ private class LoopAndSwitchResolver {
     fun resolveLoopsAndSwitches(program: AST.Program): Either<SemanticAnalysisError, AST.Program> =
         either {
             val newProgram = program.copy(
-                functionDefinition = resolveFunctionDefinition(program.functionDefinition).bind(),
+                functionDeclarations = program.functionDeclarations.map { resolveFunctionDeclaration(it).bind() },
             )
             newProgram
         }
 
-    private fun resolveFunctionDefinition(
-        functionDefinition: AST.FunctionDefinition,
-    ): Either<SemanticAnalysisError, AST.FunctionDefinition> =
+    private fun resolveFunctionDeclaration(
+        functionDefinition: AST.Declaration.Function,
+    ): Either<SemanticAnalysisError, AST.Declaration.Function> =
         either {
-            functionDefinition.copy(body = resolveBlock(functionDefinition.body, EmptyContext).bind())
+            functionDefinition.copy(body = functionDefinition.body?.let { resolveBlock(it, EmptyContext).bind() })
         }
 
     private fun resolveBlock(

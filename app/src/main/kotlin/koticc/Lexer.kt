@@ -199,6 +199,7 @@ fun lexer(input: String): Either<LexerError, List<TokenWithLocation>> =
                     }
                     char == '?' -> result.add(TokenWithLocation(Token.QuestionMark, Location(line, current + 1)))
                     char == ':' -> result.add(TokenWithLocation(Token.Colon, Location(line, current + 1)))
+                    char == ',' -> result.add(TokenWithLocation(Token.Comma, Location(line, current + 1)))
                     char.isWhitespace() -> {}
                     char.isIdentifierStart() -> {
                         val start = current

@@ -19,7 +19,7 @@ class ParserKtDoWhileTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                functionDefinition("main") {
+                func("main") {
                     int("a") assign 1.e
                     do_ {
                         e("a".e plusAssign 1.e)

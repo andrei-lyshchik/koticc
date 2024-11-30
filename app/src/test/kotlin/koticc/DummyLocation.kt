@@ -13,24 +13,27 @@ fun assertEqualsIgnoringLocations(expected: AST.Program, actual: Either<Compiler
 }
 
 fun AST.Program.withDummyLocations() = copy(
-    functionDefinition = functionDefinition.withDummyLocations(),
+    functionDeclarations = functionDeclarations.map { it.withDummyLocations() },
 )
 
-fun AST.FunctionDefinition.withDummyLocations() = copy(
+fun AST.Declaration.Function.withDummyLocations() = copy(
     location = DUMMY_LOCATION,
-    body = body.withDummyLocations(),
+    body = body?.withDummyLocations(),
 )
 
 fun AST.Block.withDummyLocations() = copy(
     blockItems = blockItems.map { it.withDummyLocations() },
 )
 
-fun AST.BlockItem.withDummyLocations() = when (this) {
-    is AST.BlockItem.Declaration -> copy(declaration = declaration.withDummyLocations())
+fun AST.BlockItem.withDummyLocations(): AST.BlockItem = when (this) {
+    is AST.BlockItem.Declaration -> when (val declaration = this.declaration) {
+        is AST.Declaration.Variable -> copy(declaration = declaration.withDummyLocations())
+        is AST.Declaration.Function -> copy(declaration = declaration.withDummyLocations())
+    }
     is AST.BlockItem.Statement -> copy(statement = statement.withDummyLocations())
 }
 
-fun AST.Declaration.withDummyLocations() = copy(
+fun AST.Declaration.Variable.withDummyLocations() = copy(
     location = DUMMY_LOCATION,
     initializer = initializer?.withDummyLocations(),
 )
@@ -70,4 +73,5 @@ fun AST.Expression.withDummyLocations(): AST.Expression = when (this) {
     is AST.Expression.CompoundAssignment -> copy(left = left.withDummyLocations(), right = right.withDummyLocations())
     is AST.Expression.Conditional -> copy(condition = condition.withDummyLocations(), thenExpression = thenExpression.withDummyLocations(), elseExpression = elseExpression.withDummyLocations())
     is AST.Expression.Postfix -> copy(operand = operand.withDummyLocations())
+    is AST.Expression.FunctionCall -> copy(arguments = arguments.map { it.withDummyLocations() }, location = DUMMY_LOCATION)
 }

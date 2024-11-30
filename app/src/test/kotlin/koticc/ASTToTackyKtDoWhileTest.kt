@@ -8,7 +8,7 @@ class ASTToTackyKtDoWhileTest {
     fun `should produce tacky for do while`() {
         val input = ValidASTProgram(
             value = program {
-                functionDefinition("main") {
+                func("main") {
                     int("a") assign 1.e
                     do_ {
                         e("a".e plusAssign 1.e)
@@ -49,7 +49,7 @@ class ASTToTackyKtDoWhileTest {
     fun `should produce tacky for do while with break or continue`() {
         val input = ValidASTProgram(
             value = program {
-                functionDefinition("main") {
+                func("main") {
                     int("a.0") assign 1.e
                     do_ {
                         e("a.0".e plusAssign 1.e)

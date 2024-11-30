@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 import java.io.File
 import java.nio.file.Path
+import java.util.UUID
 import kotlin.io.path.absolutePathString
 import kotlin.test.assertEquals
 import kotlin.test.fail
@@ -37,7 +38,7 @@ class ReturnCodeIntegrationTest {
     @ParameterizedTest
     @ArgumentsSource(TestCases::class)
     fun `should produce correct binary that returns same exit code as gcc`(path: String) {
-        val inputFile = tempDir.resolve("input.c").toFile()
+        val inputFile = tempDir.resolve("input_${UUID.randomUUID()}.c").toFile()
         copyResourceToFile(path, inputFile)
 
         val gccBinaryExitCode = getGccProducedBinaryExitCode(inputFile)
@@ -48,13 +49,14 @@ class ReturnCodeIntegrationTest {
 
     private fun getGccProducedBinaryExitCode(inputFile: File) =
         either {
+            val outputFilePath = tempDir.resolve("gcc_output_${UUID.randomUUID()}").absolutePathString()
             val gccResult =
-                runCommand("gcc", "-o", tempDir.resolve("gcc_output").absolutePathString(), inputFile.absolutePath)
+                runCommand("gcc", "-o", outputFilePath, inputFile.absolutePath)
                     .mapLeft { "GCC failed: $it" }
                     .bind()
             ensure(gccResult.exitCode == 0) { "GCC failed with exit code ${gccResult.exitCode}: ${gccResult.stderr}" }
             val gccBinaryResult =
-                runCommand(tempDir.resolve("gcc_output").absolutePathString())
+                runCommand(outputFilePath)
                     .mapLeft { "GCC produced binary failed to run: $it" }
                     .bind()
             gccBinaryResult.exitCode
@@ -75,13 +77,14 @@ class ReturnCodeIntegrationTest {
                 .let { assembly ->
                     println("Assembly produced by ktc:\n$assembly")
                 }
+            val outputFileName = "ktc_output_${UUID.randomUUID()}"
             runCompilerDriver(
                 inputFile = inputFile.toPath(),
                 partialMode = null,
-                outputFile = tempDir.resolve("ktc_output"),
+                outputFile = tempDir.resolve(outputFileName),
             ).mapLeft { "ktc failed: ${it.message()}" }.bind()
             val ktcBinaryResult =
-                runCommand(tempDir.resolve("ktc_output").absolutePathString())
+                runCommand(tempDir.resolve(outputFileName).absolutePathString())
                     .mapLeft { "ktc produced binary failed to run: $it" }
                     .bind()
             ktcBinaryResult.exitCode

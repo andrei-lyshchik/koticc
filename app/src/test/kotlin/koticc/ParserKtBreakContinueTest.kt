@@ -15,7 +15,7 @@ class ParserKtBreakContinueTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                functionDefinition("main") {
+                func("main") {
                     break_()
                 }
             },
@@ -35,7 +35,7 @@ class ParserKtBreakContinueTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                functionDefinition("main") {
+                func("main") {
                     continue_()
                 }
             },

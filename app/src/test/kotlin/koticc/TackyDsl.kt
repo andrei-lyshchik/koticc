@@ -12,8 +12,7 @@ class TackyProgramBuilder {
     }
 
     fun build(): Tacky.Program {
-        require(functions.size == 1) { "Tacky program must have exactly one function for now" }
-        return Tacky.Program(functions.first())
+        return Tacky.Program(functions)
     }
 }
 

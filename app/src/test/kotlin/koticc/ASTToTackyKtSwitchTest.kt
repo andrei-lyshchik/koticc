@@ -8,7 +8,7 @@ class ASTToTackyKtSwitchTest {
     fun `should generate tacky for switch with cases and defaults`() {
         val program = ValidASTProgram(
             value = program {
-                functionDefinition("main") {
+                func("main") {
                     int("a") assign 1.e
                     switch("a".e + 1.e, switchId = 0, hasDefault = true, caseExpressions = mapOf(1 to 0, 2 to 1)) {
                         case(1.e, caseId = 0, switchId = 0) {
@@ -64,7 +64,7 @@ class ASTToTackyKtSwitchTest {
     fun `should generate tacky for switch with breaks and without default`() {
         val program = ValidASTProgram(
             value = program {
-                functionDefinition("main") {
+                func("main") {
                     int("a") assign 1.e
                     switch("a".e, switchId = 0, hasDefault = false, caseExpressions = mapOf(1 to 0, 2 to 1)) {
                         case(1.e, caseId = 0, switchId = 0) {

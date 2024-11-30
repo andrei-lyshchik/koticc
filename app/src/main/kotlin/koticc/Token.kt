@@ -47,6 +47,8 @@ sealed interface Token {
 
     data object Semicolon : Token
 
+    data object Comma : Token
+
     // assignment
     data object Equal : Token
 

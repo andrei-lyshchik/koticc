@@ -8,7 +8,7 @@ class SemanticAnalysisKtWhileTest {
     @Test
     fun `should assign labels to while`() {
         val input = program {
-            functionDefinition("main") {
+            func("main") {
                 int("a") assign 1.e
                 while_("a".e lt 10.e) {
                     e("a".e plusAssign 1.e)
@@ -25,7 +25,7 @@ class SemanticAnalysisKtWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    functionDefinition("main") {
+                    func("main") {
                         int("a.0") assign 1.e
                         while_("a.0".e lt 10.e, loopId = 0) {
                             e("a.0".e plusAssign 1.e)
@@ -45,7 +45,7 @@ class SemanticAnalysisKtWhileTest {
     @Test
     fun `should assign labels to break continue inside while`() {
         val input = program {
-            functionDefinition("main") {
+            func("main") {
                 int("a") assign 1.e
                 while_("a".e lt 10.e) {
                     e("a".e plusAssign 1.e)
@@ -76,7 +76,7 @@ class SemanticAnalysisKtWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    functionDefinition("main") {
+                    func("main") {
                         int("a.0") assign 1.e
                         while_("a.0".e lt 10.e, loopId = 0) {
                             e("a.0".e plusAssign 1.e)
@@ -108,7 +108,7 @@ class SemanticAnalysisKtWhileTest {
     @Test
     fun `should assign labels to break continue for nested whiles`() {
         val input = program {
-            functionDefinition("main") {
+            func("main") {
                 int("a") assign 1.e
                 while_(1.e) {
                     e("a".e plusAssign 1.e)
@@ -131,7 +131,7 @@ class SemanticAnalysisKtWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    functionDefinition("main") {
+                    func("main") {
                         int("a.0") assign 1.e
                         while_(1.e, loopId = 0) {
                             e("a.0".e plusAssign 1.e)

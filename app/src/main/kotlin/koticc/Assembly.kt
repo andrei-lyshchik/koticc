@@ -2,7 +2,7 @@ package koticc
 
 object Assembly {
     data class Program(
-        val functionDefinition: FunctionDefinition,
+        val functionDefinitions: List<FunctionDefinition>,
     )
 
     data class FunctionDefinition(

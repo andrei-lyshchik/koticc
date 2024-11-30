@@ -15,29 +15,39 @@ private class TackyGenerator(initialVariableCount: Int) {
     private fun nextLabelName(prefix: String): LabelName = LabelName("$prefix.${labelCount++}")
 
     fun generateProgram(program: AST.Program): Tacky.Program {
-        program.functionDefinition.body.blockItems.forEach { generateBlockItem(it) }
+        return Tacky.Program(
+            functionDefinitions =
+            program.functionDeclarations.mapNotNull { generateFunctionDefinition(it) },
+        )
+    }
+
+    private fun generateFunctionDefinition(functionDeclaration: AST.Declaration.Function): Tacky.FunctionDefinition? {
+        val body = functionDeclaration.body ?: return null
+        body.blockItems.forEach { generateBlockItem(it) }
         instructions.add(
             Tacky.Instruction.Return(
                 value = Tacky.Value.IntConstant(0),
             ),
         )
-        return Tacky.Program(
-            functionDefinition =
-            Tacky.FunctionDefinition(
-                name = program.functionDefinition.name,
-                body = instructions,
-            ),
+        val tackyFunction = Tacky.FunctionDefinition(
+            name = functionDeclaration.name,
+            body = instructions.toList(),
         )
+        instructions.clear()
+        return tackyFunction
     }
 
     private fun generateBlockItem(blockItem: AST.BlockItem) {
         when (blockItem) {
-            is AST.BlockItem.Declaration -> generateDeclaration(blockItem.declaration)
+            is AST.BlockItem.Declaration -> when (blockItem.declaration) {
+                is AST.Declaration.Variable -> generateVariableDeclaration(blockItem.declaration)
+                is AST.Declaration.Function -> {}
+            }
             is AST.BlockItem.Statement -> generateStatement(blockItem.statement)
         }
     }
 
-    private fun generateDeclaration(declaration: AST.Declaration) {
+    private fun generateVariableDeclaration(declaration: AST.Declaration.Variable) {
         val initialValue = declaration.initializer?.let { generateExpression(it) }
         val variable = Tacky.Value.Variable(declaration.name)
         if (initialValue != null) {
@@ -199,7 +209,7 @@ private class TackyGenerator(initialVariableCount: Int) {
     private fun generateForInitializer(forInitializer: AST.ForInitializer) {
         when (forInitializer) {
             is AST.ForInitializer.Expression -> generateExpression(forInitializer.expression)
-            is AST.ForInitializer.Declaration -> generateDeclaration(forInitializer.declaration)
+            is AST.ForInitializer.Declaration -> generateVariableDeclaration(forInitializer.declaration)
         }
     }
 
@@ -407,6 +417,7 @@ private class TackyGenerator(initialVariableCount: Int) {
                 )
                 result
             }
+            is AST.Expression.FunctionCall -> TODO()
         }
 
     private fun generateIf(ifStatement: AST.Statement.If) {

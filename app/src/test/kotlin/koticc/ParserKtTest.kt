@@ -19,11 +19,14 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDefinition =
-                AST.FunctionDefinition(
-                    name = "main",
-                    body = AST.Block(blockItems = emptyList()),
-                    location = Location(1, 1),
+                functionDeclarations =
+                listOf(
+                    AST.Declaration.Function(
+                        name = "main",
+                        parameters = emptyList(),
+                        body = AST.Block(blockItems = emptyList()),
+                        location = Location(1, 1),
+                    ),
                 ),
             )
                 .right()
@@ -41,9 +44,9 @@ int main(void) {
             "int {" to ParserError("expected identifier, got OpenBrace", Location(1, 5)),
             "int main {" to
                 ParserError("expected token OpenParen, but got OpenBrace", Location(1, 10)),
-            "int test() {" to ParserError("expected token Void, but got CloseParen", Location(1, 10)),
+            "int test() {" to ParserError("expected void or int, got CloseParen", Location(1, 10)),
             "int main(void) {}abc" to
-                ParserError("expected EOF, but got Identifier(value=abc)", Location(1, 18)),
+                ParserError("expected token IntKeyword, but got Identifier(value=abc)", Location(1, 18)),
         )
 
     @ParameterizedTest
@@ -54,11 +57,6 @@ int main(void) {
     ) {
         assertEquals(expected.left(), parseInput(input))
     }
-
-    class SingleBlockItemTestCases :
-        VarargArgumentsProvider(
-            "int a;" to AST.BlockItem.Declaration(AST.Declaration("a", null, Location(1, 1))),
-        )
 
     @Test
     fun `should parse declaration without initializer`() {
@@ -72,19 +70,22 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDefinition =
-                AST.FunctionDefinition(
-                    name = "main",
-                    body =
-                    AST.Block(
-                        blockItems =
-                        listOf(
-                            AST.BlockItem.Declaration(
-                                AST.Declaration("a", null, Location(2, 5)),
+                functionDeclarations =
+                listOf(
+                    AST.Declaration.Function(
+                        name = "main",
+                        parameters = emptyList(),
+                        body =
+                        AST.Block(
+                            blockItems =
+                            listOf(
+                                AST.BlockItem.Declaration(
+                                    AST.Declaration.Variable("a", null, Location(2, 5)),
+                                ),
                             ),
                         ),
+                        location = Location(1, 1),
                     ),
-                    location = Location(1, 1),
                 ),
             )
                 .right()
@@ -104,26 +105,29 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDefinition =
-                AST.FunctionDefinition(
-                    name = "main",
-                    body =
-                    AST.Block(
-                        blockItems =
-                        listOf(
-                            AST.BlockItem.Declaration(
-                                AST.Declaration(
-                                    "a",
-                                    AST.Expression.IntLiteral(
-                                        value = 1,
-                                        location = Location(2, 13),
+                functionDeclarations =
+                listOf(
+                    AST.Declaration.Function(
+                        name = "main",
+                        parameters = emptyList(),
+                        body =
+                        AST.Block(
+                            blockItems =
+                            listOf(
+                                AST.BlockItem.Declaration(
+                                    AST.Declaration.Variable(
+                                        "a",
+                                        AST.Expression.IntLiteral(
+                                            value = 1,
+                                            location = Location(2, 13),
+                                        ),
+                                        Location(2, 5),
                                     ),
-                                    Location(2, 5),
                                 ),
                             ),
                         ),
+                        location = Location(1, 1),
                     ),
-                    location = Location(1, 1),
                 ),
             )
                 .right()
@@ -143,25 +147,28 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDefinition =
-                AST.FunctionDefinition(
-                    name = "main",
-                    body =
-                    AST.Block(
-                        blockItems =
-                        listOf(
-                            AST.BlockItem.Statement(
-                                AST.Statement.Return(
-                                    AST.Expression.IntLiteral(
-                                        value = 1,
-                                        location = Location(2, 12),
+                functionDeclarations =
+                listOf(
+                    AST.Declaration.Function(
+                        name = "main",
+                        parameters = emptyList(),
+                        body =
+                        AST.Block(
+                            blockItems =
+                            listOf(
+                                AST.BlockItem.Statement(
+                                    AST.Statement.Return(
+                                        AST.Expression.IntLiteral(
+                                            value = 1,
+                                            location = Location(2, 12),
+                                        ),
+                                        Location(2, 5),
                                     ),
-                                    Location(2, 5),
                                 ),
                             ),
                         ),
+                        location = Location(1, 1),
                     ),
-                    location = Location(1, 1),
                 ),
             )
                 .right()
@@ -181,21 +188,24 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDefinition =
-                AST.FunctionDefinition(
-                    name = "main",
-                    body =
-                    AST.Block(
-                        blockItems =
-                        listOf(
-                            AST.BlockItem.Statement(
-                                AST.Statement.Null(
-                                    location = Location(2, 5),
+                functionDeclarations =
+                listOf(
+                    AST.Declaration.Function(
+                        name = "main",
+                        parameters = emptyList(),
+                        body =
+                        AST.Block(
+                            blockItems =
+                            listOf(
+                                AST.BlockItem.Statement(
+                                    AST.Statement.Null(
+                                        location = Location(2, 5),
+                                    ),
                                 ),
                             ),
                         ),
+                        location = Location(1, 1),
                     ),
-                    location = Location(1, 1),
                 ),
             )
                 .right()
@@ -632,19 +642,22 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDefinition =
-                AST.FunctionDefinition(
-                    name = "main",
-                    body =
-                    AST.Block(
-                        blockItems =
-                        listOf(
-                            AST.BlockItem.Statement(
-                                AST.Statement.Expression(expectedExpression),
+                functionDeclarations =
+                listOf(
+                    AST.Declaration.Function(
+                        name = "main",
+                        parameters = emptyList(),
+                        body =
+                        AST.Block(
+                            blockItems =
+                            listOf(
+                                AST.BlockItem.Statement(
+                                    AST.Statement.Expression(expectedExpression),
+                                ),
                             ),
                         ),
+                        location = Location(1, 1),
                     ),
-                    location = Location(1, 1),
                 ),
             )
                 .right()
@@ -756,7 +769,7 @@ int main(void) {
                         listOf(
                             AST.BlockItem.Declaration(
                                 declaration =
-                                AST.Declaration(
+                                AST.Declaration.Variable(
                                     name = "c",
                                     initializer = AST.Expression.IntLiteral(value = 1, location = Location(2, 27)),
                                     location = Location(2, 19),
@@ -813,11 +826,14 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDefinition =
-                AST.FunctionDefinition(
-                    name = "main",
-                    body = AST.Block(blockItems = listOf(AST.BlockItem.Statement(expectedStatement))),
-                    location = Location(1, 1),
+                functionDeclarations =
+                listOf(
+                    AST.Declaration.Function(
+                        name = "main",
+                        parameters = emptyList(),
+                        body = AST.Block(blockItems = listOf(AST.BlockItem.Statement(expectedStatement))),
+                        location = Location(1, 1),
+                    ),
                 ),
             ).right()
 
@@ -838,39 +854,42 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDefinition =
-                AST.FunctionDefinition(
-                    name = "main",
-                    body =
-                    AST.Block(
-                        blockItems =
-                        listOf(
-                            AST.BlockItem.Statement(
-                                AST.Statement.Compound(
-                                    block =
-                                    AST.Block(
-                                        blockItems =
-                                        listOf(
-                                            AST.BlockItem.Declaration(
-                                                AST.Declaration(
-                                                    name = "a",
-                                                    initializer =
-                                                    AST.Expression.IntLiteral(
-                                                        value = 1,
-                                                        location = Location(3, 17),
+                functionDeclarations =
+                listOf(
+                    AST.Declaration.Function(
+                        name = "main",
+                        parameters = emptyList(),
+                        body =
+                        AST.Block(
+                            blockItems =
+                            listOf(
+                                AST.BlockItem.Statement(
+                                    AST.Statement.Compound(
+                                        block =
+                                        AST.Block(
+                                            blockItems =
+                                            listOf(
+                                                AST.BlockItem.Declaration(
+                                                    AST.Declaration.Variable(
+                                                        name = "a",
+                                                        initializer =
+                                                        AST.Expression.IntLiteral(
+                                                            value = 1,
+                                                            location = Location(3, 17),
+                                                        ),
+                                                        location = Location(3, 9),
                                                     ),
-                                                    location = Location(3, 9),
                                                 ),
-                                            ),
-                                            AST.BlockItem.Declaration(
-                                                AST.Declaration(
-                                                    name = "b",
-                                                    initializer =
-                                                    AST.Expression.IntLiteral(
-                                                        value = 2,
-                                                        location = Location(4, 17),
+                                                AST.BlockItem.Declaration(
+                                                    AST.Declaration.Variable(
+                                                        name = "b",
+                                                        initializer =
+                                                        AST.Expression.IntLiteral(
+                                                            value = 2,
+                                                            location = Location(4, 17),
+                                                        ),
+                                                        location = Location(4, 9),
                                                     ),
-                                                    location = Location(4, 9),
                                                 ),
                                             ),
                                         ),
@@ -878,8 +897,8 @@ int main(void) {
                                 ),
                             ),
                         ),
+                        location = Location(1, 1),
                     ),
-                    location = Location(1, 1),
                 ),
             ).right()
 
@@ -899,35 +918,38 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDefinition =
-                AST.FunctionDefinition(
-                    name = "main",
-                    body =
-                    AST.Block(
-                        blockItems =
-                        listOf(
-                            AST.BlockItem.Statement(
-                                AST.Statement.Labeled(
-                                    label = LabelName("label"),
-                                    statement =
-                                    AST.Statement.Expression(
-                                        AST.Expression.Assignment(
-                                            left = AST.Expression.Variable(name = "a", location = Location(3, 5)),
-                                            right = AST.Expression.IntLiteral(value = 1, location = Location(3, 9)),
+                functionDeclarations =
+                listOf(
+                    AST.Declaration.Function(
+                        name = "main",
+                        parameters = emptyList(),
+                        body =
+                        AST.Block(
+                            blockItems =
+                            listOf(
+                                AST.BlockItem.Statement(
+                                    AST.Statement.Labeled(
+                                        label = LabelName("label"),
+                                        statement =
+                                        AST.Statement.Expression(
+                                            AST.Expression.Assignment(
+                                                left = AST.Expression.Variable(name = "a", location = Location(3, 5)),
+                                                right = AST.Expression.IntLiteral(value = 1, location = Location(3, 9)),
+                                            ),
                                         ),
+                                        location = Location(2, 1),
                                     ),
-                                    location = Location(2, 1),
                                 ),
-                            ),
-                            AST.BlockItem.Statement(
-                                AST.Statement.Goto(
-                                    label = LabelName("label"),
-                                    location = Location(4, 5),
+                                AST.BlockItem.Statement(
+                                    AST.Statement.Goto(
+                                        label = LabelName("label"),
+                                        location = Location(4, 5),
+                                    ),
                                 ),
                             ),
                         ),
+                        location = Location(1, 1),
                     ),
-                    location = Location(1, 1),
                 ),
             ).right()
 

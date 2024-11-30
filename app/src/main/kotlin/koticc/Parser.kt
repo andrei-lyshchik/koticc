@@ -5,7 +5,6 @@ package koticc
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.raise.either
-import arrow.core.raise.ensure
 import arrow.core.right
 
 data class ParserError(val message: String, val location: Location?) : CompilerError {
@@ -21,13 +20,11 @@ private class Parser(
 
     fun parse(): Either<ParserError, AST.Program> =
         either {
-            val functionDefinition = parseFunctionDefinition().bind()
-
-            val nextToken = nextToken()
-            ensure(nextToken == null) {
-                ParserError("expected EOF, but got ${nextToken?.value}", nextToken?.location)
+            val functionDeclarations = mutableListOf<AST.Declaration.Function>()
+            while (peekToken() != null) {
+                functionDeclarations.add(parseFunctionDeclaration().bind())
             }
-            AST.Program(functionDefinition)
+            AST.Program(functionDeclarations)
         }
 
     private fun peekToken(): TokenWithLocation? = tokens.getOrNull(current)
@@ -55,7 +52,6 @@ private class Parser(
         }
     }
 
-    // TODO: do we really need to return location as well
     private fun expectIdentifier(): Either<ParserError, TokenIdentifierWithLocation> {
         val nextToken = nextToken()
         return when (val tokenValue = nextToken?.value) {
@@ -66,22 +62,63 @@ private class Parser(
         }
     }
 
-    private fun parseFunctionDefinition(): Either<ParserError, AST.FunctionDefinition> =
+    private fun parseFunctionDeclaration(): Either<ParserError, AST.Declaration.Function> =
         either {
             val returnTypeToken = expectToken(Token.IntKeyword).bind()
             val nameToken = expectIdentifier().bind()
             expectToken(Token.OpenParen).bind()
-            expectToken(Token.Void).bind()
+            val parameters = parseFunctionDeclarationParameters().bind()
             expectToken(Token.CloseParen).bind()
 
-            val body = parseBlock().bind()
+            val peekToken = peekToken()
+            val body = when (peekToken?.value) {
+                Token.OpenBrace -> parseBlock().bind()
+                Token.Semicolon -> {
+                    nextToken()
+                    null
+                }
+                else -> raise(ParserError("expected block or semicolon, got ${peekToken?.value}", peekToken?.location))
+            }
 
-            return AST.FunctionDefinition(
+            return AST.Declaration.Function(
                 name = nameToken.value.value,
+                parameters = parameters,
                 body = body,
                 location = returnTypeToken.location,
             ).right()
         }
+
+    private fun parseFunctionDeclarationParameters() = either {
+        val paramOrVoidToken = peekToken()
+        when (paramOrVoidToken?.value) {
+            Token.Void -> {
+                nextToken()
+                emptyList()
+            }
+            Token.IntKeyword -> {
+                val params = mutableListOf<String>()
+                while (true) {
+                    expectToken(Token.IntKeyword).bind()
+                    params.add(expectIdentifier().bind().value.value)
+
+                    val peekToken = peekToken()
+                    when (peekToken?.value) {
+                        Token.Comma -> nextToken()
+                        Token.CloseParen -> break
+                        else -> raise(
+                            ParserError(
+                                "expected comma or close parenthesis in parameters list, " +
+                                    "got ${peekToken?.value}",
+                                peekToken?.location,
+                            ),
+                        )
+                    }
+                }
+                params
+            }
+            else -> raise(ParserError("expected void or int, got ${paramOrVoidToken?.value}", paramOrVoidToken?.location))
+        }
+    }
 
     private fun parseBlock(): Either<ParserError, AST.Block> =
         either {
@@ -110,15 +147,33 @@ private class Parser(
         either {
             val typeToken = expectToken(Token.IntKeyword).bind()
             val nameToken = expectIdentifier().bind()
-            val initializer =
-                if (peekToken()?.value == Token.Equal) {
+            when (peekToken()?.value) {
+                Token.Semicolon -> {
                     nextToken()
-                    parseExpression(0).bind()
-                } else {
-                    null
+                    AST.Declaration.Variable(nameToken.value.value, null, typeToken.location)
                 }
-            expectToken(Token.Semicolon).bind()
-            AST.Declaration(nameToken.value.value, initializer, typeToken.location)
+                Token.Equal -> {
+                    nextToken()
+                    val initializer = parseExpression(0).bind()
+                    expectToken(Token.Semicolon).bind()
+                    AST.Declaration.Variable(nameToken.value.value, initializer, typeToken.location)
+                }
+                Token.OpenParen -> {
+                    nextToken()
+                    val parameters = parseFunctionDeclarationParameters().bind()
+                    expectToken(Token.CloseParen).bind()
+                    if (peekToken()?.value == Token.OpenBrace) {
+                        val body = parseBlock().bind()
+                        AST.Declaration.Function(nameToken.value.value, parameters, body, typeToken.location)
+                    } else {
+                        expectToken(Token.Semicolon).bind()
+                        AST.Declaration.Function(nameToken.value.value, parameters, null, typeToken.location)
+                    }
+                }
+                else -> {
+                    raise(ParserError("expected = or (, got ${peekToken()?.value}", peekToken()?.location))
+                }
+            }
         }
 
     private fun parseStatement(): Either<ParserError, AST.Statement> =
@@ -204,7 +259,15 @@ private class Parser(
                     val forToken = expectToken(Token.For).bind()
                     expectToken(Token.OpenParen).bind()
                     val initializer = when (peekToken()?.value) {
-                        Token.IntKeyword -> AST.ForInitializer.Declaration(parseDeclaration().bind())
+                        Token.IntKeyword -> when (val declaration = parseDeclaration().bind()) {
+                            is AST.Declaration.Variable -> AST.ForInitializer.Declaration(declaration)
+                            is AST.Declaration.Function -> raise(
+                                ParserError(
+                                    "expected variable declaration in for initializer, got function declaration '${declaration.name}'",
+                                    declaration.location,
+                                ),
+                            )
+                        }
                         else -> parseOptionalExpression(Token.Semicolon).bind()?.let(AST.ForInitializer::Expression)
                     }
                     val condition =
@@ -350,7 +413,18 @@ private class Parser(
                     }
                     is Token.Identifier -> {
                         nextToken()
-                        AST.Expression.Variable(peekTokenValue.value, peekToken.location)
+                        if (peekToken()?.value == Token.OpenParen) {
+                            nextToken()
+                            val arguments = parseFunctionCallArguments().bind()
+                            expectToken(Token.CloseParen).bind()
+                            AST.Expression.FunctionCall(
+                                name = peekTokenValue.value,
+                                arguments = arguments,
+                                location = peekToken.location,
+                            )
+                        } else {
+                            AST.Expression.Variable(peekTokenValue.value, peekToken.location)
+                        }
                     }
                     is Token.OpenParen -> {
                         nextToken()
@@ -382,6 +456,19 @@ private class Parser(
 
             factor
         }
+
+    private fun parseFunctionCallArguments() = either<ParserError, List<AST.Expression>> {
+        val arguments = mutableListOf<AST.Expression>()
+        if (peekToken()?.value == Token.CloseParen) {
+            return@either emptyList()
+        }
+        arguments.add(parseExpression(0).bind())
+        while (peekToken()?.value != Token.CloseParen) {
+            expectToken(Token.Comma).bind()
+            arguments.add(parseExpression(0).bind())
+        }
+        arguments
+    }
 
     private fun parseFactorWithPossiblePrefix(): Either<ParserError, AST.Expression> =
         either {

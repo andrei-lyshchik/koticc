@@ -2,7 +2,7 @@ package koticc
 
 fun tackyProgramToAssembly(tackyProgram: Tacky.Program): Assembly.Program =
     Assembly.Program(
-        functionDefinition = tackyFunctionDefinitionToAssembly(tackyProgram.functionDefinition),
+        functionDefinitions = tackyProgram.functionDefinitions.map(::tackyFunctionDefinitionToAssembly),
     )
 
 private fun tackyFunctionDefinitionToAssembly(tackyFunctionDefinition: Tacky.FunctionDefinition): Assembly.FunctionDefinition {

@@ -1,19 +1,34 @@
 package koticc
 
 import arrow.core.Either
+import arrow.core.raise.either
 import java.io.IOException
 import java.io.Writer
 
 fun writeAssemblyProgram(
     assemblyProgram: Assembly.Program,
     writer: Writer,
+): Either<IOException, Unit> = either {
+    assemblyProgram.functionDefinitions.forEachIndexed { index, functionDefinition ->
+        writeAssemblyFunctionDefinition(functionDefinition, writer).bind()
+        if (index != assemblyProgram.functionDefinitions.size - 1) {
+            Either.catchOrThrow<IOException, Unit> {
+                writer.write("\n")
+            }.bind()
+        }
+    }
+}
+
+private fun writeAssemblyFunctionDefinition(
+    functionDefinition: Assembly.FunctionDefinition,
+    writer: Writer,
 ): Either<IOException, Unit> =
     Either.catchOrThrow<IOException, Unit> {
-        writer.write("    .globl _${assemblyProgram.functionDefinition.name}\n")
-        writer.write("_${assemblyProgram.functionDefinition.name}:\n")
+        writer.write("    .globl _${functionDefinition.name}\n")
+        writer.write("_${functionDefinition.name}:\n")
         writer.write("    pushq %rbp\n")
         writer.write("    movq %rsp, %rbp\n")
-        assemblyProgram.functionDefinition.body.forEach { instruction ->
+        functionDefinition.body.forEach { instruction ->
             val indent =
                 when (instruction) {
                     is Assembly.Instruction.Label -> ""

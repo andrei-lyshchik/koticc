@@ -2,16 +2,10 @@ package koticc
 
 object AST {
     data class Program(
-        val functionDefinition: FunctionDefinition,
+        val functionDeclarations: List<Declaration.Function>,
     ) : LocationAware {
-        override val location: Location = functionDefinition.location
+        override val location: Location = functionDeclarations.firstOrNull()?.location ?: Location(0, 0)
     }
-
-    data class FunctionDefinition(
-        val name: String,
-        val body: Block,
-        override val location: Location,
-    ) : LocationAware
 
     data class Block(
         val blockItems: List<BlockItem>,
@@ -30,11 +24,20 @@ object AST {
         }
     }
 
-    data class Declaration(
-        val name: String,
-        val initializer: Expression?,
-        override val location: Location,
-    ) : LocationAware
+    sealed interface Declaration : LocationAware {
+        data class Variable(
+            val name: String,
+            val initializer: Expression?,
+            override val location: Location,
+        ) : Declaration
+
+        data class Function(
+            val name: String,
+            val parameters: List<String>,
+            val body: Block?,
+            override val location: Location,
+        ) : Declaration
+    }
 
     sealed interface Statement : LocationAware {
         data class Return(val expression: AST.Expression, override val location: Location) : Statement
@@ -156,7 +159,7 @@ object AST {
     value class CaseId(val value: Int)
 
     sealed interface ForInitializer : LocationAware {
-        data class Declaration(val declaration: AST.Declaration) : ForInitializer {
+        data class Declaration(val declaration: AST.Declaration.Variable) : ForInitializer {
             override val location: Location
                 get() = declaration.location
         }
@@ -215,6 +218,12 @@ object AST {
             override val location: Location
                 get() = condition.location
         }
+
+        data class FunctionCall(
+            val name: String,
+            val arguments: List<Expression>,
+            override val location: Location,
+        ) : Expression
     }
 
     enum class UnaryOperator {

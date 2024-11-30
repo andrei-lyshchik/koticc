@@ -66,7 +66,7 @@ class ParserKtForTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                functionDefinition("main") {
+                func("main") {
                     int("a") assign 1.e
                     for_(
                         expectedInit,
