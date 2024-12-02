@@ -1,6 +1,7 @@
 package koticc
 
 import arrow.core.Either
+import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
@@ -19,144 +20,208 @@ data class SemanticAnalysisError(
 
 fun semanticAnalysis(program: AST.Program): Either<SemanticAnalysisError, ValidASTProgram> =
     either {
-        val variableResolverResult = VariableResolver().resolveProgram(program).bind()
-        validateGotoLabels(variableResolverResult.program).bind()
-        val programWithResolvedLoopsAndSwitches = LoopAndSwitchResolver().resolveLoopsAndSwitches(variableResolverResult.program).bind()
+        val identifierResolverResult = IdentifierResolver().resolveProgram(program).bind()
+        validateGotoLabels(identifierResolverResult.program).bind()
+        val programWithResolvedLoopsAndSwitches = LoopAndSwitchResolver().resolveLoopsAndSwitches(identifierResolverResult.program).bind()
         ValidASTProgram(
             value = programWithResolvedLoopsAndSwitches,
-            variableCount = variableResolverResult.variableCount,
+            variableCount = identifierResolverResult.variableCount,
         )
     }
 
-private data class VariableResolverResult(
+private data class IdentifierResolverResult(
     val program: AST.Program,
     val variableCount: Int,
 )
 
-private class VariableResolver {
+private class IdentifierResolver {
     private var variableCount = 0
 
-    fun resolveProgram(program: AST.Program): Either<SemanticAnalysisError, VariableResolverResult> =
+    fun resolveProgram(program: AST.Program): Either<SemanticAnalysisError, IdentifierResolverResult> =
         either {
             val validProgram =
                 program.copy(
                     functionDeclarations = program.functionDeclarations.map {
-                        resolveFunctionDefinition(it).bind()
+                        resolveFunctionDeclaration(it).bind()
                     },
                 )
-            VariableResolverResult(validProgram, variableCount)
+            IdentifierResolverResult(validProgram, variableCount)
         }
 
-    private fun resolveFunctionDefinition(
+    private fun resolveFunctionDeclaration(
         functionDeclaration: AST.Declaration.Function,
     ): Either<SemanticAnalysisError, AST.Declaration.Function> =
         either {
-            functionDeclaration.copy(body = functionDeclaration.body?.let { resolveBlock(it, variableMapping = mutableMapOf()).bind() })
+            val identifierMapping = mutableMapOf<String, DeclaredIdentifier>()
+            declareFunction(functionDeclaration.name, functionDeclaration.location, identifierMapping).bind()
+            // if there's no function declaration, parameter names don't matter, so we won't resolve them
+            val parameters = if (functionDeclaration.body != null) {
+                functionDeclaration.parameters.map { parameter ->
+                    val newName = declareVariable(parameter.name, parameter.location, identifierMapping).bind()
+                    parameter.copy(name = newName)
+                }
+            } else {
+                functionDeclaration.parameters
+            }
+            functionDeclaration.copy(
+                parameters = parameters,
+                body = functionDeclaration.body?.let { resolveBlock(it, identifierMapping = identifierMapping).bind() },
+            )
         }
 
     private fun resolveBlock(
         block: AST.Block,
-        variableMapping: MutableMap<String, DeclaredVariable>,
+        identifierMapping: MutableMap<String, DeclaredIdentifier>,
     ): Either<SemanticAnalysisError, AST.Block> {
-        val variableMappingCopy = variableMapping.copyForNestedBlock()
         return either {
-            block.copy(blockItems = block.blockItems.map { resolveBlockItem(it, variableMappingCopy).bind() })
+            block.copy(blockItems = block.blockItems.map { resolveBlockItem(it, identifierMapping).bind() })
         }
     }
 
-    private fun resolveBlockItem(blockItem: AST.BlockItem, variableMapping: MutableMap<String, DeclaredVariable>): Either<SemanticAnalysisError, AST.BlockItem> =
+    private fun resolveBlockItem(blockItem: AST.BlockItem, identifierMapping: MutableMap<String, DeclaredIdentifier>): Either<SemanticAnalysisError, AST.BlockItem> =
         either {
             when (blockItem) {
                 is AST.BlockItem.Declaration -> when (blockItem.declaration) {
                     is AST.Declaration.Variable ->
-                        AST.BlockItem.Declaration(resolveVariableDeclaration(blockItem.declaration, variableMapping).bind())
-                    is AST.Declaration.Function -> blockItem
+                        AST.BlockItem.Declaration(resolveVariableDeclaration(blockItem.declaration, identifierMapping).bind())
+                    is AST.Declaration.Function -> {
+                        ensure(blockItem.declaration.body == null) {
+                            SemanticAnalysisError("nested function declaration '${blockItem.declaration.name}' with body", blockItem.declaration.location)
+                        }
+                        AST.BlockItem.Declaration(blockItem.declaration)
+                    }
                 }
                 is AST.BlockItem.Statement ->
-                    AST.BlockItem.Statement(resolveStatement(blockItem.statement, variableMapping).bind())
+                    AST.BlockItem.Statement(resolveStatement(blockItem.statement, identifierMapping).bind())
             }
         }
 
     private fun resolveVariableDeclaration(
         declaration: AST.Declaration.Variable,
-        variableMapping: MutableMap<String, DeclaredVariable>,
+        identifierMapping: MutableMap<String, DeclaredIdentifier>,
     ): Either<SemanticAnalysisError, AST.Declaration.Variable> =
         either {
-            variableMapping[declaration.name]?.takeIf { it.declaredInThisScope }?.let {
-                raise(
-                    SemanticAnalysisError(
-                        "variable '${declaration.name}' already declared at" +
-                            " ${it.location.toHumanReadableString()}",
-                        declaration.location,
-                    ),
-                )
-            }
-            val newName = "${declaration.name}.${variableCount++}"
-            variableMapping[declaration.name] = DeclaredVariable(newName, declaration.location, declaredInThisScope = true)
-            declaration.copy(name = newName, initializer = declaration.initializer?.let { resolveExpression(it, variableMapping).bind() })
+            val newName = declareVariable(declaration.name, declaration.location, identifierMapping).bind()
+            declaration.copy(name = newName, initializer = declaration.initializer?.let { resolveExpression(it, identifierMapping).bind() })
         }
 
-    private fun resolveStatement(statement: AST.Statement, variableMapping: MutableMap<String, DeclaredVariable>): Either<SemanticAnalysisError, AST.Statement> =
+    private fun declareVariable(
+        originalName: String,
+        location: Location,
+        identifierMapping: MutableMap<String, DeclaredIdentifier>,
+    ): Either<SemanticAnalysisError, String> = either {
+        checkIfAlreadyDeclared(identifierMapping, originalName, location)
+        val newName = "$originalName.${variableCount++}"
+        identifierMapping[originalName] = DeclaredIdentifier(
+            type = IdentifierType.Variable,
+            name = newName,
+            hasLinkage = false,
+            declaredInThisScope = true,
+            location = location,
+        )
+        newName
+    }
+
+    private fun Raise<SemanticAnalysisError>.checkIfAlreadyDeclared(
+        identifierMapping: MutableMap<String, DeclaredIdentifier>,
+        originalName: String,
+        location: Location,
+    ) {
+        identifierMapping[originalName]?.takeIf { it.declaredInThisScope && !it.hasLinkage }?.let {
+            val identifierType = when (it.type) {
+                IdentifierType.Variable -> "variable"
+                IdentifierType.Function -> "function"
+            }
+            raise(
+                SemanticAnalysisError(
+                    "$identifierType '$originalName' already declared at" +
+                        " ${it.location.toHumanReadableString()}",
+                    location,
+                ),
+            )
+        }
+    }
+
+    private fun declareFunction(
+        name: String,
+        location: Location,
+        identifierMapping: MutableMap<String, DeclaredIdentifier>,
+    ): Either<SemanticAnalysisError, String> = either {
+        checkIfAlreadyDeclared(identifierMapping, name, location)
+        identifierMapping[name] = DeclaredIdentifier(
+            type = IdentifierType.Function,
+            name = name,
+            hasLinkage = true,
+            declaredInThisScope = true,
+            location = location,
+        )
+        name
+    }
+
+    private fun resolveStatement(statement: AST.Statement, identifierMapping: MutableMap<String, DeclaredIdentifier>): Either<SemanticAnalysisError, AST.Statement> =
         either {
             when (statement) {
                 is AST.Statement.Return ->
                     AST.Statement.Return(
-                        expression = resolveExpression(statement.expression, variableMapping).bind(),
+                        expression = resolveExpression(statement.expression, identifierMapping).bind(),
                         location = statement.location,
                     )
                 is AST.Statement.Expression ->
                     AST.Statement.Expression(
-                        expression = resolveExpression(statement.expression, variableMapping).bind(),
+                        expression = resolveExpression(statement.expression, identifierMapping).bind(),
                     )
                 is AST.Statement.Null -> statement
                 is AST.Statement.If -> {
                     AST.Statement.If(
-                        condition = resolveExpression(statement.condition, variableMapping).bind(),
-                        thenStatement = resolveStatement(statement.thenStatement, variableMapping).bind(),
-                        elseStatement = statement.elseStatement?.let { resolveStatement(it, variableMapping).bind() },
+                        condition = resolveExpression(statement.condition, identifierMapping).bind(),
+                        thenStatement = resolveStatement(statement.thenStatement, identifierMapping).bind(),
+                        elseStatement = statement.elseStatement?.let { resolveStatement(it, identifierMapping).bind() },
                     )
                 }
                 is AST.Statement.Labeled -> {
                     AST.Statement.Labeled(
                         label = statement.label,
-                        statement = resolveStatement(statement.statement, variableMapping).bind(),
+                        statement = resolveStatement(statement.statement, identifierMapping).bind(),
                         location = statement.location,
                     )
                 }
                 is AST.Statement.Goto -> statement
-                is AST.Statement.Compound -> AST.Statement.Compound(resolveBlock(statement.block, variableMapping).bind())
+                is AST.Statement.Compound -> {
+                    val identifierMappingCopy = identifierMapping.copyForNestedBlock()
+                    AST.Statement.Compound(resolveBlock(statement.block, identifierMappingCopy).bind())
+                }
                 is AST.Statement.DoWhile -> {
                     AST.Statement.DoWhile(
-                        body = resolveStatement(statement.body, variableMapping).bind(),
-                        condition = resolveExpression(statement.condition, variableMapping).bind(),
+                        body = resolveStatement(statement.body, identifierMapping).bind(),
+                        condition = resolveExpression(statement.condition, identifierMapping).bind(),
                         loopId = statement.loopId,
                         location = statement.location,
                     )
                 }
                 is AST.Statement.While -> AST.Statement.While(
-                    condition = resolveExpression(statement.condition, variableMapping).bind(),
-                    body = resolveStatement(statement.body, variableMapping).bind(),
+                    condition = resolveExpression(statement.condition, identifierMapping).bind(),
+                    body = resolveStatement(statement.body, identifierMapping).bind(),
                     loopId = statement.loopId,
                     location = statement.location,
                 )
                 is AST.Statement.For -> {
-                    val headerVariableMapping = variableMapping.copyForNestedBlock()
+                    val headerIdentifierMapping = identifierMapping.copyForNestedBlock()
                     val initializer = when (statement.initializer) {
                         is AST.ForInitializer.Declaration ->
                             AST.ForInitializer.Declaration(
-                                resolveVariableDeclaration(statement.initializer.declaration, headerVariableMapping).bind(),
+                                resolveVariableDeclaration(statement.initializer.declaration, headerIdentifierMapping).bind(),
                             )
 
                         is AST.ForInitializer.Expression ->
                             AST.ForInitializer.Expression(
-                                resolveExpression(statement.initializer.expression, headerVariableMapping).bind(),
+                                resolveExpression(statement.initializer.expression, headerIdentifierMapping).bind(),
                             )
 
                         null -> null
                     }
-                    val condition = statement.condition?.let { resolveExpression(it, headerVariableMapping).bind() }
-                    val post = statement.post?.let { resolveExpression(it, headerVariableMapping).bind() }
-                    val body = resolveStatement(statement.body, headerVariableMapping).bind()
+                    val condition = statement.condition?.let { resolveExpression(it, headerIdentifierMapping).bind() }
+                    val post = statement.post?.let { resolveExpression(it, headerIdentifierMapping).bind() }
+                    val body = resolveStatement(statement.body, headerIdentifierMapping).bind()
                     AST.Statement.For(
                         initializer = initializer,
                         condition = condition,
@@ -170,15 +235,15 @@ private class VariableResolver {
                 is AST.Statement.Break -> statement
                 is AST.Statement.Continue -> statement
                 is AST.Statement.Case -> statement.copy(
-                    expression = resolveExpression(statement.expression, variableMapping).bind(),
-                    body = resolveStatement(statement.body, variableMapping).bind(),
+                    expression = resolveExpression(statement.expression, identifierMapping).bind(),
+                    body = resolveStatement(statement.body, identifierMapping).bind(),
                 )
                 is AST.Statement.Default -> statement.copy(
-                    body = resolveStatement(statement.body, variableMapping).bind(),
+                    body = resolveStatement(statement.body, identifierMapping).bind(),
                 )
                 is AST.Statement.Switch -> statement.copy(
-                    expression = resolveExpression(statement.expression, variableMapping).bind(),
-                    body = resolveStatement(statement.body, variableMapping).bind(),
+                    expression = resolveExpression(statement.expression, identifierMapping).bind(),
+                    body = resolveStatement(statement.body, identifierMapping).bind(),
                     caseExpressions = statement.caseExpressions?.mapKeys { (key, _) -> key },
                 )
                 is AST.Statement.BreakLoop -> statement
@@ -186,51 +251,51 @@ private class VariableResolver {
             }
         }
 
-    private fun resolveExpression(expression: AST.Expression, variableMapping: MutableMap<String, DeclaredVariable>): Either<SemanticAnalysisError, AST.Expression> =
+    private fun resolveExpression(expression: AST.Expression, identifierMapping: MutableMap<String, DeclaredIdentifier>): Either<SemanticAnalysisError, AST.Expression> =
         either {
             when (expression) {
                 is AST.Expression.IntLiteral -> expression
                 is AST.Expression.Variable -> {
-                    val newName = variableMapping[expression.name]
+                    val newName = identifierMapping[expression.name]
                     ensureNotNull(newName) {
                         SemanticAnalysisError("undeclared variable '${expression.name}'", expression.location)
                     }
-                    AST.Expression.Variable(newName.newName, expression.location)
+                    AST.Expression.Variable(newName.name, expression.location)
                 }
                 is AST.Expression.Unary -> {
                     AST.Expression.Unary(
                         operator = expression.operator,
-                        operand = resolveExpression(expression.operand, variableMapping).bind(),
+                        operand = resolveExpression(expression.operand, identifierMapping).bind(),
                         location = expression.location,
                     )
                 }
                 is AST.Expression.Binary -> {
                     AST.Expression.Binary(
                         operator = expression.operator,
-                        left = resolveExpression(expression.left, variableMapping).bind(),
-                        right = resolveExpression(expression.right, variableMapping).bind(),
+                        left = resolveExpression(expression.left, identifierMapping).bind(),
+                        right = resolveExpression(expression.right, identifierMapping).bind(),
                     )
                 }
                 is AST.Expression.Assignment -> {
-                    resolveAssignment(expression, variableMapping).bind()
+                    resolveAssignment(expression, identifierMapping).bind()
                 }
 
                 is AST.Expression.CompoundAssignment -> {
-                    resolveCompoundAssignment(expression, variableMapping).bind()
+                    resolveCompoundAssignment(expression, identifierMapping).bind()
                 }
                 is AST.Expression.Postfix -> {
-                    resolvePostfix(expression, variableMapping).bind()
+                    resolvePostfix(expression, identifierMapping).bind()
                 }
                 is AST.Expression.Conditional -> {
                     AST.Expression.Conditional(
-                        condition = resolveExpression(expression.condition, variableMapping).bind(),
-                        thenExpression = resolveExpression(expression.thenExpression, variableMapping).bind(),
-                        elseExpression = resolveExpression(expression.elseExpression, variableMapping).bind(),
+                        condition = resolveExpression(expression.condition, identifierMapping).bind(),
+                        thenExpression = resolveExpression(expression.thenExpression, identifierMapping).bind(),
+                        elseExpression = resolveExpression(expression.elseExpression, identifierMapping).bind(),
                     )
                 }
                 is AST.Expression.FunctionCall -> {
                     expression.copy(
-                        arguments = expression.arguments.map { resolveExpression(it, variableMapping).bind() },
+                        arguments = expression.arguments.map { resolveExpression(it, identifierMapping).bind() },
                     )
                 }
             }
@@ -238,11 +303,11 @@ private class VariableResolver {
 
     private fun resolveAssignment(
         assignment: AST.Expression.Assignment,
-        variableMapping: MutableMap<String, DeclaredVariable>,
+        identifierMapping: MutableMap<String, DeclaredIdentifier>,
     ): Either<SemanticAnalysisError, AST.Expression.Assignment> =
         either {
             val left =
-                when (val result = resolveExpression(assignment.left, variableMapping).bind()) {
+                when (val result = resolveExpression(assignment.left, identifierMapping).bind()) {
                     is AST.Expression.Variable -> result
                     else ->
                         raise(
@@ -253,18 +318,18 @@ private class VariableResolver {
                             ),
                         )
                 }
-            val right = resolveExpression(assignment.right, variableMapping).bind()
+            val right = resolveExpression(assignment.right, identifierMapping).bind()
 
             AST.Expression.Assignment(left, right)
         }
 
     private fun resolveCompoundAssignment(
         assignment: AST.Expression.CompoundAssignment,
-        variableMapping: MutableMap<String, DeclaredVariable>,
+        identifierMapping: MutableMap<String, DeclaredIdentifier>,
     ): Either<SemanticAnalysisError, AST.Expression.CompoundAssignment> =
         either {
             val left =
-                when (val result = resolveExpression(assignment.left, variableMapping = variableMapping).bind()) {
+                when (val result = resolveExpression(assignment.left, identifierMapping = identifierMapping).bind()) {
                     is AST.Expression.Variable -> result
                     else ->
                         raise(
@@ -275,15 +340,15 @@ private class VariableResolver {
                             ),
                         )
                 }
-            val right = resolveExpression(assignment.right, variableMapping).bind()
+            val right = resolveExpression(assignment.right, identifierMapping).bind()
 
             AST.Expression.CompoundAssignment(assignment.operator, left, right)
         }
 
-    private fun resolvePostfix(postfix: AST.Expression.Postfix, variableMapping: MutableMap<String, DeclaredVariable>): Either<SemanticAnalysisError, AST.Expression.Postfix> =
+    private fun resolvePostfix(postfix: AST.Expression.Postfix, identifierMapping: MutableMap<String, DeclaredIdentifier>): Either<SemanticAnalysisError, AST.Expression.Postfix> =
         either {
             val operand =
-                when (val result = resolveExpression(postfix.operand, variableMapping = variableMapping).bind()) {
+                when (val result = resolveExpression(postfix.operand, identifierMapping = identifierMapping).bind()) {
                     is AST.Expression.Variable -> result
                     else ->
                         raise(
@@ -297,9 +362,20 @@ private class VariableResolver {
             AST.Expression.Postfix(postfix.operator, operand)
         }
 
-    private data class DeclaredVariable(val newName: String, val location: Location, val declaredInThisScope: Boolean)
+    enum class IdentifierType {
+        Variable,
+        Function,
+    }
 
-    private fun MutableMap<String, DeclaredVariable>.copyForNestedBlock() =
+    private data class DeclaredIdentifier(
+        val type: IdentifierType,
+        val name: String,
+        val hasLinkage: Boolean,
+        val declaredInThisScope: Boolean,
+        val location: Location,
+    )
+
+    private fun MutableMap<String, DeclaredIdentifier>.copyForNestedBlock() =
         mapValues { (_, value) -> value.copy(declaredInThisScope = false) }.toMutableMap()
 }
 

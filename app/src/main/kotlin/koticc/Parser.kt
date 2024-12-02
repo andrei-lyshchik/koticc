@@ -62,6 +62,12 @@ private class Parser(
         }
     }
 
+    private fun expectFunctionParameter(): Either<ParserError, AST.FunctionParameter> =
+        either {
+            val nameToken = expectIdentifier().bind()
+            AST.FunctionParameter(nameToken.value.value, nameToken.location)
+        }
+
     private fun parseFunctionDeclaration(): Either<ParserError, AST.Declaration.Function> =
         either {
             val returnTypeToken = expectToken(Token.IntKeyword).bind()
@@ -96,10 +102,10 @@ private class Parser(
                 emptyList()
             }
             Token.IntKeyword -> {
-                val params = mutableListOf<String>()
+                val params = mutableListOf<AST.FunctionParameter>()
                 while (true) {
                     expectToken(Token.IntKeyword).bind()
-                    params.add(expectIdentifier().bind().value.value)
+                    params.add(expectFunctionParameter().bind())
 
                     val peekToken = peekToken()
                     when (peekToken?.value) {

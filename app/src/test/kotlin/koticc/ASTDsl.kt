@@ -17,7 +17,7 @@ class ProgramBuilder {
         } else {
             null
         }
-        functionDeclarations.add(AST.Declaration.Function(name, parameters.toList(), body, DUMMY_LOCATION))
+        functionDeclarations.add(AST.Declaration.Function(name, parameters.map { AST.FunctionParameter(it, DUMMY_LOCATION) }, body, DUMMY_LOCATION))
     }
 
     fun build(): AST.Program {
@@ -54,7 +54,7 @@ class BlockBuilder {
         } else {
             null
         }
-        addBlockItem(AST.BlockItem.Declaration(AST.Declaration.Function(name, parameters.toList(), body, DUMMY_LOCATION)))
+        addBlockItem(AST.BlockItem.Declaration(AST.Declaration.Function(name, parameters.map { AST.FunctionParameter(it, DUMMY_LOCATION) }, body, DUMMY_LOCATION)))
     }
 
     fun return_(expression: AST.Expression) {

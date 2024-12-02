@@ -19,7 +19,10 @@ fun AST.Program.withDummyLocations() = copy(
 fun AST.Declaration.Function.withDummyLocations() = copy(
     location = DUMMY_LOCATION,
     body = body?.withDummyLocations(),
+    parameters = parameters.map { it.withDummyLocations() },
 )
+
+fun AST.FunctionParameter.withDummyLocations() = copy(location = DUMMY_LOCATION)
 
 fun AST.Block.withDummyLocations() = copy(
     blockItems = blockItems.map { it.withDummyLocations() },

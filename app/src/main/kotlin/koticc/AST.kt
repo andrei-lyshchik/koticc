@@ -33,11 +33,16 @@ object AST {
 
         data class Function(
             val name: String,
-            val parameters: List<String>,
+            val parameters: List<FunctionParameter>,
             val body: Block?,
             override val location: Location,
         ) : Declaration
     }
+
+    data class FunctionParameter(
+        val name: String,
+        override val location: Location,
+    ) : LocationAware
 
     sealed interface Statement : LocationAware {
         data class Return(val expression: AST.Expression, override val location: Location) : Statement
