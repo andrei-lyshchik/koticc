@@ -198,6 +198,16 @@ class BlockBuilder {
         )
     }
 
+    fun nested(block: BlockBuilder.() -> Unit) {
+        addBlockItem(
+            AST.BlockItem.Statement(
+                AST.Statement.Compound(
+                    BlockBuilder().apply(block).build(),
+                ),
+            ),
+        )
+    }
+
     fun build(): AST.Block {
         currentBlockItemBuilder?.let {
             blockItems.add(it.build())

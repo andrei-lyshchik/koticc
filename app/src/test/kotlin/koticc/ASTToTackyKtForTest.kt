@@ -16,6 +16,7 @@ class ASTToTackyKtForTest {
                 }
             },
             variableCount = 2,
+            types = emptyMap<String, Type>(),
         )
 
         val actual = programASTToTacky(input)
@@ -60,6 +61,7 @@ class ASTToTackyKtForTest {
                 }
             },
             variableCount = 1,
+            types = emptyMap<String, Type>(),
         )
 
         val actual = programASTToTacky(input)
@@ -104,6 +106,7 @@ class ASTToTackyKtForTest {
                 }
             },
             variableCount = 2,
+            types = emptyMap<String, Type>(),
         )
 
         val actual = programASTToTacky(input)
@@ -146,6 +149,7 @@ class ASTToTackyKtForTest {
                 }
             },
             variableCount = 2,
+            types = emptyMap<String, Type>(),
         )
 
         val actual = programASTToTacky(input)
@@ -193,6 +197,7 @@ class ASTToTackyKtForTest {
                 }
             },
             variableCount = 2,
+            types = emptyMap<String, Type>(),
         )
 
         val actual = programASTToTacky(input)

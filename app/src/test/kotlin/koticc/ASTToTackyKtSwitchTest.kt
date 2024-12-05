@@ -24,6 +24,7 @@ class ASTToTackyKtSwitchTest {
                 }
             },
             variableCount = 1,
+            types = emptyMap<String, Type>(),
         )
 
         val tacky = programASTToTacky(program)
@@ -78,6 +79,7 @@ class ASTToTackyKtSwitchTest {
                 }
             },
             variableCount = 1,
+            types = emptyMap<String, Type>(),
         )
 
         val actual = programASTToTacky(program)

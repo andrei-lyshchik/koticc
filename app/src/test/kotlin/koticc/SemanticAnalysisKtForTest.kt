@@ -40,6 +40,11 @@ class SemanticAnalysisKtForTest {
                     }
                 },
                 variableCount = 2,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                    "i.1" to Type.Integer,
+                ),
             ).right(),
             actual = actual,
         )
@@ -119,6 +124,12 @@ class SemanticAnalysisKtForTest {
                     }
                 },
                 variableCount = 3,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                    "i.1" to Type.Integer,
+                    "i.2" to Type.Integer,
+                ),
             ).right(),
             actual = actual,
         )
@@ -198,6 +209,12 @@ class SemanticAnalysisKtForTest {
                     }
                 },
                 variableCount = 3,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                    "i.1" to Type.Integer,
+                    "j.2" to Type.Integer,
+                ),
             ).right(),
             actual = actual,
         )
@@ -245,6 +262,13 @@ class SemanticAnalysisKtForTest {
                     }
                 },
                 variableCount = 4,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                    "i.1" to Type.Integer,
+                    "i.2" to Type.Integer,
+                    "i.3" to Type.Integer,
+                ),
             ).right(),
             actual = actual,
         )

@@ -124,6 +124,11 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 2,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                    "b.1" to Type.Integer,
+                ),
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -204,7 +209,7 @@ class SemanticAnalysisKtTest {
             )
 
         val expected =
-            SemanticAnalysisError("variable 'a' already declared at line 2, column 5", Location(3, 5))
+            SemanticAnalysisError("'a' already declared at line 2, column 5", Location(3, 5))
 
         assertEquals(expected.left(), semanticAnalysis(input))
     }
@@ -412,6 +417,10 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 1,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                ),
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -531,6 +540,12 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 3,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                    "b.1" to Type.Integer,
+                    "c.2" to Type.Integer,
+                ),
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -612,6 +627,10 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 1,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                ),
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -759,6 +778,10 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 1,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                ),
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -884,6 +907,11 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 2,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                    "b.1" to Type.Integer,
+                ),
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -975,6 +1003,10 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 1,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                ),
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -1109,6 +1141,9 @@ class SemanticAnalysisKtTest {
             ValidASTProgram(
                 value = input,
                 variableCount = 0,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                ),
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -1261,6 +1296,11 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 2,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                    "a.1" to Type.Integer,
+                ),
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -1391,6 +1431,10 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
                 variableCount = 1,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                ),
             )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -1507,6 +1551,11 @@ class SemanticAnalysisKtTest {
                 ),
             ),
             variableCount = 2,
+            types = mapOf(
+                "main" to Type.Function(parameterCount = 0),
+                "a.0" to Type.Integer,
+                "a.1" to Type.Integer,
+            ),
         )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -1565,6 +1614,9 @@ class SemanticAnalysisKtTest {
         val expected = ValidASTProgram(
             value = input,
             variableCount = 0,
+            types = mapOf(
+                "main" to Type.Function(parameterCount = 0),
+            ),
         )
 
         assertEquals(expected.right(), semanticAnalysis(input))
@@ -1572,50 +1624,17 @@ class SemanticAnalysisKtTest {
 
     @Test
     fun `should not allow declaring variable multiple times in nested scope`() {
-        val input = AST.Program(
-            functionDeclarations = listOf(
-                AST.Declaration.Function(
-                    name = "main",
-                    parameters = emptyList(),
-                    body = AST.Block(
-                        blockItems = listOf(
-                            AST.BlockItem.Declaration(
-                                declaration = AST.Declaration.Variable(
-                                    name = "a",
-                                    initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
-                                    location = Location(2, 5),
-                                ),
-                            ),
-                            AST.BlockItem.Statement(
-                                statement = AST.Statement.Compound(
-                                    AST.Block(
-                                        blockItems = listOf(
-                                            AST.BlockItem.Declaration(
-                                                declaration = AST.Declaration.Variable(
-                                                    name = "a",
-                                                    initializer = AST.Expression.IntLiteral(2, Location(3, 13)),
-                                                    location = Location(3, 5),
-                                                ),
-                                            ),
-                                            AST.BlockItem.Declaration(
-                                                declaration = AST.Declaration.Variable(
-                                                    name = "a",
-                                                    initializer = AST.Expression.IntLiteral(2, Location(4, 13)),
-                                                    location = Location(4, 5),
-                                                ),
-                                            ),
-                                        ),
-                                    ),
-                                ),
-                            ),
-                        ),
-                    ),
-                    location = Location(1, 1),
-                ),
-            ),
-        )
+        val input = program {
+            func("main") {
+                int("a") assign 1.e
+                nested {
+                    int("a") assign 2.e
+                    int("a") assign 2.e
+                }
+            }
+        }
 
-        val expected = SemanticAnalysisError("variable 'a' already declared at line 3, column 5", Location(4, 5))
+        val expected = SemanticAnalysisError("'a' already declared at line 0, column 0", Location(0, 0))
 
         assertEquals(expected.left(), semanticAnalysis(input))
     }

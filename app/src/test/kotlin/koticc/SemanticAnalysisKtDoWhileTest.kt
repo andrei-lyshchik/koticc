@@ -37,6 +37,10 @@ class SemanticAnalysisKtDoWhileTest {
                     }
                 },
                 variableCount = 1,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                ),
             ).right(),
             actual = actual,
         )
@@ -100,6 +104,10 @@ class SemanticAnalysisKtDoWhileTest {
                     }
                 },
                 variableCount = 1,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                ),
             ).right(),
             actual = actual,
         )
@@ -149,6 +157,10 @@ class SemanticAnalysisKtDoWhileTest {
                     }
                 },
                 variableCount = 1,
+                types = mapOf(
+                    "main" to Type.Function(parameterCount = 0),
+                    "a.0" to Type.Integer,
+                ),
             ).right(),
             actual = actual,
         )

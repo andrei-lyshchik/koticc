@@ -34,6 +34,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 0,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(program)
@@ -99,6 +100,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 0,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(program)
@@ -179,6 +181,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 0,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(program)
@@ -247,6 +250,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 0,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(program)
@@ -327,6 +331,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 0,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(program)
@@ -420,6 +425,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 0,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(program)
@@ -501,6 +507,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 1,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(program)
@@ -555,6 +562,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 1,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(program)
@@ -610,6 +618,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 123,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(program)
@@ -678,6 +687,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 1,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(program)
@@ -758,6 +768,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 1,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(program)
@@ -858,6 +869,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 2,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(program)
@@ -970,6 +982,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 2,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(input)
@@ -1081,6 +1094,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 2,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(input)
@@ -1200,6 +1214,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 2,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(input)
@@ -1307,6 +1322,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 1,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(input)
@@ -1388,6 +1404,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 variableCount = 1,
+                types = emptyMap<String, Type>(),
             )
 
         val tacky = programASTToTacky(input)
