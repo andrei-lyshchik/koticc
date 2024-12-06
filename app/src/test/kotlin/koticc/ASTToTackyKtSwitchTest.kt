@@ -32,13 +32,13 @@ class ASTToTackyKtSwitchTest {
         assertEquals(
             expected = tackyProgram {
                 function("main") {
-                    i(1.t to "a".t)
-                    i("a".t + 1.t to "tmp.1".t)
+                    i(1.t assignTo "a".t)
+                    i("a".t + 1.t assignTo "tmp.1".t)
 
-                    i("tmp.1".t eq 1.t to "tmp.2".t)
+                    i("tmp.1".t eq 1.t assignTo "tmp.2".t)
                     jumpIfNotZero("tmp.2".t, "switch.0.case.0")
 
-                    i("tmp.1".t eq 2.t to "tmp.3".t)
+                    i("tmp.1".t eq 2.t assignTo "tmp.3".t)
                     jumpIfNotZero("tmp.3".t, "switch.0.case.1")
 
                     jump("switch.0.default")
@@ -87,22 +87,22 @@ class ASTToTackyKtSwitchTest {
         assertEquals(
             expected = tackyProgram {
                 function("main") {
-                    i(1.t to "a".t)
+                    i(1.t assignTo "a".t)
 
-                    i("a".t eq 1.t to "tmp.1".t)
+                    i("a".t eq 1.t assignTo "tmp.1".t)
                     jumpIfNotZero("tmp.1".t, "switch.0.case.0")
 
-                    i("a".t eq 2.t to "tmp.2".t)
+                    i("a".t eq 2.t assignTo "tmp.2".t)
                     jumpIfNotZero("tmp.2".t, "switch.0.case.1")
 
                     jump("switch.0.end")
 
                     label("switch.0.case.0")
-                    i(3.t to "a".t)
+                    i(3.t assignTo "a".t)
                     jump("switch.0.end")
 
                     label("switch.0.case.1")
-                    i(2.t to "a".t)
+                    i(2.t assignTo "a".t)
 
                     label("switch.0.end")
 

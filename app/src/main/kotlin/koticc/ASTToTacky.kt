@@ -417,7 +417,18 @@ private class TackyGenerator(initialVariableCount: Int) {
                 )
                 result
             }
-            is AST.Expression.FunctionCall -> TODO()
+            is AST.Expression.FunctionCall -> {
+                val arguments = expression.arguments.map { generateExpression(it) }
+                val dst = nextVariable()
+                instructions.add(
+                    Tacky.Instruction.Call(
+                        name = expression.name,
+                        arguments = arguments,
+                        dst = dst,
+                    ),
+                )
+                dst
+            }
         }
 
     private fun generateIf(ifStatement: AST.Statement.If) {

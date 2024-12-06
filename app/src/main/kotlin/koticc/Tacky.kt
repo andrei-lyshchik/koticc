@@ -50,6 +50,12 @@ object Tacky {
         data class Return(
             val value: Value,
         ) : Instruction
+
+        data class Call(
+            val name: String,
+            val arguments: List<Value>,
+            val dst: Value,
+        ) : Instruction
     }
 
     sealed interface Value {

@@ -22,9 +22,9 @@ val Int.t
 val String.t
     get() = Tacky.Value.Variable(this)
 
-infix fun Tacky.Value.to(dst: Tacky.Value) = Tacky.Instruction.Copy(this, dst)
+infix fun Tacky.Value.assignTo(dst: Tacky.Value) = Tacky.Instruction.Copy(this, dst)
 
-class FunctionBuilder(val name: String) {
+class FunctionBuilder(private val name: String) {
     private val instructions = mutableListOf<Tacky.Instruction>()
 
     fun i(instruction: Tacky.Instruction) = instructions.add(instruction)
@@ -42,7 +42,7 @@ class FunctionBuilder(val name: String) {
     fun build() = Tacky.FunctionDefinition(name, instructions)
 }
 
-class TackyUnaryOperatorBuilder(val operator: Tacky.UnaryOperator, val src: Tacky.Value) {
+class TackyUnaryOperatorBuilder(private val operator: Tacky.UnaryOperator, private val src: Tacky.Value) {
     infix fun to(dst: Tacky.Value) = Tacky.Instruction.Unary(operator = operator, src = src, dst = dst)
 }
 
@@ -53,7 +53,7 @@ operator fun Tacky.Value.not() = TackyUnaryOperatorBuilder(Tacky.UnaryOperator.L
 fun Tacky.Value.complement() = TackyUnaryOperatorBuilder(Tacky.UnaryOperator.Complement, this)
 
 class TackyBinaryOperatorBuilder(val operator: Tacky.BinaryOperator, val left: Tacky.Value, val right: Tacky.Value) {
-    infix fun to(dst: Tacky.Value) = Tacky.Instruction.Binary(operator = operator, left = left, right = right, dst = dst)
+    infix fun assignTo(dst: Tacky.Value) = Tacky.Instruction.Binary(operator = operator, left = left, right = right, dst = dst)
 }
 
 operator fun Tacky.Value.plus(other: Tacky.Value) = TackyBinaryOperatorBuilder(Tacky.BinaryOperator.Add, this, other)
@@ -87,3 +87,9 @@ infix fun Tacky.Value.xor(other: Tacky.Value) = TackyBinaryOperatorBuilder(Tacky
 infix fun Tacky.Value.shl(other: Tacky.Value) = TackyBinaryOperatorBuilder(Tacky.BinaryOperator.ShiftLeft, this, other)
 
 infix fun Tacky.Value.shr(other: Tacky.Value) = TackyBinaryOperatorBuilder(Tacky.BinaryOperator.ShiftRight, this, other)
+
+fun call(name: String, vararg arguments: Tacky.Value) = TackyFunctionCallBuilder(name, arguments.toList())
+
+class TackyFunctionCallBuilder(private val name: String, private val arguments: List<Tacky.Value>) {
+    infix fun assignTo(dst: Tacky.Value) = Tacky.Instruction.Call(name, arguments, dst)
+}

@@ -198,6 +198,7 @@ private fun tackyInstructionToAssembly(tackyInstruction: Tacky.Instruction): Lis
                 ),
                 Assembly.Instruction.Ret,
             )
+        is Tacky.Instruction.Call -> TODO()
     }
 
 private fun tackyValueToOperand(tackyValue: Tacky.Value): Assembly.Operand =

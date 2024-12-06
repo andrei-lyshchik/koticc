@@ -24,20 +24,20 @@ class ASTToTackyKtForTest {
         assertEquals(
             expected = tackyProgram {
                 function("main") {
-                    i(1.t to "a.0".t)
+                    i(1.t assignTo "a.0".t)
 
-                    i(0.t to "i.1".t)
+                    i(0.t assignTo "i.1".t)
                     label("loop_start.0")
 
-                    i("i.1".t lt 10.t to "tmp.2".t)
+                    i("i.1".t lt 10.t assignTo "tmp.2".t)
                     jumpIfZero("tmp.2".t, "loop_end.0")
 
-                    i("a.0".t + "i.1".t to "tmp.3".t)
-                    i("tmp.3".t to "a.0".t)
+                    i("a.0".t + "i.1".t assignTo "tmp.3".t)
+                    i("tmp.3".t assignTo "a.0".t)
 
                     label("loop_continue.0")
-                    i("i.1".t + 1.t to "tmp.4".t)
-                    i("tmp.4".t to "i.1".t)
+                    i("i.1".t + 1.t assignTo "tmp.4".t)
+                    i("tmp.4".t assignTo "i.1".t)
 
                     jump("loop_start.0")
                     label("loop_end.0")
@@ -69,19 +69,19 @@ class ASTToTackyKtForTest {
         assertEquals(
             expected = tackyProgram {
                 function("main") {
-                    i(1.t to "a.0".t)
+                    i(1.t assignTo "a.0".t)
 
                     label("loop_start.0")
 
-                    i("a.0".t lt 10.t to "tmp.1".t)
+                    i("a.0".t lt 10.t assignTo "tmp.1".t)
                     jumpIfZero("tmp.1".t, "loop_end.0")
 
-                    i("a.0".t + 1.t to "tmp.2".t)
-                    i("tmp.2".t to "a.0".t)
+                    i("a.0".t + 1.t assignTo "tmp.2".t)
+                    i("tmp.2".t assignTo "a.0".t)
 
                     label("loop_continue.0")
-                    i("a.0".t + 1.t to "tmp.3".t)
-                    i("tmp.3".t to "a.0".t)
+                    i("a.0".t + 1.t assignTo "tmp.3".t)
+                    i("tmp.3".t assignTo "a.0".t)
 
                     jump("loop_start.0")
                     label("loop_end.0")
@@ -114,17 +114,17 @@ class ASTToTackyKtForTest {
         assertEquals(
             expected = tackyProgram {
                 function("main") {
-                    i(1.t to "a.0".t)
+                    i(1.t assignTo "a.0".t)
 
-                    i(0.t to "i.1".t)
+                    i(0.t assignTo "i.1".t)
                     label("loop_start.0")
 
-                    i("a.0".t + "i.1".t to "tmp.2".t)
-                    i("tmp.2".t to "a.0".t)
+                    i("a.0".t + "i.1".t assignTo "tmp.2".t)
+                    i("tmp.2".t assignTo "a.0".t)
 
                     label("loop_continue.0")
-                    i("i.1".t + 1.t to "tmp.3".t)
-                    i("tmp.3".t to "i.1".t)
+                    i("i.1".t + 1.t assignTo "tmp.3".t)
+                    i("tmp.3".t assignTo "i.1".t)
 
                     jump("loop_start.0")
                     label("loop_end.0")
@@ -157,16 +157,16 @@ class ASTToTackyKtForTest {
         assertEquals(
             expected = tackyProgram {
                 function("main") {
-                    i(1.t to "a.0".t)
+                    i(1.t assignTo "a.0".t)
 
-                    i(0.t to "i.1".t)
+                    i(0.t assignTo "i.1".t)
                     label("loop_start.0")
 
-                    i("i.1".t lt 10.t to "tmp.2".t)
+                    i("i.1".t lt 10.t assignTo "tmp.2".t)
                     jumpIfZero("tmp.2".t, "loop_end.0")
 
-                    i("a.0".t + "i.1".t to "tmp.3".t)
-                    i("tmp.3".t to "a.0".t)
+                    i("a.0".t + "i.1".t assignTo "tmp.3".t)
+                    i("tmp.3".t assignTo "a.0".t)
 
                     label("loop_continue.0")
 
@@ -205,18 +205,18 @@ class ASTToTackyKtForTest {
         assertEquals(
             expected = tackyProgram {
                 function("main") {
-                    i(1.t to "a.0".t)
+                    i(1.t assignTo "a.0".t)
 
-                    i(0.t to "i.1".t)
+                    i(0.t assignTo "i.1".t)
                     label("loop_start.0")
 
-                    i("i.1".t lt 10.t to "tmp.2".t)
+                    i("i.1".t lt 10.t assignTo "tmp.2".t)
                     jumpIfZero("tmp.2".t, "loop_end.0")
 
-                    i("a.0".t + "i.1".t to "tmp.3".t)
-                    i("tmp.3".t to "a.0".t)
+                    i("a.0".t + "i.1".t assignTo "tmp.3".t)
+                    i("tmp.3".t assignTo "a.0".t)
 
-                    i("i.1".t eq 5.t to "tmp.4".t)
+                    i("i.1".t eq 5.t assignTo "tmp.4".t)
                     jumpIfZero("tmp.4".t, "if_else.0")
                     jump("loop_continue.0")
                     jump("if_end.1")
@@ -225,8 +225,8 @@ class ASTToTackyKtForTest {
                     label("if_end.1")
 
                     label("loop_continue.0")
-                    i("i.1".t + 1.t to "tmp.5".t)
-                    i("tmp.5".t to "i.1".t)
+                    i("i.1".t + 1.t assignTo "tmp.5".t)
+                    i("tmp.5".t assignTo "i.1".t)
 
                     jump("loop_start.0")
                     label("loop_end.0")
