@@ -56,12 +56,23 @@ class CompilerCommand : CliktCommand(name = "ktc") {
                 "Emit assembly into output file, but do not run the assembler and linker",
             ).flag()
                 .convert { PartialMode.EmitAssembly },
+            option(
+                "-c",
+                help =
+                "Compile to object file, but do not run the linker",
+            ).flag()
+                .convert { PartialMode.ObjectFile },
         ).single()
 
     private val inputFile by argument(help = "Input file to compile").path()
 
     override fun run() {
-        val outputFile = inputFile.resolveSibling(inputFile.nameWithoutExtension)
+        val outputFileName = if (partialMode == PartialMode.ObjectFile) {
+            inputFile.nameWithoutExtension + ".o"
+        } else {
+            inputFile.nameWithoutExtension
+        }
+        val outputFile = inputFile.resolveSibling(outputFileName)
         runCompilerDriver(inputFile, partialMode, outputFile)
             .fold(
                 ifLeft = { error ->

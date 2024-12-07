@@ -18,6 +18,7 @@ enum class PartialMode {
     Tacky,
     Codegen,
     EmitAssembly,
+    ObjectFile,
 }
 
 fun runCompilerDriver(
@@ -59,7 +60,11 @@ fun runCompilerDriver(
             return@either
         }
 
-        runLinkerAndAssembler(assemblyFile, outputFile).bind()
+        if (partialMode == PartialMode.ObjectFile) {
+            runAssembler(assemblyFile, outputFile).bind()
+        } else {
+            runAssemblerAndLinker(assemblyFile, outputFile).bind()
+        }
 
         Either.catchOrThrow<IOException, Unit> { assemblyFile.deleteIfExists() }
             .mapLeft { IOError("failed to delete assembly file", it) }
@@ -114,7 +119,7 @@ data class LinkerAndAssemblerError(
     override fun message(): String = message
 }
 
-fun runLinkerAndAssembler(
+fun runAssemblerAndLinker(
     assemblyFilePath: Path,
     outputFile: Path,
 ): Either<CompilerError, Unit> =
@@ -127,12 +132,36 @@ fun runLinkerAndAssembler(
                 assemblyFilePath.absolutePathString(),
                 "-o",
                 outputFile.absolutePathString(),
-            ).mapLeft { LinkerAndAssemblerError("failed to run linker and assembler: ${it.message}") }
+            ).mapLeft { LinkerAndAssemblerError("failed to run linked and assembler: ${it.message}") }
                 .bind()
 
         ensure(result.exitCode == 0) {
             LinkerAndAssemblerError(
                 "linker and assembler failed with exit code ${result.exitCode}, output: ${result.stderr}",
+            )
+        }
+    }
+
+fun runAssembler(
+    assemblyFilePath: Path,
+    outputFile: Path,
+): Either<CompilerError, Unit> =
+    either {
+        val result =
+            runCommand(
+                "arch",
+                "-x86_64",
+                "gcc",
+                "-c",
+                assemblyFilePath.absolutePathString(),
+                "-o",
+                outputFile.absolutePathString(),
+            ).mapLeft { LinkerAndAssemblerError("failed to run assembler: ${it.message}") }
+                .bind()
+
+        ensure(result.exitCode == 0) {
+            LinkerAndAssemblerError(
+                "assembler failed with exit code ${result.exitCode}, output: ${result.stderr}",
             )
         }
     }

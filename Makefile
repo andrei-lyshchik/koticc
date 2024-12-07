@@ -17,4 +17,4 @@ build:
 	./gradlew installDist
 
 book_tests: build clone_book_tests
-	./$(BOOK_TESTS_REPO_DIR)/test_compiler $(APP_DIR) $(ARGS)
+	arch -x86_64 ./$(BOOK_TESTS_REPO_DIR)/test_compiler $(APP_DIR) $(ARGS)
