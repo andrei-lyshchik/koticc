@@ -31,6 +31,18 @@ object Assembly {
             val size: Int,
         ) : Instruction
 
+        data class DeallocateStack(
+            val size: Int,
+        ) : Instruction
+
+        data class Push(
+            val operand: Operand,
+        ) : Instruction
+
+        data class Call(
+            val name: String,
+        ) : Instruction
+
         data object Cdq : Instruction
 
         data class Idiv(
@@ -83,6 +95,10 @@ object Assembly {
         Ax,
         Cx,
         Dx,
+        Di,
+        Si,
+        R8,
+        R9,
         R10,
         R11,
     }

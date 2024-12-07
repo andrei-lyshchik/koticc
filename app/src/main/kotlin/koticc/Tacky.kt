@@ -7,6 +7,7 @@ object Tacky {
 
     data class FunctionDefinition(
         val name: String,
+        val parameters: List<String>,
         val body: List<Instruction>,
     )
 

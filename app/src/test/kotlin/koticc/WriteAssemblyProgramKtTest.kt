@@ -2,10 +2,8 @@ package koticc
 
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
-import java.io.StringWriter
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class WriteAssemblyProgramKtTest {
     class AssemblyOutputTestCases : VarargArgumentsProvider(
@@ -210,12 +208,5 @@ class WriteAssemblyProgramKtTest {
             """.trimIndent(),
             output.trimIndent(),
         )
-    }
-
-    private fun assemblyToString(assembly: Assembly.Program): String {
-        val writer = StringWriter()
-        val result = writeAssemblyProgram(assembly, writer)
-        assertTrue(result.isRight())
-        return writer.toString()
     }
 }

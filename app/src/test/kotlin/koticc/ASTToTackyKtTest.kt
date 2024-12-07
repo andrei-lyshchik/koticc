@@ -45,6 +45,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Return(
@@ -111,6 +112,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Unary(
@@ -192,6 +194,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Binary(
@@ -261,6 +264,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Binary(
@@ -342,6 +346,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Binary(
@@ -436,6 +441,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Binary(
@@ -518,6 +524,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Copy(
@@ -573,6 +580,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Return(Tacky.Value.IntConstant(0)),
@@ -629,6 +637,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Binary(
@@ -698,6 +707,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Copy(
@@ -779,6 +789,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Copy(
@@ -880,6 +891,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Copy(
@@ -993,6 +1005,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Copy(
@@ -1105,6 +1118,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Copy(
@@ -1225,6 +1239,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Copy(
@@ -1333,6 +1348,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Copy(
@@ -1415,6 +1431,7 @@ class ASTToTackyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Copy(

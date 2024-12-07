@@ -24,6 +24,12 @@ java {
     }
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xmulti-dollar-interpolation")
+    }
+}
+
 application {
     mainClass = "koticc.AppKt"
     applicationName = "ktc"

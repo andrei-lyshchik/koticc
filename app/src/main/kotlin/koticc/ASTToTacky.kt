@@ -31,6 +31,7 @@ private class TackyGenerator(initialVariableCount: Int) {
         )
         val tackyFunction = Tacky.FunctionDefinition(
             name = functionDeclaration.name,
+            parameters = functionDeclaration.parameters.map { it.name },
             body = instructions.toList(),
         )
         instructions.clear()

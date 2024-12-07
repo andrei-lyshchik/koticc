@@ -7,8 +7,10 @@ fun tackyProgramToAssembly(tackyProgram: Tacky.Program): Assembly.Program =
 
 private fun tackyFunctionDefinitionToAssembly(tackyFunctionDefinition: Tacky.FunctionDefinition): Assembly.FunctionDefinition {
     val body =
-        tackyFunctionDefinition.body
-            .flatMap(::tackyInstructionToAssembly)
+        (
+            copyParameters(tackyFunctionDefinition.parameters) + tackyFunctionDefinition.body
+                .flatMap(::tackyInstructionToAssembly)
+            )
             .let(::replacePseudoIdentifiers)
             .flatMap(::fixInstructionOperands)
     return Assembly.FunctionDefinition(
@@ -16,6 +18,33 @@ private fun tackyFunctionDefinitionToAssembly(tackyFunctionDefinition: Tacky.Fun
         body = body,
     )
 }
+
+private fun copyParameters(parameters: List<String>): List<Assembly.Instruction> =
+    parameters
+        .mapIndexed { index, parameter ->
+            val src = when {
+                index < argumentRegisters.size -> Assembly.Operand.Register(argumentRegisters[index])
+                else -> {
+                    val stackParameterIndex = index - argumentRegisters.size
+                    // 8(%rbp) contains the address of the caller
+                    // 16(%rbp) is the first stack argument (6th), 24(%rbp) is the second stack argument (7th), etc.
+                    Assembly.Operand.Stack(16 + stackParameterIndex * 8)
+                }
+            }
+            Assembly.Instruction.Mov(
+                src = src,
+                dst = Assembly.Operand.PseudoIdentifier(parameter),
+            )
+        }
+
+private val argumentRegisters = listOf(
+    Assembly.RegisterValue.Di,
+    Assembly.RegisterValue.Si,
+    Assembly.RegisterValue.Dx,
+    Assembly.RegisterValue.Cx,
+    Assembly.RegisterValue.R8,
+    Assembly.RegisterValue.R9,
+)
 
 private fun tackyInstructionToAssembly(tackyInstruction: Tacky.Instruction): List<Assembly.Instruction> =
     when (tackyInstruction) {
@@ -198,7 +227,7 @@ private fun tackyInstructionToAssembly(tackyInstruction: Tacky.Instruction): Lis
                 ),
                 Assembly.Instruction.Ret,
             )
-        is Tacky.Instruction.Call -> TODO()
+        is Tacky.Instruction.Call -> functionCall(tackyInstruction)
     }
 
 private fun tackyValueToOperand(tackyValue: Tacky.Value): Assembly.Operand =
@@ -335,6 +364,56 @@ private fun shiftInstructions(
     )
 }
 
+private fun functionCall(call: Tacky.Instruction.Call): List<Assembly.Instruction> = buildList {
+    val registerArguments = call.arguments.take(argumentRegisters.size)
+    val stackArguments = call.arguments.drop(argumentRegisters.size)
+
+    // stack must be 16-bytes aligned before issuing a call instruction
+    // each stack argument is 8-bytes long, so if number is even, there's nothing to align
+    val stackPadding = if (stackArguments.size % 2 == 0) {
+        0
+    } else {
+        8
+    }
+    if (stackPadding != 0) {
+        add(Assembly.Instruction.AllocateStack(stackPadding))
+    }
+
+    registerArguments.forEachIndexed { index, arg ->
+        add(
+            Assembly.Instruction.Mov(
+                src = tackyValueToOperand(arg),
+                dst = Assembly.Operand.Register(argumentRegisters[index]),
+            ),
+        )
+    }
+    stackArguments.reversed().forEach { arg ->
+        // even though our values are 4-bytes, pushq accepts 8-bytes operands,
+        // in case of immediate or register values there's no problem
+        // but if the operand is the value somewhere in the memory, higher 4-bytes may lie in the inaccessible memory
+        // to prevent that, we move the 4-bytes value to the register first and then push the register
+        when (val assemblyArgument = tackyValueToOperand(arg)) {
+            is Assembly.Operand.Immediate, is Assembly.Operand.Register -> {
+                add(Assembly.Instruction.Push(assemblyArgument))
+            }
+            else -> {
+                add(Assembly.Instruction.Mov(assemblyArgument, Assembly.Operand.Register(Assembly.RegisterValue.Ax)))
+                add(Assembly.Instruction.Push(Assembly.Operand.Register(Assembly.RegisterValue.Ax)))
+            }
+        }
+    }
+
+    add(Assembly.Instruction.Call(call.name))
+
+    val bytesToRemove = stackArguments.size * 8 + stackPadding
+    if (bytesToRemove != 0) {
+        add(Assembly.Instruction.DeallocateStack(bytesToRemove))
+    }
+
+    val assemblyDst = tackyValueToOperand(call.dst)
+    add(Assembly.Instruction.Mov(Assembly.Operand.Register(Assembly.RegisterValue.Ax), assemblyDst))
+}
+
 private fun replacePseudoIdentifiers(instructions: List<Assembly.Instruction>): List<Assembly.Instruction> {
     val stackOffsets = mutableMapOf<String, Int>()
     val result = ArrayList<Assembly.Instruction>(instructions.size + 1)
@@ -380,10 +459,24 @@ private fun replacePseudoIdentifiers(instructions: List<Assembly.Instruction>): 
                     val operand = replacePseudoIdentifier(stackOffsets, instruction.operand)
                     Assembly.Instruction.Unary(instruction.operator, operand)
                 }
+
+                is Assembly.Instruction.Call -> instruction
+                is Assembly.Instruction.DeallocateStack -> instruction
+                is Assembly.Instruction.Push -> {
+                    val operand = replacePseudoIdentifier(stackOffsets, instruction.operand)
+                    Assembly.Instruction.Push(operand)
+                }
             }
         result.add(replacedInstruction)
     }
-    result[0] = Assembly.Instruction.AllocateStack(stackOffsets.size * 4)
+    val stackBytes = stackOffsets.size * 4
+    val alignedStackBytes = if (stackBytes % 16 == 0) {
+        stackBytes
+    } else {
+        val padding = 16 - stackBytes % 16
+        stackBytes + padding
+    }
+    result[0] = Assembly.Instruction.AllocateStack(alignedStackBytes)
     return result
 }
 
@@ -503,4 +596,7 @@ private fun fixInstructionOperands(instruction: Assembly.Instruction): List<Asse
         is Assembly.Instruction.Set -> listOf(instruction)
         is Assembly.Instruction.Shift -> listOf(instruction)
         is Assembly.Instruction.Unary -> listOf(instruction)
+        is Assembly.Instruction.Call -> listOf(instruction)
+        is Assembly.Instruction.DeallocateStack -> listOf(instruction)
+        is Assembly.Instruction.Push -> listOf(instruction)
     }

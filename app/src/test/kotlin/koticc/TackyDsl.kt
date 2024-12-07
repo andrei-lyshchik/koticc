@@ -7,8 +7,8 @@ fun tackyProgram(block: TackyProgramBuilder.() -> Unit): Tacky.Program = TackyPr
 class TackyProgramBuilder {
     private val functions = mutableListOf<Tacky.FunctionDefinition>()
 
-    fun function(name: String, block: FunctionBuilder.() -> Unit) {
-        functions += FunctionBuilder(name).apply(block).build()
+    fun function(name: String, vararg parameters: String, block: FunctionBuilder.() -> Unit) {
+        functions += FunctionBuilder(name, parameters).apply(block).build()
     }
 
     fun build(): Tacky.Program {
@@ -24,7 +24,7 @@ val String.t
 
 infix fun Tacky.Value.assignTo(dst: Tacky.Value) = Tacky.Instruction.Copy(this, dst)
 
-class FunctionBuilder(private val name: String) {
+class FunctionBuilder(private val name: String, private val parameters: Array<out String>) {
     private val instructions = mutableListOf<Tacky.Instruction>()
 
     fun i(instruction: Tacky.Instruction) = instructions.add(instruction)
@@ -39,7 +39,7 @@ class FunctionBuilder(private val name: String) {
 
     fun jumpIfNotZero(src: Tacky.Value, target: String) = instructions.add(Tacky.Instruction.JumpIfNotZero(src, LabelName(target)))
 
-    fun build() = Tacky.FunctionDefinition(name, instructions)
+    fun build() = Tacky.FunctionDefinition(name, parameters.toList(), instructions)
 }
 
 class TackyUnaryOperatorBuilder(private val operator: Tacky.UnaryOperator, private val src: Tacky.Value) {

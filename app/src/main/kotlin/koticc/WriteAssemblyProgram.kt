@@ -13,7 +13,7 @@ fun writeAssemblyProgram(
         writeAssemblyFunctionDefinition(functionDefinition, writer).bind()
         if (index != assemblyProgram.functionDefinitions.size - 1) {
             Either.catchOrThrow<IOException, Unit> {
-                writer.write("\n")
+                writer.write("\n\n")
             }.bind()
         }
     }
@@ -28,13 +28,16 @@ private fun writeAssemblyFunctionDefinition(
         writer.write("_${functionDefinition.name}:\n")
         writer.write("    pushq %rbp\n")
         writer.write("    movq %rsp, %rbp\n")
-        functionDefinition.body.forEach { instruction ->
+        functionDefinition.body.forEachIndexed { index, instruction ->
             val indent =
                 when (instruction) {
                     is Assembly.Instruction.Label -> ""
                     else -> "    "
                 }
-            writer.write("$indent${instruction.toOutputString()}\n")
+            writer.write("$indent${instruction.toOutputString()}")
+            if (index != functionDefinition.body.size - 1) {
+                writer.write("\n")
+            }
         }
         writer.flush()
     }
@@ -53,9 +56,12 @@ private fun Assembly.Instruction.toOutputString(): String =
         is Assembly.Instruction.Label -> "${label.toLocalOutputString()}:"
         is Assembly.Instruction.Mov -> "movl ${src.toOutputString()}, ${dst.toOutputString()}"
         Assembly.Instruction.Ret -> "movq %rbp, %rsp\n    popq %rbp\n    ret"
-        is Assembly.Instruction.Set -> "set${operator.toOutputString()} ${dst.toOutputString(Size.Byte)}"
+        is Assembly.Instruction.Set -> "set${operator.toOutputString()} ${dst.toOutputString(Size.OneByte)}"
         is Assembly.Instruction.Shift -> "${operator.toOutputString()} %cl, ${dst.toOutputString()}"
         is Assembly.Instruction.Unary -> "${operator.toOutputString()} ${operand.toOutputString()}"
+        is Assembly.Instruction.Call -> "call _$name"
+        is Assembly.Instruction.DeallocateStack -> "addq \$$size, %rsp"
+        is Assembly.Instruction.Push -> "pushq ${operand.toOutputString(size = Size.EightByte)}"
     }
 
 private fun Assembly.BinaryOperator.toOutputString(): String =
@@ -78,7 +84,7 @@ private fun Assembly.ConditionalOperator.toOutputString(): String =
         Assembly.ConditionalOperator.NotEqual -> "ne"
     }
 
-private fun Assembly.Operand.toOutputString(size: Size = Size.LongWord): String =
+private fun Assembly.Operand.toOutputString(size: Size = Size.FourByte): String =
     when (this) {
         is Assembly.Operand.Register -> value.toOutputString(size)
         is Assembly.Operand.Stack -> "$offset(%rbp)"
@@ -103,40 +109,75 @@ private fun Assembly.UnaryOperator.toOutputString(): String =
     }
 
 private enum class Size {
-    Byte,
-    LongWord,
+    OneByte,
+    FourByte,
+    EightByte,
 }
 
 private fun Assembly.RegisterValue.toOutputString(size: Size): String =
     when (this) {
         Assembly.RegisterValue.Ax -> {
             when (size) {
-                Size.Byte -> "%al"
-                Size.LongWord -> "%eax"
+                Size.OneByte -> "%al"
+                Size.FourByte -> "%eax"
+                Size.EightByte -> "%rax"
             }
         }
         Assembly.RegisterValue.Cx -> {
             when (size) {
-                Size.Byte -> "%cl"
-                Size.LongWord -> "%ecx"
+                Size.OneByte -> "%cl"
+                Size.FourByte -> "%ecx"
+                Size.EightByte -> "%rcx"
             }
         }
         Assembly.RegisterValue.Dx -> {
             when (size) {
-                Size.Byte -> "%dl"
-                Size.LongWord -> "%edx"
+                Size.OneByte -> "%dl"
+                Size.FourByte -> "%edx"
+                Size.EightByte -> "%rdx"
+            }
+        }
+
+        Assembly.RegisterValue.Di -> {
+            when (size) {
+                Size.OneByte -> "%dil"
+                Size.FourByte -> "%edi"
+                Size.EightByte -> "%rdi"
+            }
+        }
+        Assembly.RegisterValue.Si -> {
+            when (size) {
+                Size.OneByte -> "%sil"
+                Size.FourByte -> "%esi"
+                Size.EightByte -> "%rsi"
+            }
+        }
+        Assembly.RegisterValue.R8 -> {
+            when (size) {
+                Size.OneByte -> "%r8b"
+                Size.FourByte -> "%r8d"
+                Size.EightByte -> "%r8"
+            }
+        }
+        Assembly.RegisterValue.R9 -> {
+            when (size) {
+                Size.OneByte -> "%r9b"
+                Size.FourByte -> "%r9d"
+                Size.EightByte -> "%r9"
             }
         }
         Assembly.RegisterValue.R10 -> {
             when (size) {
-                Size.Byte -> "%r10b"
-                Size.LongWord -> "%r10d"
+                Size.OneByte -> "%r10b"
+                Size.FourByte -> "%r10d"
+                Size.EightByte -> "%r10"
             }
         }
         Assembly.RegisterValue.R11 -> {
             when (size) {
-                Size.Byte -> "%r11b"
-                Size.LongWord -> "%r11d"
+                Size.OneByte -> "%r11b"
+                Size.FourByte -> "%r11d"
+                Size.EightByte -> "%r11"
             }
         }
     }

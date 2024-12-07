@@ -14,6 +14,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Return(
@@ -56,6 +57,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Copy(
@@ -80,7 +82,7 @@ class TackyToAssemblyKtTest {
                         name = "main",
                         body =
                         listOf(
-                            Assembly.Instruction.AllocateStack(4),
+                            Assembly.Instruction.AllocateStack(16),
                             Assembly.Instruction.Mov(
                                 src = Assembly.Operand.Immediate(42),
                                 dst = Assembly.Operand.Stack(-4),
@@ -115,6 +117,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Unary(
@@ -137,7 +140,7 @@ class TackyToAssemblyKtTest {
                         name = "main",
                         body =
                         listOf(
-                            Assembly.Instruction.AllocateStack(4),
+                            Assembly.Instruction.AllocateStack(16),
                             Assembly.Instruction.Mov(
                                 src = Assembly.Operand.Immediate(42),
                                 dst = Assembly.Operand.Stack(-4),
@@ -162,6 +165,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Unary(
@@ -184,7 +188,7 @@ class TackyToAssemblyKtTest {
                         name = "main",
                         body =
                         listOf(
-                            Assembly.Instruction.AllocateStack(4),
+                            Assembly.Instruction.AllocateStack(16),
                             Assembly.Instruction.Mov(
                                 src = Assembly.Operand.Immediate(0),
                                 dst = Assembly.Operand.Stack(-4),
@@ -225,6 +229,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Binary(
@@ -248,7 +253,7 @@ class TackyToAssemblyKtTest {
                         name = "main",
                         body =
                         listOf(
-                            Assembly.Instruction.AllocateStack(4),
+                            Assembly.Instruction.AllocateStack(16),
                             Assembly.Instruction.Mov(
                                 src = Assembly.Operand.Immediate(1),
                                 dst = Assembly.Operand.Stack(-4),
@@ -274,6 +279,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Binary(
@@ -297,7 +303,7 @@ class TackyToAssemblyKtTest {
                         name = "main",
                         body =
                         listOf(
-                            Assembly.Instruction.AllocateStack(4),
+                            Assembly.Instruction.AllocateStack(16),
                             Assembly.Instruction.Mov(
                                 src = Assembly.Operand.Immediate(1),
                                 dst = Assembly.Operand.Stack(-4),
@@ -340,6 +346,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Binary(
@@ -363,7 +370,7 @@ class TackyToAssemblyKtTest {
                         name = "main",
                         body =
                         listOf(
-                            Assembly.Instruction.AllocateStack(8),
+                            Assembly.Instruction.AllocateStack(16),
                             Assembly.Instruction.Mov(
                                 src = Assembly.Operand.Immediate(1),
                                 dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
@@ -405,6 +412,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Binary(
@@ -428,7 +436,7 @@ class TackyToAssemblyKtTest {
                         name = "main",
                         body =
                         listOf(
-                            Assembly.Instruction.AllocateStack(4),
+                            Assembly.Instruction.AllocateStack(16),
                             Assembly.Instruction.Mov(
                                 src = Assembly.Operand.Immediate(0),
                                 dst = Assembly.Operand.Stack(-4),
@@ -471,6 +479,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Binary(
@@ -494,7 +503,7 @@ class TackyToAssemblyKtTest {
                         name = "main",
                         body =
                         listOf(
-                            Assembly.Instruction.AllocateStack(4),
+                            Assembly.Instruction.AllocateStack(16),
                             Assembly.Instruction.Mov(
                                 src = Assembly.Operand.Immediate(1),
                                 dst = Assembly.Operand.Stack(-4),
@@ -523,6 +532,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Label(
@@ -563,6 +573,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.JumpIfNotZero(
@@ -613,6 +624,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.JumpIfZero(
@@ -663,6 +675,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Jump(
@@ -703,6 +716,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Copy(
@@ -724,7 +738,7 @@ class TackyToAssemblyKtTest {
                         name = "main",
                         body =
                         listOf(
-                            Assembly.Instruction.AllocateStack(8),
+                            Assembly.Instruction.AllocateStack(16),
                             Assembly.Instruction.Mov(
                                 src = Assembly.Operand.Stack(-4),
                                 dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
@@ -749,6 +763,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Binary(
@@ -772,7 +787,7 @@ class TackyToAssemblyKtTest {
                         name = "main",
                         body =
                         listOf(
-                            Assembly.Instruction.AllocateStack(12),
+                            Assembly.Instruction.AllocateStack(16),
                             Assembly.Instruction.Mov(
                                 src = Assembly.Operand.Immediate(0),
                                 dst = Assembly.Operand.Stack(-4),
@@ -805,6 +820,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Binary(
@@ -828,7 +844,7 @@ class TackyToAssemblyKtTest {
                         name = "main",
                         body =
                         listOf(
-                            Assembly.Instruction.AllocateStack(4),
+                            Assembly.Instruction.AllocateStack(16),
                             Assembly.Instruction.Mov(
                                 src = Assembly.Operand.Immediate(1),
                                 dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
@@ -861,6 +877,7 @@ class TackyToAssemblyKtTest {
                 listOf(
                     Tacky.FunctionDefinition(
                         name = "main",
+                        parameters = emptyList(),
                         body =
                         listOf(
                             Tacky.Instruction.Binary(
@@ -884,7 +901,7 @@ class TackyToAssemblyKtTest {
                         name = "main",
                         body =
                         listOf(
-                            Assembly.Instruction.AllocateStack(12),
+                            Assembly.Instruction.AllocateStack(16),
                             Assembly.Instruction.Mov(
                                 src = Assembly.Operand.Stack(-4),
                                 dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),

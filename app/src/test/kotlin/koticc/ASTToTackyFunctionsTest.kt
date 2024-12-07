@@ -104,4 +104,34 @@ class ASTToTackyFunctionsTest {
             actual = actual,
         )
     }
+
+    @Test
+    fun `should produce tacky for function with parameters`() {
+        val program = ValidASTProgram(
+            value = program {
+                func("foo", "a", "b") {
+                    return_("a".e + "b".e)
+                }
+            },
+            variableCount = 2,
+            types = mapOf(
+                "foo" to Type.Function(parameterCount = 2),
+                "a" to Type.Integer,
+                "b" to Type.Integer,
+            ),
+        )
+
+        val actual = programASTToTacky(program)
+
+        assertEquals(
+            expected = tackyProgram {
+                function("foo", "a", "b") {
+                    i("a".t + "b".t assignTo "tmp.2".t)
+                    return_("tmp.2".t)
+                    return_(0.t)
+                }
+            },
+            actual = actual,
+        )
+    }
 }

@@ -3,7 +3,7 @@
 
 [versions]
 junit-jupiter-engine = "5.10.2"
-kotlin = "2.0.21"
+kotlin = "2.1.0"
 
 [libraries]
 clikt = { module = "com.github.ajalt.clikt:clikt", version = "5.0.1" }
