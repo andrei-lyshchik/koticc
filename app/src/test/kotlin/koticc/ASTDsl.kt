@@ -48,6 +48,9 @@ class BlockBuilder {
     fun int(name: String): VariableDeclarationBuilder =
         setCurrentBlockItemBuilder(VariableDeclarationBuilder(name))
 
+    fun assign(name: String): AssignmentBuilder =
+        setCurrentBlockItemBuilder(AssignmentBuilder(name))
+
     fun func(name: String, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
         val body = if (block != null) {
             BlockBuilder().apply(block).build()
@@ -208,6 +211,33 @@ class BlockBuilder {
         )
     }
 
+    fun goto(label: String) {
+        addBlockItem(
+            AST.BlockItem.Statement(
+                AST.Statement.Goto(
+                    label = LabelName(label),
+                    location = DUMMY_LOCATION,
+                ),
+            ),
+        )
+    }
+
+    fun label(name: String, block: BlockBuilder.() -> Unit) {
+        addBlockItem(
+            AST.BlockItem.Statement(
+                AST.Statement.Labeled(
+                    label = LabelName(name),
+                    statement = BlockBuilder().apply(block).build().toSingleStatement(),
+                    location = DUMMY_LOCATION,
+                ),
+            ),
+        )
+    }
+
+    fun null_() {
+        addBlockItem(AST.BlockItem.Statement(AST.Statement.Null(DUMMY_LOCATION)))
+    }
+
     fun build(): AST.Block {
         currentBlockItemBuilder?.let {
             blockItems.add(it.build())
@@ -229,14 +259,24 @@ interface BlockItemBuilder {
     fun build(): AST.BlockItem
 }
 
-class VariableDeclarationBuilder(val name: String) : BlockItemBuilder {
-    var initializer: AST.Expression? = null
+class VariableDeclarationBuilder(private val name: String) : BlockItemBuilder {
+    private var initializer: AST.Expression? = null
 
     infix fun assign(initializer: AST.Expression) {
         this.initializer = initializer
     }
 
     override fun build(): AST.BlockItem = AST.BlockItem.Declaration(AST.Declaration.Variable(name, initializer, DUMMY_LOCATION))
+}
+
+class AssignmentBuilder(private val name: String) : BlockItemBuilder {
+    private var right: AST.Expression? = null
+
+    infix fun with(right: AST.Expression) {
+        this.right = right
+    }
+
+    override fun build(): AST.BlockItem = AST.BlockItem.Statement(AST.Statement.Expression(AST.Expression.Assignment(AST.Expression.Variable(name, DUMMY_LOCATION), right ?: error("No right side of assignment"))))
 }
 
 class IfBuilder(val condition: AST.Expression, thenBlock: BlockBuilder.() -> Unit) : BlockItemBuilder {

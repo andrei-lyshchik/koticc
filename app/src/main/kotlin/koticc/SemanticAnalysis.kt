@@ -22,8 +22,8 @@ data class SemanticAnalysisError(
 fun semanticAnalysis(program: AST.Program): Either<SemanticAnalysisError, ValidASTProgram> =
     either {
         val identifierResolverResult = IdentifierResolver().resolveProgram(program).bind()
-        validateGotoLabels(identifierResolverResult.program).bind()
-        val programWithResolvedLoopsAndSwitches = LoopAndSwitchResolver().resolveLoopsAndSwitches(identifierResolverResult.program).bind()
+        val gotoLabelResolverResult = GotoLabelResolver().resolveLabels(identifierResolverResult.program).bind()
+        val programWithResolvedLoopsAndSwitches = LoopAndSwitchResolver().resolveLoopsAndSwitches(gotoLabelResolverResult).bind()
         val types = Typechecker(identifierResolverResult.nameMapping).typecheck(programWithResolvedLoopsAndSwitches).bind()
         ValidASTProgram(
             value = programWithResolvedLoopsAndSwitches,
@@ -380,112 +380,6 @@ private class IdentifierResolver {
     private fun MutableMap<String, DeclaredIdentifier>.copyForNestedBlock() =
         mapValues { (_, value) -> value.copy(declaredInThisScope = false) }.toMutableMap()
 }
-
-private fun validateGotoLabels(program: AST.Program): Either<SemanticAnalysisError, AST.Program> =
-    either {
-        val labelMapping = validateLabelsAreUnique(program).bind()
-        validateGotos(program, labelMapping).bind()
-        program
-    }
-
-private fun validateLabelsAreUnique(program: AST.Program) =
-    either<SemanticAnalysisError, Map<LabelName, Location>> {
-        val labelMapping = mutableMapOf<LabelName, Location>()
-        findAllLabeledStatements(program)
-            .forEach { labeledStatement ->
-                val existingLocation = labelMapping[labeledStatement.label]
-                ensure(existingLocation == null) {
-                    SemanticAnalysisError(
-                        "label '${labeledStatement.label.value}' already declared at" +
-                            " ${labelMapping[labeledStatement.label]!!.toHumanReadableString()}",
-                        labeledStatement.location,
-                    )
-                }
-                labelMapping[labeledStatement.label] = labeledStatement.location
-            }
-        labelMapping
-    }
-
-private fun findAllLabeledStatements(program: AST.Program): List<AST.Statement.Labeled> =
-    program.functionDeclarations.flatMap { it.body?.let(::findAllLabeledStatements) ?: emptyList() }
-
-private fun findAllLabeledStatements(block: AST.Block): List<AST.Statement.Labeled> =
-    block.blockItems.filterIsInstance<AST.BlockItem.Statement>()
-        .map(AST.BlockItem.Statement::statement)
-        .flatMap(::findAllLabeledStatements)
-
-private fun findAllLabeledStatements(statement: AST.Statement): List<AST.Statement.Labeled> =
-    when (statement) {
-        is AST.Statement.Expression -> emptyList()
-        is AST.Statement.Goto -> emptyList()
-        is AST.Statement.If ->
-            findAllLabeledStatements(statement.thenStatement) +
-                (statement.elseStatement?.let { findAllLabeledStatements(it) } ?: emptyList())
-        is AST.Statement.Labeled -> listOf(statement) + findAllLabeledStatements(statement.statement)
-        is AST.Statement.Null -> emptyList()
-        is AST.Statement.Return -> emptyList()
-        is AST.Statement.Compound ->
-            findAllLabeledStatements(statement.block)
-        is AST.Statement.DoWhile -> findAllLabeledStatements(statement.body)
-        is AST.Statement.While -> findAllLabeledStatements(statement.body)
-        is AST.Statement.For -> findAllLabeledStatements(statement.body)
-        is AST.Statement.Break -> emptyList()
-        is AST.Statement.BreakLoop -> emptyList()
-        is AST.Statement.BreakSwitch -> emptyList()
-        is AST.Statement.Continue -> emptyList()
-        is AST.Statement.Case -> findAllLabeledStatements(statement.body)
-        is AST.Statement.Default -> findAllLabeledStatements(statement.body)
-        is AST.Statement.Switch -> findAllLabeledStatements(statement.body)
-    }
-
-private fun validateGotos(
-    program: AST.Program,
-    labelMapping: Map<LabelName, Location>,
-) = either {
-    findAllGotos(program)
-        .forEach { goto ->
-            val existingLocation = labelMapping[goto.label]
-            ensureNotNull(existingLocation) {
-                SemanticAnalysisError("goto to undeclared label '${goto.label.value}'", goto.location)
-            }
-        }
-}
-
-private fun findAllGotos(program: AST.Program): List<AST.Statement.Goto> =
-    program.functionDeclarations.flatMap {
-        it.body?.let(::findAllGotos) ?: emptyList()
-    }
-
-private fun findAllGotos(block: AST.Block): List<AST.Statement.Goto> =
-    block.blockItems
-        .flatMap(::findAllGotos)
-
-private fun findAllGotos(blockItem: AST.BlockItem): List<AST.Statement.Goto> =
-    when (blockItem) {
-        is AST.BlockItem.Declaration -> emptyList()
-        is AST.BlockItem.Statement -> findAllGotos(blockItem.statement)
-    }
-
-private fun findAllGotos(statement: AST.Statement): List<AST.Statement.Goto> =
-    when (statement) {
-        is AST.Statement.Expression -> emptyList()
-        is AST.Statement.Goto -> listOf(statement)
-        is AST.Statement.If -> findAllGotos(statement.thenStatement) + (statement.elseStatement?.let(::findAllGotos) ?: emptyList())
-        is AST.Statement.Labeled -> findAllGotos(statement.statement)
-        is AST.Statement.Null -> emptyList()
-        is AST.Statement.Return -> emptyList()
-        is AST.Statement.Compound -> findAllGotos(statement.block)
-        is AST.Statement.DoWhile -> findAllGotos(statement.body)
-        is AST.Statement.While -> findAllGotos(statement.body)
-        is AST.Statement.For -> findAllGotos(statement.body)
-        is AST.Statement.Break -> emptyList()
-        is AST.Statement.BreakLoop -> emptyList()
-        is AST.Statement.BreakSwitch -> emptyList()
-        is AST.Statement.Continue -> emptyList()
-        is AST.Statement.Case -> findAllGotos(statement.body)
-        is AST.Statement.Default -> findAllGotos(statement.body)
-        is AST.Statement.Switch -> findAllGotos(statement.body)
-    }
 
 private class LoopAndSwitchResolver {
     private var loopIdCount: Int = 0
