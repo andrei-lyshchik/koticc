@@ -2,7 +2,7 @@ package koticc
 
 import java.io.IOException
 
-sealed interface CompilerError {
+interface CompilerError {
     fun message(): String
 }
 

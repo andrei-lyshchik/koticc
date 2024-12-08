@@ -1,6 +1,14 @@
 package koticc
 
 import arrow.core.Either
+import koticc.assembly.Assembly
+import koticc.assembly.tackyProgramToAssembly
+import koticc.assembly.writeAssemblyProgram
+import koticc.ast.AST
+import koticc.ast.ParserError
+import koticc.ast.parse
+import koticc.tacky.Tacky
+import koticc.token.lexer
 import java.io.StringWriter
 import kotlin.test.assertTrue
 import kotlin.test.fail

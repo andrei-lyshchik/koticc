@@ -2,6 +2,8 @@ package koticc
 
 import arrow.core.raise.either
 import arrow.core.raise.ensure
+import koticc.command.CommandResult
+import koticc.command.runCommand
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource

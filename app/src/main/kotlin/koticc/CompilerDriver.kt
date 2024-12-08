@@ -3,6 +3,14 @@ package koticc
 import arrow.core.Either
 import arrow.core.raise.either
 import arrow.core.raise.ensure
+import koticc.assembly.Assembly
+import koticc.assembly.tackyProgramToAssembly
+import koticc.assembly.writeAssemblyProgram
+import koticc.command.runCommand
+import koticc.ast.parse
+import koticc.semantic.semanticAnalysis
+import koticc.tacky.programASTToTacky
+import koticc.token.lexer
 import java.io.BufferedWriter
 import java.io.IOException
 import java.nio.file.Path
