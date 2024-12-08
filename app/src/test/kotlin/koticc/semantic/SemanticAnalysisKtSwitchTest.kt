@@ -3,7 +3,6 @@ package koticc.semantic
 import arrow.core.left
 import arrow.core.right
 import koticc.ast.DUMMY_LOCATION
-import koticc.ast.assign
 import koticc.ast.e
 import koticc.ast.program
 import koticc.token.Location
@@ -14,14 +13,14 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should resolve switch and case ids`() {
         val input = program {
-            func("main") {
+            function("main") {
                 int("a") assign 1.e
                 switch(1.e) {
                     case(1.e) {
                         return_(1.e)
                     }
                     case(2.e) {
-                        e("a".e assign 2.e)
+                        assign("a", 2.e)
                     }
                     return_("a".e)
                     default {
@@ -36,14 +35,14 @@ class SemanticAnalysisKtSwitchTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("main") {
+                    function("main") {
                         int("a.0") assign 1.e
                         switch(1.e, switchId = 0, hasDefault = true, caseExpressions = mapOf(1 to 0, 2 to 1)) {
                             case(1.e, caseId = 0, switchId = 0) {
                                 return_(1.e)
                             }
                             case(2.e, caseId = 1, switchId = 0) {
-                                e("a.0".e assign 2.e)
+                                assign("a.0", 2.e)
                             }
                             return_("a.0".e)
                             default(switchId = 0) {
@@ -65,7 +64,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `switch without any cases`() {
         val program = program {
-            func("main") {
+            function("main") {
                 switch(1.e) {
                     return_(1.e)
                 }
@@ -78,7 +77,7 @@ class SemanticAnalysisKtSwitchTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("main") {
+                    function("main") {
                         switch(1.e, switchId = 0, caseExpressions = emptyMap(), hasDefault = false) {
                             return_(1.e)
                         }
@@ -97,7 +96,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should return error for case outside of switch`() {
         val program = program {
-            func("main") {
+            function("main") {
                 case(1.e) {
                     return_(1.e)
                 }
@@ -115,7 +114,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should return error for duplicate case expressions`() {
         val program = program {
-            func("main") {
+            function("main") {
                 switch(1.e) {
                     case(1.e.copy(location = Location(0, 0))) {
                         return_(1.e)
@@ -138,7 +137,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should return error for non constant integer expressions`() {
         val program = program {
-            func("main") {
+            function("main") {
                 int("a") assign 1.e
                 switch(1.e) {
                     case("a".e) {
@@ -159,7 +158,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should return error for default outside of switch`() {
         val program = program {
-            func("main") {
+            function("main") {
                 default {
                     return_(1.e)
                 }
@@ -177,7 +176,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should correctly assign breaks between loops and switches`() {
         val program = program {
-            func("main") {
+            function("main") {
                 switch(1.e) {
                     case(1.e) {
                         return_(1.e)
@@ -212,7 +211,7 @@ class SemanticAnalysisKtSwitchTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("main") {
+                    function("main") {
                         switch(1.e, switchId = 0, caseExpressions = mapOf(1 to 0, 2 to 1), hasDefault = false) {
                             case(1.e, caseId = 0, switchId = 0) {
                                 return_(1.e)
@@ -253,7 +252,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should return error for duplicate default`() {
         val program = program {
-            func("main") {
+            function("main") {
                 switch(1.e) {
                     default {
                         return_(1.e)

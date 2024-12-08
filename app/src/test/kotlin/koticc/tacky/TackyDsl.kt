@@ -24,12 +24,14 @@ val Int.t
 val String.t
     get() = Tacky.Value.Variable(this)
 
-infix fun Tacky.Value.assignTo(dst: Tacky.Value) = Tacky.Instruction.Copy(this, dst)
-
 class FunctionBuilder(private val name: String, private val parameters: Array<out String>) {
     private val instructions = mutableListOf<Tacky.Instruction>()
 
     fun i(instruction: Tacky.Instruction) = instructions.add(instruction)
+
+    fun assign(dst: String, builder: TackyInstructionWithDstBuilder) = instructions.add(builder.build(Tacky.Value.Variable(dst)))
+
+    fun assign(dst: String, value: Tacky.Value) = instructions.add(Tacky.Instruction.Copy(value, Tacky.Value.Variable(dst)))
 
     fun return_(value: Tacky.Value) = instructions.add(Tacky.Instruction.Return(value))
 
@@ -44,8 +46,12 @@ class FunctionBuilder(private val name: String, private val parameters: Array<ou
     fun build() = Tacky.FunctionDefinition(name, parameters.toList(), instructions)
 }
 
-class TackyUnaryOperatorBuilder(private val operator: Tacky.UnaryOperator, private val src: Tacky.Value) {
-    infix fun to(dst: Tacky.Value) = Tacky.Instruction.Unary(operator = operator, src = src, dst = dst)
+interface TackyInstructionWithDstBuilder {
+    fun build(dst: Tacky.Value): Tacky.Instruction
+}
+
+class TackyUnaryOperatorBuilder(private val operator: Tacky.UnaryOperator, private val src: Tacky.Value) : TackyInstructionWithDstBuilder {
+    override fun build(dst: Tacky.Value): Tacky.Instruction = Tacky.Instruction.Unary(operator = operator, src = src, dst = dst)
 }
 
 operator fun Tacky.Value.unaryMinus() = TackyUnaryOperatorBuilder(Tacky.UnaryOperator.Negate, this)
@@ -54,8 +60,8 @@ operator fun Tacky.Value.not() = TackyUnaryOperatorBuilder(Tacky.UnaryOperator.L
 
 fun Tacky.Value.complement() = TackyUnaryOperatorBuilder(Tacky.UnaryOperator.Complement, this)
 
-class TackyBinaryOperatorBuilder(val operator: Tacky.BinaryOperator, val left: Tacky.Value, val right: Tacky.Value) {
-    infix fun assignTo(dst: Tacky.Value) = Tacky.Instruction.Binary(operator = operator, left = left, right = right, dst = dst)
+class TackyBinaryOperatorBuilder(val operator: Tacky.BinaryOperator, val left: Tacky.Value, val right: Tacky.Value) : TackyInstructionWithDstBuilder {
+    override fun build(dst: Tacky.Value): Tacky.Instruction = Tacky.Instruction.Binary(operator = operator, left = left, right = right, dst = dst)
 }
 
 operator fun Tacky.Value.plus(other: Tacky.Value) = TackyBinaryOperatorBuilder(Tacky.BinaryOperator.Add, this, other)
@@ -92,6 +98,6 @@ infix fun Tacky.Value.shr(other: Tacky.Value) = TackyBinaryOperatorBuilder(Tacky
 
 fun call(name: String, vararg arguments: Tacky.Value) = TackyFunctionCallBuilder(name, arguments.toList())
 
-class TackyFunctionCallBuilder(private val name: String, private val arguments: List<Tacky.Value>) {
-    infix fun assignTo(dst: Tacky.Value) = Tacky.Instruction.Call(name, arguments, dst)
+class TackyFunctionCallBuilder(private val name: String, private val arguments: List<Tacky.Value>) : TackyInstructionWithDstBuilder {
+    override fun build(dst: Tacky.Value) = Tacky.Instruction.Call(name, arguments, dst)
 }

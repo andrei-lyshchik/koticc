@@ -68,7 +68,7 @@ internal class IdentifierResolver {
                         ensure(blockItem.declaration.body == null) {
                             SemanticAnalysisError(
                                 "nested function declaration '${blockItem.declaration.name}' with body",
-                                blockItem.declaration.location
+                                blockItem.declaration.location,
                             )
                         }
                         AST.BlockItem.Declaration(
@@ -118,7 +118,7 @@ internal class IdentifierResolver {
         raise(
             SemanticAnalysisError(
                 "'$originalName' already declared at" +
-                        " ${previousLocation.toHumanReadableString()}",
+                    " ${previousLocation.toHumanReadableString()}",
                 location,
             ),
         )
@@ -318,7 +318,7 @@ internal class IdentifierResolver {
                         raise(
                             SemanticAnalysisError(
                                 "left side of assignment must be a left-value, " +
-                                        "got ${assignment.left}",
+                                    "got ${assignment.left}",
                                 assignment.location,
                             ),
                         )
@@ -340,7 +340,7 @@ internal class IdentifierResolver {
                         raise(
                             SemanticAnalysisError(
                                 "left side of compound assignment must be a left-value, " +
-                                        "got ${assignment.left}",
+                                    "got ${assignment.left}",
                                 assignment.location,
                             ),
                         )
@@ -359,7 +359,7 @@ internal class IdentifierResolver {
                         raise(
                             SemanticAnalysisError(
                                 "operand of postfix operator must be a left-value, " +
-                                        "got ${postfix.operand}",
+                                    "got ${postfix.operand}",
                                 postfix.location,
                             ),
                         )

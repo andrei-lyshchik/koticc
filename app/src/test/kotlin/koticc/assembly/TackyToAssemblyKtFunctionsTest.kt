@@ -13,17 +13,17 @@ class TackyToAssemblyKtFunctionsTest {
     fun `should support multiple functions`() {
         val program = tackyProgram {
             function("foo") {
-                i(1.t + 2.t assignTo "tmp.1".t)
-                i("tmp.1".t + 1.t assignTo "tmp.2".t)
-                i("tmp.2".t + 1.t assignTo "tmp.3".t)
-                i("tmp.3".t + 1.t assignTo "tmp.4".t)
-                i("tmp.4".t + 1.t assignTo "tmp.5".t)
-                i("tmp.5".t + 1.t assignTo "tmp.6".t)
+                assign("tmp.1", 1.t + 2.t)
+                assign("tmp.2", "tmp.1".t + 1.t)
+                assign("tmp.3", "tmp.2".t + 1.t)
+                assign("tmp.4", "tmp.3".t + 1.t)
+                assign("tmp.5", "tmp.4".t + 1.t)
+                assign("tmp.6", "tmp.5".t + 1.t)
                 return_("tmp.6".t)
             }
             function("bar") {
-                i(2.t + 3.t assignTo "tmp.2".t)
-                i("tmp.2".t + 1.t assignTo "tmp.3".t)
+                assign("tmp.2", 2.t + 3.t)
+                assign("tmp.3", "tmp.2".t + 1.t)
                 return_("tmp.3".t)
             }
         }
@@ -84,7 +84,7 @@ class TackyToAssemblyKtFunctionsTest {
     fun `should support function with a parameter`() {
         val program = tackyProgram {
             function("foo", "a") {
-                i("a".t + 1.t assignTo "tmp.1".t)
+                assign("tmp.1", "a".t + 1.t)
                 return_("tmp.1".t)
             }
         }
@@ -115,7 +115,7 @@ class TackyToAssemblyKtFunctionsTest {
     fun `should support function with many parameters`() {
         val program = tackyProgram {
             function("foo", "a", "b", "c", "d", "e", "f", "g", "h") {
-                i("a".t + "h".t assignTo "tmp.1".t)
+                assign("tmp.1", "a".t + "h".t)
                 return_("tmp.1".t)
             }
         }
@@ -156,7 +156,7 @@ class TackyToAssemblyKtFunctionsTest {
     fun `should support function call with one argument`() {
         val program = tackyProgram {
             function("main") {
-                i(call("foo", 1.t) assignTo "tmp.0".t)
+                assign("tmp.0", call("foo", 1.t))
                 return_("tmp.0".t)
             }
         }
@@ -186,7 +186,7 @@ class TackyToAssemblyKtFunctionsTest {
     fun `should support function call with many arguments, even number of stack arguments`() {
         val program = tackyProgram {
             function("main") {
-                i(call("foo", 1.t, 2.t, 3.t, 4.t, 5.t, 6.t, 7.t, 8.t) assignTo "tmp.0".t)
+                assign("tmp.0", call("foo", 1.t, 2.t, 3.t, 4.t, 5.t, 6.t, 7.t, 8.t))
                 return_("tmp.0".t)
             }
         }
@@ -224,7 +224,7 @@ class TackyToAssemblyKtFunctionsTest {
     fun `should support function call with many arguments, odd number of stack arguments`() {
         val program = tackyProgram {
             function("main") {
-                i(call("foo", 1.t, 2.t, 3.t, 4.t, 5.t, 6.t, 7.t, 8.t, 9.t) assignTo "tmp.0".t)
+                assign("tmp.0", call("foo", 1.t, 2.t, 3.t, 4.t, 5.t, 6.t, 7.t, 8.t, 9.t))
                 return_("tmp.0".t)
             }
         }
@@ -264,8 +264,8 @@ class TackyToAssemblyKtFunctionsTest {
     fun `should copy stack arguments first to eax`() {
         val program = tackyProgram {
             function("main") {
-                i(1.t + 2.t assignTo "tmp.0".t)
-                i(call("foo", 1.t, 2.t, 3.t, 4.t, 5.t, 6.t, "tmp.0".t, 8.t, 9.t) assignTo "tmp.1".t)
+                assign("tmp.0", 1.t + 2.t)
+                assign("tmp.1", call("foo", 1.t, 2.t, 3.t, 4.t, 5.t, 6.t, "tmp.0".t, 8.t, 9.t))
                 return_("tmp.1".t)
             }
         }

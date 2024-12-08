@@ -21,7 +21,7 @@ private class TackyGenerator(initialVariableCount: Int) {
     fun generateProgram(program: AST.Program): Tacky.Program {
         return Tacky.Program(
             functionDefinitions =
-                program.functionDeclarations.mapNotNull { generateFunctionDefinition(it) },
+            program.functionDeclarations.mapNotNull { generateFunctionDefinition(it) },
         )
     }
 

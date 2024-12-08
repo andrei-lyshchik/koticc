@@ -5,11 +5,6 @@ import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.gt
 import koticc.ast.lt
-import koticc.tacky.eq
-import koticc.tacky.gt
-import koticc.tacky.lt
-import koticc.ast.plusAssign
-import koticc.ast.plusMultiply
 import koticc.ast.program
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -18,13 +13,13 @@ class SemanticAnalysisKtDoWhileTest {
     @Test
     fun `should assign labels to do while`() {
         val input = program {
-            func("main") {
+            function("main") {
                 int("a") assign 1.e
                 do_ {
-                    e("a".e plusAssign 1.e)
+                    plusAssign("a", 1.e)
                 }.while_("a".e lt 10.e)
                 do_ {
-                    e("a".e plusMultiply 2.e)
+                    plusMultiply("a", 2.e)
                 }.while_("a".e lt 40.e)
                 return_("a".e)
             }
@@ -35,13 +30,13 @@ class SemanticAnalysisKtDoWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("main") {
+                    function("main") {
                         int("a.0") assign 1.e
                         do_ {
-                            e("a.0".e plusAssign 1.e)
+                            plusAssign("a.0", 1.e)
                         }.while_("a.0".e lt 10.e, loopId = 0)
                         do_ {
-                            e("a.0".e plusMultiply 2.e)
+                            plusMultiply("a.0", 2.e)
                         }.while_("a.0".e lt 40.e, loopId = 1)
                         return_("a.0".e)
                     }
@@ -59,27 +54,25 @@ class SemanticAnalysisKtDoWhileTest {
     @Test
     fun `should assign labels to break continue inside do while`() {
         val input = program {
-            func("main") {
+            function("main") {
                 int("a") assign 1.e
                 do_ {
-                    e("a".e plusAssign 1.e)
+                    plusAssign("a", 1.e)
                     if_("a".e eq 5.e) {
                         break_()
                     }
                     if_("a".e eq 3.e) {
                         continue_()
                     }
-                    "a".e plusAssign 1.e
                 }.while_("a".e lt 10.e)
                 do_ {
-                    e("a".e plusAssign 1.e)
+                    plusAssign("a", 1.e)
                     if_("a".e eq 10.e) {
                         break_()
                     }
                     if_("a".e eq 8.e) {
                         continue_()
                     }
-                    "a".e plusAssign 1.e
                 }.while_("a".e lt 20.e)
                 return_("a".e)
             }
@@ -90,10 +83,10 @@ class SemanticAnalysisKtDoWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("main") {
+                    function("main") {
                         int("a.0") assign 1.e
                         do_ {
-                            e("a.0".e plusAssign 1.e)
+                            plusAssign("a.0", 1.e)
                             if_("a.0".e eq 5.e) {
                                 breakLoop(0)
                             }
@@ -102,7 +95,7 @@ class SemanticAnalysisKtDoWhileTest {
                             }
                         }.while_("a.0".e lt 10.e, loopId = 0)
                         do_ {
-                            e("a.0".e plusAssign 1.e)
+                            plusAssign("a.0", 1.e)
                             if_("a.0".e eq 10.e) {
                                 breakLoop(1)
                             }
@@ -126,12 +119,12 @@ class SemanticAnalysisKtDoWhileTest {
     @Test
     fun `should assign labels to break continue for nested do whiles`() {
         val input = program {
-            func("main") {
+            function("main") {
                 int("a") assign 1.e
                 do_ {
-                    e("a".e plusAssign 1.e)
+                    plusAssign("a", 1.e)
                     do_ {
-                        e("a".e plusAssign 2.e)
+                        plusAssign("a", 2.e)
                         if_("a".e gt 10.e) {
                             break_()
                         }
@@ -149,12 +142,12 @@ class SemanticAnalysisKtDoWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("main") {
+                    function("main") {
                         int("a.0") assign 1.e
                         do_ {
-                            e("a.0".e plusAssign 1.e)
+                            plusAssign("a.0", 1.e)
                             do_ {
-                                e("a.0".e plusAssign 2.e)
+                                plusAssign("a.0", 2.e)
                                 if_("a.0".e gt 10.e) {
                                     breakLoop(1)
                                 }

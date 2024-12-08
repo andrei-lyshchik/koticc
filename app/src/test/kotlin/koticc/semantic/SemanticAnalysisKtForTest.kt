@@ -3,10 +3,8 @@ package koticc.semantic
 import arrow.core.right
 import koticc.ast.e
 import koticc.ast.eq
-import koticc.tacky.eq
 import koticc.ast.initDecl
 import koticc.ast.lt
-import koticc.tacky.lt
 import koticc.ast.plusAssign
 import koticc.ast.program
 import kotlin.test.Test
@@ -16,14 +14,14 @@ class SemanticAnalysisKtForTest {
     @Test
     fun `should assign labels to for`() {
         val input = program {
-            func("main") {
+            function("main") {
                 int("a") assign 1.e
                 for_(
                     initDecl("i", 0.e),
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
-                    e("a".e plusAssign "i".e)
+                    plusAssign("a", "i".e)
                 }
                 return_("a".e)
             }
@@ -34,7 +32,7 @@ class SemanticAnalysisKtForTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("main") {
+                    function("main") {
                         int("a.0") assign 1.e
                         for_(
                             initDecl("i.1", 0.e),
@@ -42,7 +40,7 @@ class SemanticAnalysisKtForTest {
                             "i.1".e plusAssign 1.e,
                             loopId = 0,
                         ) {
-                            e("a.0".e plusAssign "i.1".e)
+                            plusAssign("a.0", "i.1".e)
                         }
                         return_("a.0".e)
                     }
@@ -61,14 +59,14 @@ class SemanticAnalysisKtForTest {
     @Test
     fun `should assign labels for break continue inside for`() {
         val input = program {
-            func("main") {
+            function("main") {
                 int("a") assign 1.e
                 for_(
                     initDecl("i", 0.e),
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
-                    e("a".e plusAssign "i".e)
+                    plusAssign("a", "i".e)
                     if_("a".e eq 5.e) {
                         break_()
                     }
@@ -81,7 +79,7 @@ class SemanticAnalysisKtForTest {
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
-                    e("a".e plusAssign "i".e)
+                    plusAssign("a", "i".e)
                     if_("a".e eq 20.e) {
                         break_()
                     }
@@ -98,7 +96,7 @@ class SemanticAnalysisKtForTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("main") {
+                    function("main") {
                         int("a.0") assign 1.e
                         for_(
                             initDecl("i.1", 0.e),
@@ -106,7 +104,7 @@ class SemanticAnalysisKtForTest {
                             "i.1".e plusAssign 1.e,
                             loopId = 0,
                         ) {
-                            e("a.0".e plusAssign "i.1".e)
+                            plusAssign("a.0", "i.1".e)
                             if_("a.0".e eq 5.e) {
                                 breakLoop(0)
                             }
@@ -120,7 +118,7 @@ class SemanticAnalysisKtForTest {
                             "i.2".e plusAssign 1.e,
                             loopId = 1,
                         ) {
-                            e("a.0".e plusAssign "i.2".e)
+                            plusAssign("a.0", "i.2".e)
                             if_("a.0".e eq 20.e) {
                                 breakLoop(1)
                             }
@@ -146,20 +144,20 @@ class SemanticAnalysisKtForTest {
     @Test
     fun `should assign loop labels for nested fors`() {
         val input = program {
-            func("main") {
+            function("main") {
                 int("a") assign 1.e
                 for_(
                     initDecl("i", 0.e),
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
-                    e("a".e plusAssign "i".e)
+                    plusAssign("a", "i".e)
                     for_(
                         initDecl("j", 0.e),
                         "j".e lt 10.e,
                         "j".e plusAssign 1.e,
                     ) {
-                        e("a".e plusAssign "j".e)
+                        plusAssign("a", "j".e)
                         if_("a".e eq 5.e) {
                             break_()
                         }
@@ -183,7 +181,7 @@ class SemanticAnalysisKtForTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("main") {
+                    function("main") {
                         int("a.0") assign 1.e
                         for_(
                             initDecl("i.1", 0.e),
@@ -191,14 +189,14 @@ class SemanticAnalysisKtForTest {
                             "i.1".e plusAssign 1.e,
                             loopId = 0,
                         ) {
-                            e("a.0".e plusAssign "i.1".e)
+                            plusAssign("a.0", "i.1".e)
                             for_(
                                 initDecl("j.2", 0.e),
                                 "j.2".e lt 10.e,
                                 "j.2".e plusAssign 1.e,
                                 loopId = 1,
                             ) {
-                                e("a.0".e plusAssign "j.2".e)
+                                plusAssign("a.0", "j.2".e)
                                 if_("a.0".e eq 5.e) {
                                     breakLoop(1)
                                 }
@@ -231,7 +229,7 @@ class SemanticAnalysisKtForTest {
     @Test
     fun `should create nested scope in for header`() {
         val input = program {
-            func("main") {
+            function("main") {
                 int("a") assign 1.e
                 int("i") assign 2.e
                 for_(
@@ -243,7 +241,7 @@ class SemanticAnalysisKtForTest {
                     // this is again a nested scope,
                     // so the variable i is different from the one outside and the one in the header
                     int("i") assign 4.e
-                    e("a".e plusAssign "i".e)
+                    plusAssign("a", "i".e)
                 }
                 return_("a".e)
             }
@@ -254,7 +252,7 @@ class SemanticAnalysisKtForTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("main") {
+                    function("main") {
                         int("a.0") assign 1.e
                         int("i.1") assign 2.e
                         for_(
@@ -264,7 +262,7 @@ class SemanticAnalysisKtForTest {
                             loopId = 0,
                         ) {
                             int("i.3") assign 4.e
-                            e("a.0".e plusAssign "i.3".e)
+                            plusAssign("a.0", "i.3".e)
                         }
                         return_("a.0".e)
                     }

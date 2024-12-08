@@ -68,14 +68,14 @@ class ParserKtForTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                func("main") {
+                function("main") {
                     int("a") assign 1.e
                     for_(
                         expectedInit,
                         expectedCondition,
                         expectedPost,
                     ) {
-                        e("a".e plusAssign 1.e)
+                        plusAssign("a", 1.e)
                     }
                     return_("a".e)
                 }

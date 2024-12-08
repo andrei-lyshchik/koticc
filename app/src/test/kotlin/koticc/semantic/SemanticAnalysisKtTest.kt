@@ -2,8 +2,8 @@ package koticc.semantic
 
 import arrow.core.left
 import arrow.core.right
-import koticc.ast.e
 import koticc.ast.AST
+import koticc.ast.e
 import koticc.ast.program
 import koticc.token.Location
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -1299,7 +1299,7 @@ class SemanticAnalysisKtTest {
     @Test
     fun `should not allow declaring variable multiple times in nested scope`() {
         val input = program {
-            func("main") {
+            function("main") {
                 int("a") assign 1.e
                 nested {
                     int("a") assign 2.e

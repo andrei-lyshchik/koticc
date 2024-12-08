@@ -33,8 +33,8 @@ class ParserKtFunctionCallTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                func("main") {
-                    e("foo"(*expectedArguments.toTypedArray()))
+                function("main") {
+                    call("foo", *expectedArguments.toTypedArray())
                 }
             },
             actual = actual,

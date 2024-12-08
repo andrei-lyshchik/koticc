@@ -12,10 +12,10 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should handle labeled statement`() {
         val input = program {
-            func("main") {
+            function("main") {
                 int("a") assign 1.e
                 label("label") {
-                    assign("a") with 2.e
+                    assign("a", 2.e)
                 }
             }
         }
@@ -24,10 +24,10 @@ class SemanticAnalysisKtGotoLabelTest {
             ValidASTProgram(
                 value =
                 program {
-                    func("main") {
+                    function("main") {
                         int("a.0") assign 1.e
                         label("main.label") {
-                            assign("a.0") with 2.e
+                            assign("a.0", 2.e)
                         }
                     }
                 },
@@ -44,7 +44,7 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should return error if goto label is not declared`() {
         val input = program {
-            func("main") {
+            function("main") {
                 goto("label")
             }
         }
@@ -57,7 +57,7 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should return error if labels on labeled statements are not unique`() {
         val input = program {
-            func("main") {
+            function("main") {
                 label("label") { null_() }
                 label("label") { null_() }
             }
@@ -71,7 +71,7 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should detect non-unique labels in default`() {
         val input = program {
-            func("main") {
+            function("main") {
                 label("label") { null_() }
                 switch(1.e) {
                     default {
@@ -89,7 +89,7 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should consider labels inside if else`() {
         val input = program {
-            func("foo") {
+            function("foo") {
                 if_(1.e) {
                     label("label_if") { null_() }
                 } else_ {
@@ -103,7 +103,7 @@ class SemanticAnalysisKtGotoLabelTest {
         val expected =
             ValidASTProgram(
                 value = program {
-                    func("foo") {
+                    function("foo") {
                         if_(1.e) {
                             label("foo.label_if") { null_() }
                         } else_ {
@@ -125,7 +125,7 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should consider non top level gotos`() {
         val input = program {
-            func("main") {
+            function("main") {
                 if_(1.e) {
                     goto("non_existing_label")
                 } else_ {
@@ -142,7 +142,7 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should find goto and labels in compound statements`() {
         val input = program {
-            func("main") {
+            function("main") {
                 nested {
                     label("label1") { null_() }
                     goto("label2")
@@ -154,7 +154,7 @@ class SemanticAnalysisKtGotoLabelTest {
 
         val expected = ValidASTProgram(
             value = program {
-                func("main") {
+                function("main") {
                     nested {
                         label("main.label1") { null_() }
                         goto("main.label2")
@@ -175,20 +175,20 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `labels can be non-unique if used in different functions`() {
         val input = program {
-            func("main") {
+            function("main") {
                 label("label") { null_() }
             }
-            func("foo") {
+            function("foo") {
                 label("label") { null_() }
             }
         }
 
         val expected = ValidASTProgram(
             value = program {
-                func("main") {
+                function("main") {
                     label("main.label") { null_() }
                 }
-                func("foo") {
+                function("foo") {
                     label("foo.label") { null_() }
                 }
             },
@@ -205,10 +205,10 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `can't goto label in different function`() {
         val input = program {
-            func("main") {
+            function("main") {
                 goto("label")
             }
-            func("foo") {
+            function("foo") {
                 label("label") { null_() }
             }
         }

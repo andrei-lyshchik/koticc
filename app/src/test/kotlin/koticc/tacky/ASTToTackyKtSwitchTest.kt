@@ -1,9 +1,7 @@
 package koticc.tacky
 
-import koticc.ast.assign
 import koticc.ast.e
 import koticc.ast.plus
-import koticc.tacky.plus
 import koticc.ast.program
 import koticc.semantic.Type
 import koticc.semantic.ValidASTProgram
@@ -15,7 +13,7 @@ class ASTToTackyKtSwitchTest {
     fun `should generate tacky for switch with cases and defaults`() {
         val program = ValidASTProgram(
             value = program {
-                func("main") {
+                function("main") {
                     int("a") assign 1.e
                     switch("a".e + 1.e, switchId = 0, hasDefault = true, caseExpressions = mapOf(1 to 0, 2 to 1)) {
                         case(1.e, caseId = 0, switchId = 0) {
@@ -39,13 +37,13 @@ class ASTToTackyKtSwitchTest {
         assertEquals(
             expected = tackyProgram {
                 function("main") {
-                    i(1.t assignTo "a".t)
-                    i("a".t + 1.t assignTo "tmp.1".t)
+                    assign("a", 1.t)
+                    assign("tmp.1", "a".t + 1.t)
 
-                    i("tmp.1".t eq 1.t assignTo "tmp.2".t)
+                    assign("tmp.2", "tmp.1".t eq 1.t)
                     jumpIfNotZero("tmp.2".t, "switch.0.case.0")
 
-                    i("tmp.1".t eq 2.t assignTo "tmp.3".t)
+                    assign("tmp.3", "tmp.1".t eq 2.t)
                     jumpIfNotZero("tmp.3".t, "switch.0.case.1")
 
                     jump("switch.0.default")
@@ -72,15 +70,15 @@ class ASTToTackyKtSwitchTest {
     fun `should generate tacky for switch with breaks and without default`() {
         val program = ValidASTProgram(
             value = program {
-                func("main") {
+                function("main") {
                     int("a") assign 1.e
                     switch("a".e, switchId = 0, hasDefault = false, caseExpressions = mapOf(1 to 0, 2 to 1)) {
                         case(1.e, caseId = 0, switchId = 0) {
-                            e("a".e assign 3.e)
+                            assign("a", 3.e)
                         }
                         breakSwitch(0)
                         case(2.e, caseId = 1, switchId = 0) {
-                            e("a".e assign 2.e)
+                            assign("a", 2.e)
                         }
                     }
                 }
@@ -94,22 +92,22 @@ class ASTToTackyKtSwitchTest {
         assertEquals(
             expected = tackyProgram {
                 function("main") {
-                    i(1.t assignTo "a".t)
+                    assign("a", 1.t)
 
-                    i("a".t eq 1.t assignTo "tmp.1".t)
+                    assign("tmp.1", "a".t eq 1.t)
                     jumpIfNotZero("tmp.1".t, "switch.0.case.0")
 
-                    i("a".t eq 2.t assignTo "tmp.2".t)
+                    assign("tmp.2", "a".t eq 2.t)
                     jumpIfNotZero("tmp.2".t, "switch.0.case.1")
 
                     jump("switch.0.end")
 
                     label("switch.0.case.0")
-                    i(3.t assignTo "a".t)
+                    assign("a", 3.t)
                     jump("switch.0.end")
 
                     label("switch.0.case.1")
-                    i(2.t assignTo "a".t)
+                    assign("a", 2.t)
 
                     label("switch.0.end")
 

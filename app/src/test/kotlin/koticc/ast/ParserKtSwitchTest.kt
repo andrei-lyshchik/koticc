@@ -27,7 +27,7 @@ class ParserKtSwitchTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                func("main") {
+                function("main") {
                     switch(1.e) {
                         case(1.e) {
                             return_(1.e)

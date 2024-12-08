@@ -1,9 +1,7 @@
 package koticc.tacky
 
 import koticc.ast.e
-import koticc.ast.invoke
 import koticc.ast.plus
-import koticc.tacky.plus
 import koticc.ast.program
 import koticc.semantic.Type
 import koticc.semantic.ValidASTProgram
@@ -15,7 +13,7 @@ class ASTToTackyFunctionsTest {
     fun `should skip function declarations with no body`() {
         val input = ValidASTProgram(
             value = program {
-                func("foo")
+                function("foo")
             },
             variableCount = 0,
             types = emptyMap(),
@@ -33,10 +31,10 @@ class ASTToTackyFunctionsTest {
     fun `should support multiple functions`() {
         val input = ValidASTProgram(
             value = program {
-                func("foo") {
+                function("foo") {
                     return_(1.e)
                 }
-                func("bar") {
+                function("bar") {
                     return_(2.e)
                 }
             },
@@ -65,8 +63,8 @@ class ASTToTackyFunctionsTest {
     fun `should produce tacky for function call without arguments`() {
         val program = ValidASTProgram(
             value = program {
-                func("main") {
-                    e("foo"())
+                function("main") {
+                    call("foo")
                 }
             },
             variableCount = 0,
@@ -78,7 +76,7 @@ class ASTToTackyFunctionsTest {
         assertEquals(
             expected = tackyProgram {
                 function("main") {
-                    i(call("foo") assignTo "tmp.0".t)
+                    assign("tmp.0", call("foo"))
                     return_(0.t)
                 }
             },
@@ -90,8 +88,8 @@ class ASTToTackyFunctionsTest {
     fun `should produce tacky for function call with arguments`() {
         val program = ValidASTProgram(
             value = program {
-                func("main") {
-                    e("foo"(1.e, 2.e + 3.e))
+                function("main") {
+                    call("foo", 1.e, 2.e + 3.e)
                 }
             },
             variableCount = 0,
@@ -103,8 +101,8 @@ class ASTToTackyFunctionsTest {
         assertEquals(
             expected = tackyProgram {
                 function("main") {
-                    i(2.t + 3.t assignTo "tmp.0".t)
-                    i(call("foo", 1.t, "tmp.0".t) assignTo "tmp.1".t)
+                    assign("tmp.0", 2.t + 3.t)
+                    assign("tmp.1", call("foo", 1.t, "tmp.0".t))
                     return_(0.t)
                 }
             },
@@ -116,7 +114,7 @@ class ASTToTackyFunctionsTest {
     fun `should produce tacky for function with parameters`() {
         val program = ValidASTProgram(
             value = program {
-                func("foo", "a", "b") {
+                function("foo", "a", "b") {
                     return_("a".e + "b".e)
                 }
             },
@@ -133,7 +131,7 @@ class ASTToTackyFunctionsTest {
         assertEquals(
             expected = tackyProgram {
                 function("foo", "a", "b") {
-                    i("a".t + "b".t assignTo "tmp.2".t)
+                    assign("tmp.2", "a".t + "b".t)
                     return_("tmp.2".t)
                     return_(0.t)
                 }

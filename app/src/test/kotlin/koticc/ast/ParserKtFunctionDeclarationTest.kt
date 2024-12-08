@@ -14,7 +14,7 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                func("main")
+                function("main")
             },
             actual = actual,
         )
@@ -31,8 +31,8 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                func("main")
-                func("foo")
+                function("main")
+                function("foo")
             },
             actual = actual,
         )
@@ -48,7 +48,7 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                func("function", "a", "b")
+                function("function", "a", "b")
             },
             actual = actual,
         )
@@ -66,7 +66,7 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                func("main") {
+                function("main") {
                     func("foo")
                 }
             },
@@ -88,7 +88,7 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                func("main") {
+                function("main") {
                     func("foo") {
                         return_(1.e)
                     }

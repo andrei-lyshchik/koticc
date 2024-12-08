@@ -6,8 +6,8 @@ import arrow.core.raise.ensure
 import koticc.assembly.Assembly
 import koticc.assembly.tackyProgramToAssembly
 import koticc.assembly.writeAssemblyProgram
-import koticc.command.runCommand
 import koticc.ast.parse
+import koticc.command.runCommand
 import koticc.semantic.semanticAnalysis
 import koticc.tacky.programASTToTacky
 import koticc.token.lexer

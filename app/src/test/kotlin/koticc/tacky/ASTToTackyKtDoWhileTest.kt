@@ -3,9 +3,6 @@ package koticc.tacky
 import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.lt
-import koticc.tacky.eq
-import koticc.tacky.lt
-import koticc.ast.plusAssign
 import koticc.ast.program
 import koticc.semantic.Type
 import koticc.semantic.ValidASTProgram
@@ -17,10 +14,10 @@ class ASTToTackyKtDoWhileTest {
     fun `should produce tacky for do while`() {
         val input = ValidASTProgram(
             value = program {
-                func("main") {
+                function("main") {
                     int("a") assign 1.e
                     do_ {
-                        e("a".e plusAssign 1.e)
+                        plusAssign("a", 1.e)
                     }.while_("a".e lt 10.e, loopId = 0)
                     return_("a".e)
                 }
@@ -34,14 +31,14 @@ class ASTToTackyKtDoWhileTest {
         assertEquals(
             expected = tackyProgram {
                 function("main") {
-                    i(1.t assignTo "a".t)
+                    assign("a", 1.t)
 
                     label("loop_start.0")
-                    i("a".t + 1.t assignTo "tmp.1".t)
-                    i("tmp.1".t assignTo "a".t)
+                    assign("tmp.1", "a".t + 1.t)
+                    assign("a", "tmp.1".t)
 
                     label("loop_continue.0")
-                    i("a".t lt 10.t assignTo "tmp.2".t)
+                    assign("tmp.2", "a".t lt 10.t)
                     jumpIfNotZero("tmp.2".t, "loop_start.0")
 
                     label("loop_end.0")
@@ -59,10 +56,10 @@ class ASTToTackyKtDoWhileTest {
     fun `should produce tacky for do while with break or continue`() {
         val input = ValidASTProgram(
             value = program {
-                func("main") {
+                function("main") {
                     int("a.0") assign 1.e
                     do_ {
-                        e("a.0".e plusAssign 1.e)
+                        plusAssign("a.0", 1.e)
                         if_("a.0".e eq 5.e) {
                             continue_(0)
                         } else_ {
@@ -81,13 +78,13 @@ class ASTToTackyKtDoWhileTest {
         assertEquals(
             expected = tackyProgram {
                 function("main") {
-                    i(1.t assignTo "a.0".t)
+                    assign("a.0", 1.t)
 
                     label("loop_start.0")
-                    i("a.0".t + 1.t assignTo "tmp.1".t)
-                    i("tmp.1".t assignTo "a.0".t)
+                    assign("tmp.1", "a.0".t + 1.t)
+                    assign("a.0", "tmp.1".t)
 
-                    i("a.0".t eq 5.t assignTo "tmp.2".t)
+                    assign("tmp.2", "a.0".t eq 5.t)
                     jumpIfZero("tmp.2".t, "if_else.0")
                     jump("loop_continue.0")
                     jump("if_end.1")
@@ -96,7 +93,7 @@ class ASTToTackyKtDoWhileTest {
                     label("if_end.1")
 
                     label("loop_continue.0")
-                    i("a.0".t lt 10.t assignTo "tmp.3".t)
+                    assign("tmp.3", "a.0".t lt 10.t)
                     jumpIfNotZero("tmp.3".t, "loop_start.0")
 
                     label("loop_end.0")

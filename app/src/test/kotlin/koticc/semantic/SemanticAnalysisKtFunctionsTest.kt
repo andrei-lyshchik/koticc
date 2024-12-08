@@ -2,15 +2,13 @@ package koticc.semantic
 
 import arrow.core.left
 import arrow.core.right
-import koticc.ast.DUMMY_LOCATION
 import koticc.VarargArgumentsProvider
-import koticc.ast.e
-import koticc.tacky.eq
 import koticc.ast.AST
+import koticc.ast.DUMMY_LOCATION
+import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.invoke
 import koticc.ast.plus
-import koticc.tacky.plus
 import koticc.ast.program
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
@@ -21,7 +19,7 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should resolve function params as identifiers`() {
         val program = program {
-            func("test", "a", "b") {
+            function("test", "a", "b") {
                 return_("a".e + "b".e)
             }
         }
@@ -31,7 +29,7 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("test", "a.0", "b.1") {
+                    function("test", "a.0", "b.1") {
                         return_("a.0".e + "b.1".e)
                     }
                 },
@@ -49,7 +47,7 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should return error if local variable has the same name as a function parameter`() {
         val program = program {
-            func("test", "a") {
+            function("test", "a") {
                 int("a") assign 1.e
                 return_("a".e)
             }
@@ -65,10 +63,10 @@ class SemanticAnalysisKtFunctionsTest {
 
     class ParamsWithSameName : VarargArgumentsProvider(
         program {
-            func("test", "a", "a")
+            function("test", "a", "a")
         },
         program {
-            func("test", "a", "a") {
+            function("test", "a", "a") {
                 return_("a".e)
             }
         },
@@ -90,7 +88,7 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should return error if nested function has a body`() {
         val program = program {
-            func("test") {
+            function("test") {
                 func("test2") {
                     return_(2.e)
                 }
@@ -109,8 +107,8 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should allow multiple non-conflicting function declarations without body`() {
         val program = program {
-            func("test1", "a")
-            func("test1", "a")
+            function("test1", "a")
+            function("test1", "a")
         }
 
         val actual = semanticAnalysis(program)
@@ -118,8 +116,8 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("test1", "a.0")
-                    func("test1", "a.1")
+                    function("test1", "a.0")
+                    function("test1", "a.1")
                 },
                 variableCount = 2,
                 types = mapOf(
@@ -133,8 +131,8 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `different parameter names don't make function declarations conflicting`() {
         val program = program {
-            func("test1", "a", "c")
-            func("test1", "b", "d")
+            function("test1", "a", "c")
+            function("test1", "b", "d")
         }
 
         val actual = semanticAnalysis(program)
@@ -142,8 +140,8 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("test1", "a.0", "c.1")
-                    func("test1", "b.2", "d.3")
+                    function("test1", "a.0", "c.1")
+                    function("test1", "b.2", "d.3")
                 },
                 variableCount = 4,
                 types = mapOf(
@@ -157,7 +155,7 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should allow nesting function declarations without a body`() {
         val program = program {
-            func("main") {
+            function("main") {
                 if_(1.e eq 1.e) {
                     func("test1", "a")
                 }
@@ -169,7 +167,7 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("main") {
+                    function("main") {
                         if_(1.e eq 1.e) {
                             func("test1", "a.0")
                         }
@@ -187,13 +185,13 @@ class SemanticAnalysisKtFunctionsTest {
 
     class ConflictingVariableAndFunctionDeclarations : VarargArgumentsProvider(
         program {
-            func("main") {
+            function("main") {
                 int("a") assign 1.e
                 func("a")
             }
         },
         program {
-            func("main") {
+            function("main") {
                 func("a")
                 int("a") assign 1.e
             }
@@ -216,11 +214,11 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `valid function call`() {
         val program = program {
-            func("test", "a") {
+            function("test", "a") {
                 return_(1.e + "a".e)
             }
-            func("main") {
-                e("test"(1.e))
+            function("main") {
+                call("test", 1.e)
             }
         }
 
@@ -229,11 +227,11 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("test", "a.0") {
+                    function("test", "a.0") {
                         return_(1.e + "a.0".e)
                     }
-                    func("main") {
-                        e("test"(1.e))
+                    function("main") {
+                        call("test", 1.e)
                     }
                 },
                 variableCount = 1,
@@ -250,8 +248,8 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should return error if function is undeclared`() {
         val program = program {
-            func("main") {
-                e("test"())
+            function("main") {
+                call("test")
             }
         }
 
@@ -266,9 +264,9 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should return error if variable is called as function`() {
         val program = program {
-            func("main") {
+            function("main") {
                 int("a") assign 1.e
-                e("a"())
+                call("a")
             }
         }
 
@@ -283,11 +281,11 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should return error if function is called with a different number of arguments`() {
         val program = program {
-            func("test", "a") {
+            function("test", "a") {
                 return_("a".e)
             }
-            func("main") {
-                e("test"(1.e, 2.e))
+            function("main") {
+                call("test", 1.e, 2.e)
             }
         }
 
@@ -302,10 +300,10 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should treat different function parameters as in different scopes`() {
         val program = program {
-            func("test1", "a") {
+            function("test1", "a") {
                 return_("a".e)
             }
-            func("test2", "a") {
+            function("test2", "a") {
                 return_("a".e)
             }
         }
@@ -315,10 +313,10 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    func("test1", "a.0") {
+                    function("test1", "a.0") {
                         return_("a.0".e)
                     }
-                    func("test2", "a.1") {
+                    function("test2", "a.1") {
                         return_("a.1".e)
                     }
                 },
@@ -336,34 +334,34 @@ class SemanticAnalysisKtFunctionsTest {
 
     class ConflictingFunctionDeclarations : VarargArgumentsProvider(
         program {
-            func("test", "a") {
+            function("test", "a") {
                 return_("a".e)
             }
-            func("test", "a") {
+            function("test", "a") {
                 return_("a".e)
             }
         },
         program {
-            func("test", "a") {
+            function("test", "a") {
                 return_("a".e)
             }
-            func("main") {
+            function("main") {
                 func("test", "a")
                 return_("test"(1.e))
             }
-            func("test", "a") {
+            function("test", "a") {
                 return_("a".e)
             }
         },
         program {
-            func("test", "a")
-            func("test", "a", "b")
+            function("test", "a")
+            function("test", "a", "b")
         },
         program {
-            func("test", "a") {
+            function("test", "a") {
                 return_("a".e)
             }
-            func("main") {
+            function("main") {
                 func("test", "a", "b")
                 return_(1.e)
             }
@@ -386,8 +384,8 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should return error if function is used as a variable`() {
         val program = program {
-            func("test")
-            func("main") {
+            function("test")
+            function("main") {
                 int("a") assign (1.e + "test".e)
             }
         }

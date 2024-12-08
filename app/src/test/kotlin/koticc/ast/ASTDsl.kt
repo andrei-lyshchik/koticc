@@ -11,7 +11,7 @@ fun program(block: ProgramBuilder.() -> Unit): AST.Program {
 class ProgramBuilder {
     private var functionDeclarations: MutableList<AST.Declaration.Function> = mutableListOf()
 
-    fun func(name: String, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
+    fun function(name: String, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
         val body = if (block != null) {
             BlockBuilder().apply(block).build()
         } else {
@@ -48,8 +48,46 @@ class BlockBuilder {
     fun int(name: String): VariableDeclarationBuilder =
         setCurrentBlockItemBuilder(VariableDeclarationBuilder(name))
 
-    fun assign(name: String): AssignmentBuilder =
-        setCurrentBlockItemBuilder(AssignmentBuilder(name))
+    fun assign(left: String, right: AST.Expression) {
+        addBlockItem(
+            AST.BlockItem.Statement(
+                AST.Statement.Expression(
+                    AST.Expression.Assignment(
+                        AST.Expression.Variable(left, DUMMY_LOCATION),
+                        right,
+                    ),
+                ),
+            ),
+        )
+    }
+
+    fun plusAssign(left: String, right: AST.Expression) {
+        addBlockItem(
+            AST.BlockItem.Statement(
+                AST.Statement.Expression(
+                    AST.Expression.CompoundAssignment(
+                        AST.CompoundAssignmentOperator.Add,
+                        AST.Expression.Variable(left, DUMMY_LOCATION),
+                        right,
+                    ),
+                ),
+            ),
+        )
+    }
+
+    fun plusMultiply(left: String, right: AST.Expression) {
+        addBlockItem(
+            AST.BlockItem.Statement(
+                AST.Statement.Expression(
+                    AST.Expression.CompoundAssignment(
+                        AST.CompoundAssignmentOperator.Multiply,
+                        AST.Expression.Variable(left, DUMMY_LOCATION),
+                        right,
+                    ),
+                ),
+            ),
+        )
+    }
 
     fun func(name: String, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
         val body = if (block != null) {
@@ -64,8 +102,18 @@ class BlockBuilder {
         addBlockItem(AST.BlockItem.Statement(AST.Statement.Return(expression, DUMMY_LOCATION)))
     }
 
-    fun e(expression: AST.Expression) {
-        addBlockItem(AST.BlockItem.Statement(AST.Statement.Expression(expression)))
+    fun call(functionName: String, vararg arguments: AST.Expression) {
+        addBlockItem(
+            AST.BlockItem.Statement(
+                AST.Statement.Expression(
+                    AST.Expression.FunctionCall(
+                        name = functionName,
+                        arguments = arguments.toList(),
+                        location = DUMMY_LOCATION,
+                    ),
+                ),
+            ),
+        )
     }
 
     fun if_(condition: AST.Expression, thenBlock: BlockBuilder.() -> Unit): IfBuilder {
@@ -267,16 +315,6 @@ class VariableDeclarationBuilder(private val name: String) : BlockItemBuilder {
     }
 
     override fun build(): AST.BlockItem = AST.BlockItem.Declaration(AST.Declaration.Variable(name, initializer, DUMMY_LOCATION))
-}
-
-class AssignmentBuilder(private val name: String) : BlockItemBuilder {
-    private var right: AST.Expression? = null
-
-    infix fun with(right: AST.Expression) {
-        this.right = right
-    }
-
-    override fun build(): AST.BlockItem = AST.BlockItem.Statement(AST.Statement.Expression(AST.Expression.Assignment(AST.Expression.Variable(name, DUMMY_LOCATION), right ?: error("No right side of assignment"))))
 }
 
 class IfBuilder(val condition: AST.Expression, thenBlock: BlockBuilder.() -> Unit) : BlockItemBuilder {
