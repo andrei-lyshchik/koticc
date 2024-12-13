@@ -33,6 +33,10 @@ sealed interface Token {
 
     data object Switch : Token
 
+    data object Extern : Token
+
+    data object Static : Token
+
     // types
     data object IntKeyword : Token
 

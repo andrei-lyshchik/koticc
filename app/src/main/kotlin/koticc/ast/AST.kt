@@ -5,9 +5,9 @@ import koticc.token.LocationAware
 
 object AST {
     data class Program(
-        val functionDeclarations: List<Declaration.Function>,
+        val declarations: List<Declaration>,
     ) : LocationAware {
-        override val location: Location = functionDeclarations.firstOrNull()?.location ?: Location(0, 0)
+        override val location: Location = declarations.firstOrNull()?.location ?: Location(0, 0)
     }
 
     data class Block(
@@ -31,6 +31,7 @@ object AST {
         data class Variable(
             val name: String,
             val initializer: Expression?,
+            val storageClass: StorageClass?,
             override val location: Location,
         ) : Declaration
 
@@ -38,8 +39,14 @@ object AST {
             val name: String,
             val parameters: List<FunctionParameter>,
             val body: Block?,
+            val storageClass: StorageClass?,
             override val location: Location,
         ) : Declaration
+    }
+
+    enum class StorageClass {
+        Extern,
+        Static,
     }
 
     data class FunctionParameter(

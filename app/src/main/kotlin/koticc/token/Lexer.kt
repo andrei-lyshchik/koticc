@@ -224,6 +224,8 @@ fun lexer(input: String): Either<LexerError, List<TokenWithLocation>> =
                             "case" -> result.add(TokenWithLocation(Token.Case, Location(line, start + 1)))
                             "default" -> result.add(TokenWithLocation(Token.Default, Location(line, start + 1)))
                             "switch" -> result.add(TokenWithLocation(Token.Switch, Location(line, start + 1)))
+                            "extern" -> result.add(TokenWithLocation(Token.Extern, Location(line, start + 1)))
+                            "static" -> result.add(TokenWithLocation(Token.Static, Location(line, start + 1)))
                             else ->
                                 result.add(
                                     TokenWithLocation(Token.Identifier(identifier), Location(line, start + 1)),

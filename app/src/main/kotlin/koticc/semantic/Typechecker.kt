@@ -13,10 +13,19 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         ?: error("unknown identifier name: $name, something is wrong in identifier resolver/typechecker")
 
     fun typecheck(program: AST.Program): Either<SemanticAnalysisError, Map<String, Type>> = either {
-        program.functionDeclarations.forEach { functionDeclaration ->
-            typecheckFunctionDeclaration(functionDeclaration).bind()
+        program.declarations.forEach { declaration ->
+            typecheckDeclaration(declaration).bind()
         }
         types.mapValues { (_, type) -> type.value }
+    }
+
+    private fun typecheckDeclaration(
+        declaration: AST.Declaration,
+    ): Either<SemanticAnalysisError, Unit> = either {
+        when (declaration) {
+            is AST.Declaration.Function -> typecheckFunctionDeclaration(declaration).bind()
+            is AST.Declaration.Variable -> typecheckVariableDeclaration(declaration).bind()
+        }
     }
 
     private fun typecheckFunctionDeclaration(
@@ -56,10 +65,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     private fun typecheckBlock(block: AST.Block): Either<SemanticAnalysisError, Unit> = either {
         block.blockItems.forEach { blockItem ->
             when (blockItem) {
-                is AST.BlockItem.Declaration -> when (blockItem.declaration) {
-                    is AST.Declaration.Function -> typecheckFunctionDeclaration(blockItem.declaration).bind()
-                    is AST.Declaration.Variable -> typecheckVariableDeclaration(blockItem.declaration).bind()
-                }
+                is AST.BlockItem.Declaration -> typecheckDeclaration(blockItem.declaration).bind()
                 is AST.BlockItem.Statement -> typecheckStatement(blockItem.statement).bind()
             }
         }

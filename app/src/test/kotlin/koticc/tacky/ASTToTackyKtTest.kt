@@ -18,7 +18,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -35,6 +35,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -82,7 +83,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -102,6 +103,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -164,7 +166,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -184,6 +186,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -224,7 +227,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -254,6 +257,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -306,7 +310,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -336,6 +340,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -401,7 +406,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -431,6 +436,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -496,7 +502,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -509,11 +515,13 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "x",
                                             initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            storageClass = null,
                                             location = Location(1, 0),
                                         ),
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -552,7 +560,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -565,11 +573,13 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "x",
                                             initializer = null,
+                                            storageClass = null,
                                             location = Location(1, 0),
                                         ),
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -604,7 +614,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -622,11 +632,13 @@ class ASTToTackyKtTest {
                                                 left = AST.Expression.IntLiteral(1, Location(1, 0)),
                                                 right = AST.Expression.IntLiteral(2, Location(1, 0)),
                                             ),
+                                            storageClass = null,
                                             location = Location(1, 0),
                                         ),
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -671,7 +683,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -684,6 +696,7 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "x",
                                             initializer = null,
+                                            storageClass = null,
                                             location = Location(1, 0),
                                         ),
                                     ),
@@ -697,6 +710,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -752,7 +766,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -765,6 +779,7 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "x",
                                             initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            storageClass = null,
                                             location = Location(1, 0),
                                         ),
                                     ),
@@ -779,6 +794,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -836,7 +852,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -849,6 +865,7 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "x",
                                             initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            storageClass = null,
                                             location = Location(1, 0),
                                         ),
                                     ),
@@ -865,6 +882,7 @@ class ASTToTackyKtTest {
                                                 ),
                                                 right = AST.Expression.IntLiteral(2, Location(1, 0)),
                                             ),
+                                            storageClass = null,
                                             location = Location(1, 0),
                                         ),
                                     ),
@@ -881,6 +899,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -946,7 +965,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -959,6 +978,7 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "x",
                                             initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            storageClass = null,
                                             location = Location(1, 0),
                                         ),
                                     ),
@@ -966,6 +986,7 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "y",
                                             initializer = AST.Expression.IntLiteral(0, Location(1, 0)),
+                                            storageClass = null,
                                             location = Location(1, 0),
                                         ),
                                     ),
@@ -995,6 +1016,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -1053,7 +1075,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -1066,6 +1088,7 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "x",
                                             initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            storageClass = null,
                                             location = Location(1, 0),
                                         ),
                                     ),
@@ -1073,6 +1096,7 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "y",
                                             initializer = AST.Expression.IntLiteral(0, Location(1, 0)),
+                                            storageClass = null,
                                             location = Location(1, 0),
                                         ),
                                     ),
@@ -1108,6 +1132,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -1174,7 +1199,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -1188,6 +1213,7 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "a.0",
                                             initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                            storageClass = null,
                                             location = Location(2, 5),
                                         ),
                                     ),
@@ -1196,6 +1222,7 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "b.1",
                                             initializer = null,
+                                            storageClass = null,
                                             location = Location(3, 5),
                                         ),
                                     ),
@@ -1229,6 +1256,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(1, 1),
                         ),
                     ),
@@ -1302,7 +1330,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -1316,6 +1344,7 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "x",
                                             initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                            storageClass = null,
                                             location = Location(1, 0),
                                         ),
                                     ),
@@ -1338,6 +1367,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
@@ -1382,7 +1412,7 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -1403,6 +1433,7 @@ class ASTToTackyKtTest {
                                                         AST.Declaration.Variable(
                                                             name = "x",
                                                             initializer = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                            storageClass = null,
                                                             location = Location(1, 0),
                                                         ),
                                                     ),
@@ -1421,6 +1452,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),

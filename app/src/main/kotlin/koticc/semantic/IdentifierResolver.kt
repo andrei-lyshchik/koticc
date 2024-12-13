@@ -24,11 +24,22 @@ internal class IdentifierResolver {
             val identifierMapping = mutableMapOf<String, DeclaredIdentifier>()
             val validProgram =
                 program.copy(
-                    functionDeclarations = program.functionDeclarations.map {
-                        resolveFunctionDeclaration(it, identifierMapping).bind()
+                    declarations = program.declarations.map {
+                        resolveFileLevelDeclaration(it, identifierMapping).bind()
                     },
                 )
             IdentifierResolverResult(validProgram, variableCount, nameMapping)
+        }
+
+    private fun resolveFileLevelDeclaration(
+        declaration: AST.Declaration,
+        identifierMapping: MutableMap<String, DeclaredIdentifier>,
+    ): Either<SemanticAnalysisError, AST.Declaration> =
+        either {
+            when (declaration) {
+                is AST.Declaration.Function -> resolveFunctionDeclaration(declaration, identifierMapping).bind()
+                is AST.Declaration.Variable -> resolveVariableDeclaration(declaration, identifierMapping).bind()
+            }
         }
 
     private fun resolveFunctionDeclaration(

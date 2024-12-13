@@ -9,7 +9,24 @@ fun program(block: ProgramBuilder.() -> Unit): AST.Program {
 }
 
 class ProgramBuilder {
-    private var functionDeclarations: MutableList<AST.Declaration.Function> = mutableListOf()
+    private var declarations: MutableList<AST.Declaration> = mutableListOf()
+    private var currentVariableBuilder: VariableDeclarationBuilder? = null
+
+    private fun addDeclaration(declaration: AST.Declaration) {
+        currentVariableBuilder?.let {
+            declarations.add(it.buildVariableDeclaration())
+            currentVariableBuilder = null
+        }
+        declarations.add(declaration)
+    }
+
+    private fun setCurrentVariableBuilder(variableBuilder: VariableDeclarationBuilder): VariableDeclarationBuilder {
+        currentVariableBuilder?.let {
+            declarations.add(it.buildVariableDeclaration())
+        }
+        currentVariableBuilder = variableBuilder
+        return variableBuilder
+    }
 
     fun function(name: String, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
         val body = if (block != null) {
@@ -17,11 +34,42 @@ class ProgramBuilder {
         } else {
             null
         }
-        functionDeclarations.add(AST.Declaration.Function(name, parameters.map { AST.FunctionParameter(it, DUMMY_LOCATION) }, body, DUMMY_LOCATION))
+        addDeclaration(
+            AST.Declaration.Function(
+                name,
+                parameters.map { AST.FunctionParameter(it, DUMMY_LOCATION) },
+                body,
+                null,
+                DUMMY_LOCATION,
+            ),
+        )
     }
 
+    fun function(name: String, storageClass: AST.StorageClass, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
+        val body = if (block != null) {
+            BlockBuilder().apply(block).build()
+        } else {
+            null
+        }
+        addDeclaration(
+            AST.Declaration.Function(
+                name,
+                parameters.map { AST.FunctionParameter(it, DUMMY_LOCATION) },
+                body,
+                storageClass,
+                DUMMY_LOCATION,
+            ),
+        )
+    }
+
+    fun int(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
+        setCurrentVariableBuilder(VariableDeclarationBuilder(name, storageClass))
+
     fun build(): AST.Program {
-        return AST.Program(functionDeclarations)
+        currentVariableBuilder?.let {
+            declarations.add(it.buildVariableDeclaration())
+        }
+        return AST.Program(declarations)
     }
 }
 
@@ -45,8 +93,8 @@ class BlockBuilder {
         blockItems.add(blockItem)
     }
 
-    fun int(name: String): VariableDeclarationBuilder =
-        setCurrentBlockItemBuilder(VariableDeclarationBuilder(name))
+    fun int(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
+        setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass))
 
     fun assign(left: String, right: AST.Expression) {
         addBlockItem(
@@ -95,7 +143,17 @@ class BlockBuilder {
         } else {
             null
         }
-        addBlockItem(AST.BlockItem.Declaration(AST.Declaration.Function(name, parameters.map { AST.FunctionParameter(it, DUMMY_LOCATION) }, body, DUMMY_LOCATION)))
+        addBlockItem(
+            AST.BlockItem.Declaration(
+                AST.Declaration.Function(
+                    name,
+                    parameters.map { AST.FunctionParameter(it, DUMMY_LOCATION) },
+                    body,
+                    null,
+                    DUMMY_LOCATION,
+                ),
+            ),
+        )
     }
 
     fun return_(expression: AST.Expression) {
@@ -307,14 +365,18 @@ interface BlockItemBuilder {
     fun build(): AST.BlockItem
 }
 
-class VariableDeclarationBuilder(private val name: String) : BlockItemBuilder {
+class VariableDeclarationBuilder(private val name: String, private val storageClass: AST.StorageClass?) : BlockItemBuilder {
     private var initializer: AST.Expression? = null
 
     infix fun assign(initializer: AST.Expression) {
         this.initializer = initializer
     }
 
-    override fun build(): AST.BlockItem = AST.BlockItem.Declaration(AST.Declaration.Variable(name, initializer, DUMMY_LOCATION))
+    fun buildVariableDeclaration(): AST.Declaration.Variable {
+        return AST.Declaration.Variable(name, initializer, storageClass, DUMMY_LOCATION)
+    }
+
+    override fun build(): AST.BlockItem = AST.BlockItem.Declaration(AST.Declaration.Variable(name, initializer, storageClass, DUMMY_LOCATION))
 }
 
 class IfBuilder(val condition: AST.Expression, thenBlock: BlockBuilder.() -> Unit) : BlockItemBuilder {
@@ -360,7 +422,7 @@ class DoWhileBuilder(val body: AST.Block) : BlockItemBuilder {
 }
 
 fun initDecl(name: String, initializer: AST.Expression? = null) =
-    AST.ForInitializer.Declaration(AST.Declaration.Variable(name, initializer, DUMMY_LOCATION))
+    AST.ForInitializer.Declaration(AST.Declaration.Variable(name, initializer, null, DUMMY_LOCATION))
 
 fun initExpr(expression: AST.Expression) =
     AST.ForInitializer.Expression(expression)

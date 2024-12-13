@@ -9,8 +9,15 @@ import koticc.token.Location
 internal class GotoLabelResolver {
     fun resolveLabels(program: AST.Program): Either<SemanticAnalysisError, AST.Program> = either {
         program.copy(
-            functionDeclarations = program.functionDeclarations.map { resolveFunctionDeclarationLabels(it).bind() },
+            declarations = program.declarations.map { resolveDeclarationLabels(it).bind() },
         )
+    }
+
+    private fun resolveDeclarationLabels(declaration: AST.Declaration): Either<SemanticAnalysisError, AST.Declaration> = either {
+        when (declaration) {
+            is AST.Declaration.Function -> resolveFunctionDeclarationLabels(declaration).bind()
+            is AST.Declaration.Variable -> declaration
+        }
     }
 
     private fun resolveFunctionDeclarationLabels(function: AST.Declaration.Function): Either<SemanticAnalysisError, AST.Declaration.Function> = either {

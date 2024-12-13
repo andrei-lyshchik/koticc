@@ -15,7 +15,12 @@ fun assertEqualsIgnoringLocations(expected: AST.Program, actual: Either<Compiler
 }
 
 fun AST.Program.withDummyLocations() = copy(
-    functionDeclarations = functionDeclarations.map { it.withDummyLocations() },
+    declarations = declarations.map {
+        when (it) {
+            is AST.Declaration.Function -> it.withDummyLocations()
+            is AST.Declaration.Variable -> it.withDummyLocations()
+        }
+    },
 )
 
 fun AST.Declaration.Function.withDummyLocations() = copy(

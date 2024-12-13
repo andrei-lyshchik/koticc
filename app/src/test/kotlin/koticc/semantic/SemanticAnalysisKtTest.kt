@@ -16,7 +16,7 @@ class SemanticAnalysisKtTest {
     fun `should replace variables name with unique ones and return count`() {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -31,6 +31,7 @@ class SemanticAnalysisKtTest {
                                         name = "a",
                                         initializer =
                                         AST.Expression.IntLiteral(1, Location(2, 13)),
+                                        storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
@@ -40,6 +41,7 @@ class SemanticAnalysisKtTest {
                                         name = "b",
                                         initializer =
                                         AST.Expression.IntLiteral(2, Location(3, 13)),
+                                        storageClass = null,
                                         location = Location(3, 5),
                                     ),
                                 ),
@@ -65,6 +67,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -74,7 +77,7 @@ class SemanticAnalysisKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -89,6 +92,7 @@ class SemanticAnalysisKtTest {
                                             name = "a.0",
                                             initializer =
                                             AST.Expression.IntLiteral(1, Location(2, 13)),
+                                            storageClass = null,
                                             location = Location(2, 5),
                                         ),
                                     ),
@@ -98,6 +102,7 @@ class SemanticAnalysisKtTest {
                                             name = "b.1",
                                             initializer =
                                             AST.Expression.IntLiteral(2, Location(3, 13)),
+                                            storageClass = null,
                                             location = Location(3, 5),
                                         ),
                                     ),
@@ -123,6 +128,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(1, 1),
                         ),
                     ),
@@ -142,7 +148,7 @@ class SemanticAnalysisKtTest {
     fun `should return error when variable is not declared`() {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -163,6 +169,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -178,7 +185,7 @@ class SemanticAnalysisKtTest {
     fun `should return error when variable declared multiple times`() {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -193,6 +200,7 @@ class SemanticAnalysisKtTest {
                                         name = "a",
                                         initializer =
                                         AST.Expression.IntLiteral(1, Location(2, 13)),
+                                        storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
@@ -202,11 +210,13 @@ class SemanticAnalysisKtTest {
                                         name = "a",
                                         initializer =
                                         AST.Expression.IntLiteral(2, Location(3, 13)),
+                                        storageClass = null,
                                         location = Location(3, 5),
                                     ),
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -222,7 +232,7 @@ class SemanticAnalysisKtTest {
     fun `should return error when left side of assignment is not a variable`() {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -245,6 +255,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -266,7 +277,7 @@ class SemanticAnalysisKtTest {
     ) {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -290,6 +301,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -309,7 +321,7 @@ class SemanticAnalysisKtTest {
     fun `should return error if left side of postfix operator is not a variable`(postfixOperator: AST.PostfixOperator) {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -330,6 +342,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -349,7 +362,7 @@ class SemanticAnalysisKtTest {
     fun `should replace variable names in postfix operator operand`(postfixOperator: AST.PostfixOperator) {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -363,6 +376,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                        storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
@@ -378,6 +392,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -387,7 +402,7 @@ class SemanticAnalysisKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -401,6 +416,7 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "a.0",
                                             initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                            storageClass = null,
                                             location = Location(2, 5),
                                         ),
                                     ),
@@ -416,6 +432,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(1, 1),
                         ),
                     ),
@@ -434,7 +451,7 @@ class SemanticAnalysisKtTest {
     fun `should replace variable names with new names in declaration initializers`() {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -448,6 +465,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                        storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
@@ -456,6 +474,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "b",
                                         initializer = AST.Expression.IntLiteral(2, Location(3, 13)),
+                                        storageClass = null,
                                         location = Location(3, 5),
                                     ),
                                 ),
@@ -477,11 +496,13 @@ class SemanticAnalysisKtTest {
                                                 Location(2, 17),
                                             ),
                                         ),
+                                        storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -491,7 +512,7 @@ class SemanticAnalysisKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -505,6 +526,7 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "a.0",
                                             initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                            storageClass = null,
                                             location = Location(2, 5),
                                         ),
                                     ),
@@ -513,6 +535,7 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "b.1",
                                             initializer = AST.Expression.IntLiteral(2, Location(3, 13)),
+                                            storageClass = null,
                                             location = Location(3, 5),
                                         ),
                                     ),
@@ -534,11 +557,13 @@ class SemanticAnalysisKtTest {
                                                     Location(2, 17),
                                                 ),
                                             ),
+                                            storageClass = null,
                                             location = Location(2, 5),
                                         ),
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(1, 1),
                         ),
                     ),
@@ -559,7 +584,7 @@ class SemanticAnalysisKtTest {
     fun `should support case with variable used in its own initializer`() {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -583,11 +608,13 @@ class SemanticAnalysisKtTest {
                                                 Location(2, 17),
                                             ),
                                         ),
+                                        storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -597,7 +624,7 @@ class SemanticAnalysisKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -621,11 +648,13 @@ class SemanticAnalysisKtTest {
                                                     Location(2, 17),
                                                 ),
                                             ),
+                                            storageClass = null,
                                             location = Location(2, 5),
                                         ),
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(1, 1),
                         ),
                     ),
@@ -644,7 +673,7 @@ class SemanticAnalysisKtTest {
     fun `should handle if statement`() {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -659,6 +688,7 @@ class SemanticAnalysisKtTest {
                                         name = "a",
                                         initializer =
                                         AST.Expression.IntLiteral(1, Location(2, 13)),
+                                        storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
@@ -706,6 +736,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -715,7 +746,7 @@ class SemanticAnalysisKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -730,6 +761,7 @@ class SemanticAnalysisKtTest {
                                             name = "a.0",
                                             initializer =
                                             AST.Expression.IntLiteral(1, Location(2, 13)),
+                                            storageClass = null,
                                             location = Location(2, 5),
                                         ),
                                     ),
@@ -777,6 +809,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(1, 1),
                         ),
                     ),
@@ -795,7 +828,7 @@ class SemanticAnalysisKtTest {
     fun `should handle conditional expression`() {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -809,6 +842,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                        storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
@@ -817,6 +851,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "b",
                                         initializer = null,
+                                        storageClass = null,
                                         location = Location(3, 5),
                                     ),
                                 ),
@@ -846,6 +881,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -855,7 +891,7 @@ class SemanticAnalysisKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -869,6 +905,7 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "a.0",
                                             initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                            storageClass = null,
                                             location = Location(2, 5),
                                         ),
                                     ),
@@ -877,6 +914,7 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "b.1",
                                             initializer = null,
+                                            storageClass = null,
                                             location = Location(3, 5),
                                         ),
                                     ),
@@ -906,6 +944,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(1, 1),
                         ),
                     ),
@@ -925,7 +964,7 @@ class SemanticAnalysisKtTest {
     fun `should allow declaring same variable in nested scope`() {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -939,6 +978,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                        storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
@@ -960,6 +1000,7 @@ class SemanticAnalysisKtTest {
                                                                 2,
                                                                 Location(4, 13),
                                                             ),
+                                                            storageClass = null,
                                                             location = Location(4, 5),
                                                         ),
                                                     ),
@@ -971,6 +1012,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -980,7 +1022,7 @@ class SemanticAnalysisKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -994,6 +1036,7 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "a.0",
                                             initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                            storageClass = null,
                                             location = Location(2, 5),
                                         ),
                                     ),
@@ -1015,6 +1058,7 @@ class SemanticAnalysisKtTest {
                                                                     2,
                                                                     Location(4, 13),
                                                                 ),
+                                                                storageClass = null,
                                                                 location = Location(4, 5),
                                                             ),
                                                         ),
@@ -1026,6 +1070,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(1, 1),
                         ),
                     ),
@@ -1045,7 +1090,7 @@ class SemanticAnalysisKtTest {
     fun `should allow using variable from outer scope`() {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -1059,6 +1104,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                        storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
@@ -1097,6 +1143,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -1106,7 +1153,7 @@ class SemanticAnalysisKtTest {
             ValidASTProgram(
                 value =
                 AST.Program(
-                    functionDeclarations =
+                    declarations =
                     listOf(
                         AST.Declaration.Function(
                             name = "main",
@@ -1123,6 +1170,7 @@ class SemanticAnalysisKtTest {
                                                 1,
                                                 Location(2, 13),
                                             ),
+                                            storageClass = null,
                                             location = Location(2, 5),
                                         ),
                                     ),
@@ -1161,6 +1209,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
+                            storageClass = null,
                             location = Location(1, 1),
                         ),
                     ),
@@ -1179,7 +1228,7 @@ class SemanticAnalysisKtTest {
     fun `should allow first using and then shadowing variable from outer scope`() {
         val input =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -1193,6 +1242,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                        storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
@@ -1227,6 +1277,7 @@ class SemanticAnalysisKtTest {
                                                             2,
                                                             Location(3, 13),
                                                         ),
+                                                        storageClass = null,
                                                         location = Location(3, 5),
                                                     ),
                                                 ),
@@ -1236,6 +1287,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -1243,7 +1295,7 @@ class SemanticAnalysisKtTest {
 
         val expected = ValidASTProgram(
             value = AST.Program(
-                functionDeclarations = listOf(
+                declarations = listOf(
                     AST.Declaration.Function(
                         name = "main",
                         parameters = emptyList(),
@@ -1253,6 +1305,7 @@ class SemanticAnalysisKtTest {
                                     declaration = AST.Declaration.Variable(
                                         name = "a.0",
                                         initializer = AST.Expression.IntLiteral(1, Location(2, 13)),
+                                        storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
@@ -1272,6 +1325,7 @@ class SemanticAnalysisKtTest {
                                                     declaration = AST.Declaration.Variable(
                                                         name = "a.1",
                                                         initializer = AST.Expression.IntLiteral(2, Location(3, 13)),
+                                                        storageClass = null,
                                                         location = Location(3, 5),
                                                     ),
                                                 ),
@@ -1281,6 +1335,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),

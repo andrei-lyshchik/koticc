@@ -5,6 +5,8 @@ package koticc.ast
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.raise.either
+import arrow.core.raise.ensure
+import arrow.core.raise.ensureNotNull
 import arrow.core.right
 import koticc.CompilerError
 import koticc.token.Location
@@ -24,11 +26,11 @@ private class Parser(
 
     fun parse(): Either<ParserError, AST.Program> =
         either {
-            val functionDeclarations = mutableListOf<AST.Declaration.Function>()
+            val declarations = mutableListOf<AST.Declaration>()
             while (peekToken() != null) {
-                functionDeclarations.add(parseFunctionDeclaration().bind())
+                declarations.add(parseDeclaration().bind())
             }
-            AST.Program(functionDeclarations)
+            AST.Program(declarations)
         }
 
     private fun peekToken(): TokenWithLocation? = tokens.getOrNull(current)
@@ -74,7 +76,7 @@ private class Parser(
 
     private fun parseFunctionDeclaration(): Either<ParserError, AST.Declaration.Function> =
         either {
-            val returnTypeToken = expectToken(Token.IntKeyword).bind()
+            val declarationSpecifiers = parseDeclarationSpecifiers().bind()
             val nameToken = expectIdentifier().bind()
             expectToken(Token.OpenParen).bind()
             val parameters = parseFunctionDeclarationParameters().bind()
@@ -94,7 +96,8 @@ private class Parser(
                 name = nameToken.value.value,
                 parameters = parameters,
                 body = body,
-                location = returnTypeToken.location,
+                storageClass = declarationSpecifiers.storageClass,
+                location = declarationSpecifiers.location,
             ).right()
         }
 
@@ -143,8 +146,8 @@ private class Parser(
 
     private fun parseBlockItem(): Either<ParserError, AST.BlockItem> =
         either {
-            when (peekToken()?.value) {
-                is Token.IntKeyword -> {
+            when {
+                isDeclarationSpecifier(peekToken()?.value) -> {
                     AST.BlockItem.Declaration(parseDeclaration().bind())
                 }
                 else -> {
@@ -153,20 +156,31 @@ private class Parser(
             }
         }
 
+    private fun isDeclarationSpecifier(token: Token?): Boolean =
+        token != null && toDeclarationSpecifierOrNull(token) != null
+
+    private fun toDeclarationSpecifierOrNull(token: Token): DeclarationSpecifier? =
+        when (token) {
+            Token.IntKeyword -> DeclarationSpecifier.Type.Int
+            Token.Extern -> DeclarationSpecifier.StorageClass.Extern
+            Token.Static -> DeclarationSpecifier.StorageClass.Static
+            else -> null
+        }
+
     private fun parseDeclaration(): Either<ParserError, AST.Declaration> =
         either {
-            val typeToken = expectToken(Token.IntKeyword).bind()
+            val declarationSpecifiers = parseDeclarationSpecifiers().bind()
             val nameToken = expectIdentifier().bind()
             when (peekToken()?.value) {
                 Token.Semicolon -> {
                     nextToken()
-                    AST.Declaration.Variable(nameToken.value.value, null, typeToken.location)
+                    AST.Declaration.Variable(nameToken.value.value, null, declarationSpecifiers.storageClass, declarationSpecifiers.location)
                 }
                 Token.Equal -> {
                     nextToken()
                     val initializer = parseExpression(0).bind()
                     expectToken(Token.Semicolon).bind()
-                    AST.Declaration.Variable(nameToken.value.value, initializer, typeToken.location)
+                    AST.Declaration.Variable(nameToken.value.value, initializer, declarationSpecifiers.storageClass, declarationSpecifiers.location)
                 }
                 Token.OpenParen -> {
                     nextToken()
@@ -174,16 +188,51 @@ private class Parser(
                     expectToken(Token.CloseParen).bind()
                     if (peekToken()?.value == Token.OpenBrace) {
                         val body = parseBlock().bind()
-                        AST.Declaration.Function(nameToken.value.value, parameters, body, typeToken.location)
+                        AST.Declaration.Function(nameToken.value.value, parameters, body, declarationSpecifiers.storageClass, declarationSpecifiers.location)
                     } else {
                         expectToken(Token.Semicolon).bind()
-                        AST.Declaration.Function(nameToken.value.value, parameters, null, typeToken.location)
+                        AST.Declaration.Function(nameToken.value.value, parameters, null, declarationSpecifiers.storageClass, declarationSpecifiers.location)
                     }
                 }
                 else -> {
                     raise(ParserError("expected = or (, got ${peekToken()?.value}", peekToken()?.location))
                 }
             }
+        }
+
+    private fun parseDeclarationSpecifiers(): Either<ParserError, DeclarationSpecifiers> = either {
+        val specifiers = mutableListOf<DeclarationSpecifier>()
+        val startLocation = ensureNotNull(peekToken()?.location) {
+            ParserError("expected declaration specifier, got EOF", null)
+        }
+        while (true) {
+            val specifier = peekToken()?.value?.let(::toDeclarationSpecifierOrNull)
+            if (specifier == null) {
+                break
+            }
+            specifiers.add(specifier)
+            nextToken()
+        }
+        val types = specifiers.filterIsInstance<DeclarationSpecifier.Type>()
+        ensure(types.size == 1) {
+            ParserError("invalid type specifier", startLocation)
+        }
+
+        val storageClasses = specifiers.filterIsInstance<DeclarationSpecifier.StorageClass>()
+        ensure(storageClasses.size <= 1) {
+            raise(ParserError("invalid storage class specifier", startLocation))
+        }
+
+        DeclarationSpecifiers(
+            storageClass = storageClasses.firstOrNull()?.toASTStorageClass(),
+            location = startLocation,
+        )
+    }
+
+    private fun DeclarationSpecifier.StorageClass.toASTStorageClass() =
+        when (this) {
+            DeclarationSpecifier.StorageClass.Extern -> AST.StorageClass.Extern
+            DeclarationSpecifier.StorageClass.Static -> AST.StorageClass.Static
         }
 
     private fun parseStatement(): Either<ParserError, AST.Statement> =
@@ -268,8 +317,8 @@ private class Parser(
                 Token.For -> {
                     val forToken = expectToken(Token.For).bind()
                     expectToken(Token.OpenParen).bind()
-                    val initializer = when (peekToken()?.value) {
-                        Token.IntKeyword -> when (val declaration = parseDeclaration().bind()) {
+                    val initializer = when {
+                        isDeclarationSpecifier(peekToken()?.value) -> when (val declaration = parseDeclaration().bind()) {
                             is AST.Declaration.Variable -> AST.ForInitializer.Declaration(declaration)
                             is AST.Declaration.Function -> raise(
                                 ParserError(
@@ -672,3 +721,19 @@ private sealed interface BinaryOperatorLike {
 
     data object Conditional : BinaryOperatorLike
 }
+
+private sealed interface DeclarationSpecifier {
+    sealed interface Type : DeclarationSpecifier {
+        data object Int : Type
+    }
+    sealed interface StorageClass : DeclarationSpecifier {
+        data object Extern : StorageClass
+        data object Static : StorageClass
+    }
+}
+
+// type is only int for now
+private data class DeclarationSpecifiers(
+    val storageClass: AST.StorageClass?,
+    val location: Location,
+)

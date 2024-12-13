@@ -13,9 +13,17 @@ internal class LoopAndSwitchResolver {
     fun resolveLoopsAndSwitches(program: AST.Program): Either<SemanticAnalysisError, AST.Program> =
         either {
             val newProgram = program.copy(
-                functionDeclarations = program.functionDeclarations.map { resolveFunctionDeclaration(it).bind() },
+                declarations = program.declarations.map { resolveDeclaration(it).bind() },
             )
             newProgram
+        }
+
+    private fun resolveDeclaration(declaration: AST.Declaration): Either<SemanticAnalysisError, AST.Declaration> =
+        either {
+            when (declaration) {
+                is AST.Declaration.Function -> resolveFunctionDeclaration(declaration).bind()
+                is AST.Declaration.Variable -> declaration
+            }
         }
 
     private fun resolveFunctionDeclaration(

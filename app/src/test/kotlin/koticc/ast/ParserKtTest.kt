@@ -22,12 +22,13 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
                         parameters = emptyList(),
                         body = AST.Block(blockItems = emptyList()),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -41,15 +42,15 @@ int main(void) {
         VarargArgumentsProvider(
             "main" to
                 ParserError(
-                    "expected token IntKeyword, but got Identifier(value=main)",
+                    "invalid type specifier",
                     Location(1, 1),
                 ),
             "int {" to ParserError("expected identifier, got OpenBrace", Location(1, 5)),
             "int main {" to
-                ParserError("expected token OpenParen, but got OpenBrace", Location(1, 10)),
+                ParserError("expected = or (, got OpenBrace", Location(1, 10)),
             "int test() {" to ParserError("expected void or int, got CloseParen", Location(1, 10)),
             "int main(void) {}abc" to
-                ParserError("expected token IntKeyword, but got Identifier(value=abc)", Location(1, 18)),
+                ParserError("invalid type specifier", Location(1, 18)),
         )
 
     @ParameterizedTest
@@ -73,7 +74,7 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -83,10 +84,11 @@ int main(void) {
                             blockItems =
                             listOf(
                                 AST.BlockItem.Declaration(
-                                    AST.Declaration.Variable("a", null, Location(2, 5)),
+                                    AST.Declaration.Variable("a", null, null, Location(2, 5)),
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -108,7 +110,7 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -124,11 +126,13 @@ int main(void) {
                                             value = 1,
                                             location = Location(2, 13),
                                         ),
+                                        null,
                                         Location(2, 5),
                                     ),
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -150,7 +154,7 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -170,6 +174,7 @@ int main(void) {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -191,7 +196,7 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -207,6 +212,7 @@ int main(void) {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -645,7 +651,7 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -659,6 +665,7 @@ int main(void) {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -775,6 +782,7 @@ int main(void) {
                                 AST.Declaration.Variable(
                                     name = "c",
                                     initializer = AST.Expression.IntLiteral(value = 1, location = Location(2, 27)),
+                                    storageClass = null,
                                     location = Location(2, 19),
                                 ),
                             ),
@@ -829,12 +837,13 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
                         parameters = emptyList(),
                         body = AST.Block(blockItems = listOf(AST.BlockItem.Statement(expectedStatement))),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -857,7 +866,7 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -880,6 +889,7 @@ int main(void) {
                                                             value = 1,
                                                             location = Location(3, 17),
                                                         ),
+                                                        storageClass = null,
                                                         location = Location(3, 9),
                                                     ),
                                                 ),
@@ -891,6 +901,7 @@ int main(void) {
                                                             value = 2,
                                                             location = Location(4, 17),
                                                         ),
+                                                        storageClass = null,
                                                         location = Location(4, 9),
                                                     ),
                                                 ),
@@ -900,6 +911,7 @@ int main(void) {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
@@ -921,7 +933,7 @@ int main(void) {
 
         val expected =
             AST.Program(
-                functionDeclarations =
+                declarations =
                 listOf(
                     AST.Declaration.Function(
                         name = "main",
@@ -951,6 +963,7 @@ int main(void) {
                                 ),
                             ),
                         ),
+                        storageClass = null,
                         location = Location(1, 1),
                     ),
                 ),
