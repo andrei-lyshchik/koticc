@@ -5,6 +5,7 @@ import koticc.ast.plus
 import koticc.ast.program
 import koticc.semantic.Type
 import koticc.semantic.ValidASTProgram
+import koticc.semantic.toIdentifier
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -15,8 +16,8 @@ class ASTToTackyFunctionsTest {
             value = program {
                 function("foo")
             },
-            variableCount = 0,
-            types = emptyMap(),
+            renamedVariableCount = 0,
+            typedIdentifiers = emptyMap(),
         )
 
         val actual = programASTToTacky(input)
@@ -38,8 +39,8 @@ class ASTToTackyFunctionsTest {
                     return_(2.e)
                 }
             },
-            variableCount = 0,
-            types = emptyMap(),
+            renamedVariableCount = 0,
+            typedIdentifiers = emptyMap(),
         )
 
         val actual = programASTToTacky(input)
@@ -67,8 +68,8 @@ class ASTToTackyFunctionsTest {
                     call("foo")
                 }
             },
-            variableCount = 0,
-            types = emptyMap(),
+            renamedVariableCount = 0,
+            typedIdentifiers = emptyMap(),
         )
 
         val actual = programASTToTacky(program)
@@ -92,8 +93,8 @@ class ASTToTackyFunctionsTest {
                     call("foo", 1.e, 2.e + 3.e)
                 }
             },
-            variableCount = 0,
-            types = emptyMap(),
+            renamedVariableCount = 0,
+            typedIdentifiers = emptyMap(),
         )
 
         val actual = programASTToTacky(program)
@@ -118,11 +119,11 @@ class ASTToTackyFunctionsTest {
                     return_("a".e + "b".e)
                 }
             },
-            variableCount = 2,
-            types = mapOf(
-                "foo" to Type.Function(parameterCount = 2),
-                "a" to Type.Integer,
-                "b" to Type.Integer,
+            renamedVariableCount = 2,
+            typedIdentifiers = mapOf(
+                "foo" to Type.Function(parameterCount = 2).toIdentifier(),
+                "a" to Type.Integer.toIdentifier(),
+                "b" to Type.Integer.toIdentifier(),
             ),
         )
 

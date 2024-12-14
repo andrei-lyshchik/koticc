@@ -8,7 +8,7 @@ import koticc.ast.initExpr
 import koticc.ast.lt
 import koticc.ast.plusAssign
 import koticc.ast.program
-import koticc.semantic.Type
+import koticc.semantic.TypedIdentifier
 import koticc.semantic.ValidASTProgram
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -25,8 +25,8 @@ class ASTToTackyKtForTest {
                     }
                 }
             },
-            variableCount = 2,
-            types = emptyMap<String, Type>(),
+            renamedVariableCount = 2,
+            typedIdentifiers = emptyMap<String, TypedIdentifier>(),
         )
 
         val actual = programASTToTacky(input)
@@ -70,8 +70,8 @@ class ASTToTackyKtForTest {
                     }
                 }
             },
-            variableCount = 1,
-            types = emptyMap<String, Type>(),
+            renamedVariableCount = 1,
+            typedIdentifiers = emptyMap<String, TypedIdentifier>(),
         )
 
         val actual = programASTToTacky(input)
@@ -115,8 +115,8 @@ class ASTToTackyKtForTest {
                     }
                 }
             },
-            variableCount = 2,
-            types = emptyMap<String, Type>(),
+            renamedVariableCount = 2,
+            typedIdentifiers = emptyMap<String, TypedIdentifier>(),
         )
 
         val actual = programASTToTacky(input)
@@ -158,8 +158,8 @@ class ASTToTackyKtForTest {
                     }
                 }
             },
-            variableCount = 2,
-            types = emptyMap<String, Type>(),
+            renamedVariableCount = 2,
+            typedIdentifiers = emptyMap<String, TypedIdentifier>(),
         )
 
         val actual = programASTToTacky(input)
@@ -206,8 +206,8 @@ class ASTToTackyKtForTest {
                     }
                 }
             },
-            variableCount = 2,
-            types = emptyMap<String, Type>(),
+            renamedVariableCount = 2,
+            typedIdentifiers = emptyMap<String, TypedIdentifier>(),
         )
 
         val actual = programASTToTacky(input)

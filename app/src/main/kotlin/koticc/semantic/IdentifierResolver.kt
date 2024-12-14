@@ -1,7 +1,6 @@
 package koticc.semantic
 
 import arrow.core.Either
-import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
@@ -10,13 +9,13 @@ import koticc.token.Location
 
 internal data class IdentifierResolverResult(
     val program: AST.Program,
-    val variableCount: Int,
+    val renamedVariableCount: Int,
     // from new unique name to original name
     val nameMapping: Map<String, String>,
 )
 
 internal class IdentifierResolver {
-    private var variableCount = 0
+    private var renamedVariableCount = 0
     private val nameMapping: MutableMap<String, String> = mutableMapOf()
 
     fun resolveProgram(program: AST.Program): Either<SemanticAnalysisError, IdentifierResolverResult> =
@@ -28,7 +27,7 @@ internal class IdentifierResolver {
                         resolveFileLevelDeclaration(it, identifierMapping).bind()
                     },
                 )
-            IdentifierResolverResult(validProgram, variableCount, nameMapping)
+            IdentifierResolverResult(validProgram, renamedVariableCount, nameMapping)
         }
 
     private fun resolveFileLevelDeclaration(
@@ -38,9 +37,23 @@ internal class IdentifierResolver {
         either {
             when (declaration) {
                 is AST.Declaration.Function -> resolveFunctionDeclaration(declaration, identifierMapping).bind()
-                is AST.Declaration.Variable -> resolveVariableDeclaration(declaration, identifierMapping).bind()
+                is AST.Declaration.Variable -> resolveFileLevelVariableDeclaration(declaration, identifierMapping).bind()
             }
         }
+
+    private fun resolveFileLevelVariableDeclaration(
+        declaration: AST.Declaration.Variable,
+        identifierMapping: MutableMap<String, DeclaredIdentifier>,
+    ): Either<SemanticAnalysisError, AST.Declaration.Variable> = either {
+        identifierMapping[declaration.name] = DeclaredIdentifier(
+            name = declaration.name,
+            hasLinkage = true,
+            declaredInThisScope = true,
+            location = declaration.location,
+        )
+        // don't resolve the initializer, as it must be a constant (if not, typechecking would return an error later)
+        declaration
+    }
 
     private fun resolveFunctionDeclaration(
         functionDeclaration: AST.Declaration.Function,
@@ -50,7 +63,7 @@ internal class IdentifierResolver {
             declareFunction(functionDeclaration.name, functionDeclaration.location, identifierMapping).bind()
             val identifierMappingCopy = identifierMapping.copyForNestedBlock()
             val parameters = functionDeclaration.parameters.map { parameter ->
-                val newName = declareVariable(parameter.name, parameter.location, identifierMappingCopy).bind()
+                val newName = declareVariable(parameter.name, parameter.location, null, identifierMappingCopy).bind()
                 parameter.copy(name = newName)
             }
             functionDeclaration.copy(
@@ -82,6 +95,12 @@ internal class IdentifierResolver {
                                 blockItem.declaration.location,
                             )
                         }
+                        ensure(blockItem.declaration.storageClass != AST.StorageClass.Static) {
+                            SemanticAnalysisError(
+                                "nested function declaration '${blockItem.declaration.name}' with static storage class",
+                                blockItem.declaration.location,
+                            )
+                        }
                         AST.BlockItem.Declaration(
                             resolveFunctionDeclaration(blockItem.declaration, identifierMapping).bind(),
                         )
@@ -98,42 +117,52 @@ internal class IdentifierResolver {
         identifierMapping: MutableMap<String, DeclaredIdentifier>,
     ): Either<SemanticAnalysisError, AST.Declaration.Variable> =
         either {
-            val newName = declareVariable(declaration.name, declaration.location, identifierMapping).bind()
+            val newName = declareVariable(declaration.name, declaration.location, declaration.storageClass, identifierMapping).bind()
             declaration.copy(name = newName, initializer = declaration.initializer?.let { resolveExpression(it, identifierMapping).bind() })
         }
 
     private fun declareVariable(
         originalName: String,
         location: Location,
+        storageClass: AST.StorageClass?,
         identifierMapping: MutableMap<String, DeclaredIdentifier>,
     ): Either<SemanticAnalysisError, String> = either {
-        identifierMapping[originalName]?.takeIf { it.declaredInThisScope }?.let {
-            raiseAlreadyDeclared(originalName = originalName, previousLocation = it.location, location = location)
+        val previousDeclaration = identifierMapping[originalName]
+        if (previousDeclaration != null && previousDeclaration.declaredInThisScope) {
+            ensure(previousDeclaration.hasLinkage && storageClass == AST.StorageClass.Extern) {
+                raise(alreadyDeclaredError(originalName = originalName, previousLocation = previousDeclaration.location, location = location))
+            }
         }
-        val newName = "$originalName.${variableCount++}"
-        nameMapping[newName] = originalName
-        identifierMapping[originalName] = DeclaredIdentifier(
-            name = newName,
-            hasLinkage = false,
-            declaredInThisScope = true,
-            location = location,
-        )
-        newName
+        if (storageClass == AST.StorageClass.Extern) {
+            identifierMapping[originalName] = DeclaredIdentifier(
+                name = originalName,
+                hasLinkage = true,
+                declaredInThisScope = true,
+                location = location,
+            )
+            originalName
+        } else {
+            val newName = "$originalName.${renamedVariableCount++}"
+            nameMapping[newName] = originalName
+            identifierMapping[originalName] = DeclaredIdentifier(
+                name = newName,
+                hasLinkage = false,
+                declaredInThisScope = true,
+                location = location,
+            )
+            newName
+        }
     }
 
-    private fun Raise<SemanticAnalysisError>.raiseAlreadyDeclared(
+    private fun alreadyDeclaredError(
         originalName: String,
         previousLocation: Location,
         location: Location,
-    ) {
-        raise(
-            SemanticAnalysisError(
-                "'$originalName' already declared at" +
-                    " ${previousLocation.toHumanReadableString()}",
-                location,
-            ),
-        )
-    }
+    ) = SemanticAnalysisError(
+        "'$originalName' already declared at" +
+            " ${previousLocation.toHumanReadableString()}",
+        location,
+    )
 
     private fun declareFunction(
         name: String,
@@ -141,9 +170,8 @@ internal class IdentifierResolver {
         identifierMapping: MutableMap<String, DeclaredIdentifier>,
     ): Either<SemanticAnalysisError, String> = either {
         identifierMapping[name]?.takeIf { it.declaredInThisScope && !it.hasLinkage }?.let {
-            raiseAlreadyDeclared(originalName = name, previousLocation = it.location, location = location)
+            raise(alreadyDeclaredError(originalName = name, previousLocation = it.location, location = location))
         }
-        nameMapping[name] = name
         identifierMapping[name] = DeclaredIdentifier(
             name = name,
             hasLinkage = true,

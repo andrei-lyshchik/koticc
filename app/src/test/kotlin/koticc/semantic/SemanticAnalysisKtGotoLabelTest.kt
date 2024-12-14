@@ -31,10 +31,10 @@ class SemanticAnalysisKtGotoLabelTest {
                         }
                     }
                 },
-                variableCount = 1,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
+                renamedVariableCount = 1,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
                 ),
             )
 
@@ -113,9 +113,9 @@ class SemanticAnalysisKtGotoLabelTest {
                         goto("foo.label_else")
                     }
                 },
-                variableCount = 0,
-                types = mapOf(
-                    "foo" to Type.Function(parameterCount = 0),
+                renamedVariableCount = 0,
+                typedIdentifiers = mapOf(
+                    "foo" to Type.Function(parameterCount = 0).toIdentifier(),
                 ),
             )
 
@@ -163,9 +163,9 @@ class SemanticAnalysisKtGotoLabelTest {
                     label("main.label2") { null_() }
                 }
             },
-            variableCount = 0,
-            types = mapOf(
-                "main" to Type.Function(parameterCount = 0),
+            renamedVariableCount = 0,
+            typedIdentifiers = mapOf(
+                "main" to Type.Function(parameterCount = 0).toIdentifier(),
             ),
         )
 
@@ -192,10 +192,10 @@ class SemanticAnalysisKtGotoLabelTest {
                     label("foo.label") { null_() }
                 }
             },
-            variableCount = 0,
-            types = mapOf(
-                "main" to Type.Function(parameterCount = 0),
-                "foo" to Type.Function(parameterCount = 0),
+            renamedVariableCount = 0,
+            typedIdentifiers = mapOf(
+                "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                "foo" to Type.Function(parameterCount = 0).toIdentifier(),
             ),
         )
 

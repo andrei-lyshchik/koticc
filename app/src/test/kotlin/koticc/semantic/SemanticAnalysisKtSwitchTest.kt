@@ -51,10 +51,10 @@ class SemanticAnalysisKtSwitchTest {
                         }
                     }
                 },
-                variableCount = 1,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
+                renamedVariableCount = 1,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
                 ),
             ).right(),
             actual = actual,
@@ -84,9 +84,9 @@ class SemanticAnalysisKtSwitchTest {
                         return_(0.e)
                     }
                 },
-                variableCount = 0,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
+                renamedVariableCount = 0,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 ),
             ).right(),
             actual = actual,
@@ -240,9 +240,9 @@ class SemanticAnalysisKtSwitchTest {
                         return_(0.e)
                     }
                 },
-                variableCount = 0,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
+                renamedVariableCount = 0,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 ),
             ).right(),
             actual = actual,

@@ -5,7 +5,7 @@ import koticc.ast.LabelName
 import koticc.semantic.ValidASTProgram
 
 fun programASTToTacky(validASTProgram: ValidASTProgram): Tacky.Program {
-    val generator = TackyGenerator(initialVariableCount = validASTProgram.variableCount)
+    val generator = TackyGenerator(initialVariableCount = validASTProgram.renamedVariableCount)
     return generator.generateProgram(validASTProgram.value)
 }
 

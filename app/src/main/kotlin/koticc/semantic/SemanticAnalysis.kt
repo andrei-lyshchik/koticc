@@ -8,8 +8,8 @@ import koticc.token.Location
 
 data class ValidASTProgram(
     val value: AST.Program,
-    val variableCount: Int,
-    val types: Map<String, Type>,
+    val renamedVariableCount: Int,
+    val typedIdentifiers: Map<String, TypedIdentifier>,
 )
 
 data class SemanticAnalysisError(
@@ -24,10 +24,10 @@ fun semanticAnalysis(program: AST.Program): Either<SemanticAnalysisError, ValidA
         val identifierResolverResult = IdentifierResolver().resolveProgram(program).bind()
         val gotoLabelResolverResult = GotoLabelResolver().resolveLabels(identifierResolverResult.program).bind()
         val programWithResolvedLoopsAndSwitches = LoopAndSwitchResolver().resolveLoopsAndSwitches(gotoLabelResolverResult).bind()
-        val types = Typechecker(identifierResolverResult.nameMapping).typecheck(programWithResolvedLoopsAndSwitches).bind()
+        val typedIdentifiers = Typechecker(identifierResolverResult.nameMapping).typecheck(programWithResolvedLoopsAndSwitches).bind()
         ValidASTProgram(
             value = programWithResolvedLoopsAndSwitches,
-            variableCount = identifierResolverResult.variableCount,
-            types = types,
+            renamedVariableCount = identifierResolverResult.renamedVariableCount,
+            typedIdentifiers = typedIdentifiers,
         )
     }

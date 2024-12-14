@@ -133,11 +133,11 @@ class SemanticAnalysisKtTest {
                         ),
                     ),
                 ),
-                variableCount = 2,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
-                    "b.1" to Type.Integer,
+                renamedVariableCount = 2,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
+                    "b.1" to Type.Integer.toIdentifier(),
                 ),
             )
 
@@ -437,10 +437,10 @@ class SemanticAnalysisKtTest {
                         ),
                     ),
                 ),
-                variableCount = 1,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
+                renamedVariableCount = 1,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
                 ),
             )
 
@@ -568,12 +568,12 @@ class SemanticAnalysisKtTest {
                         ),
                     ),
                 ),
-                variableCount = 3,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
-                    "b.1" to Type.Integer,
-                    "c.2" to Type.Integer,
+                renamedVariableCount = 3,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
+                    "b.1" to Type.Integer.toIdentifier(),
+                    "c.2" to Type.Integer.toIdentifier(),
                 ),
             )
 
@@ -659,10 +659,10 @@ class SemanticAnalysisKtTest {
                         ),
                     ),
                 ),
-                variableCount = 1,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
+                renamedVariableCount = 1,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
                 ),
             )
 
@@ -814,10 +814,10 @@ class SemanticAnalysisKtTest {
                         ),
                     ),
                 ),
-                variableCount = 1,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
+                renamedVariableCount = 1,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
                 ),
             )
 
@@ -949,11 +949,11 @@ class SemanticAnalysisKtTest {
                         ),
                     ),
                 ),
-                variableCount = 2,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
-                    "b.1" to Type.Integer,
+                renamedVariableCount = 2,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
+                    "b.1" to Type.Integer.toIdentifier(),
                 ),
             )
 
@@ -1075,11 +1075,11 @@ class SemanticAnalysisKtTest {
                         ),
                     ),
                 ),
-                variableCount = 2,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
-                    "a.1" to Type.Integer,
+                renamedVariableCount = 2,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
+                    "a.1" to Type.Integer.toIdentifier(),
                 ),
             )
 
@@ -1214,10 +1214,10 @@ class SemanticAnalysisKtTest {
                         ),
                     ),
                 ),
-                variableCount = 1,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
+                renamedVariableCount = 1,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
                 ),
             )
 
@@ -1340,11 +1340,11 @@ class SemanticAnalysisKtTest {
                     ),
                 ),
             ),
-            variableCount = 2,
-            types = mapOf(
-                "main" to Type.Function(parameterCount = 0),
-                "a.0" to Type.Integer,
-                "a.1" to Type.Integer,
+            renamedVariableCount = 2,
+            typedIdentifiers = mapOf(
+                "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                "a.0" to Type.Integer.toIdentifier(),
+                "a.1" to Type.Integer.toIdentifier(),
             ),
         )
 

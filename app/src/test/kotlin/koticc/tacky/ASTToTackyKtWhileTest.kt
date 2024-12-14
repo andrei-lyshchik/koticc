@@ -4,7 +4,7 @@ import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.lt
 import koticc.ast.program
-import koticc.semantic.Type
+import koticc.semantic.TypedIdentifier
 import koticc.semantic.ValidASTProgram
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -21,8 +21,8 @@ class ASTToTackyKtWhileTest {
                     }
                 }
             },
-            variableCount = 1,
-            types = emptyMap<String, Type>(),
+            renamedVariableCount = 1,
+            typedIdentifiers = emptyMap<String, TypedIdentifier>(),
         )
 
         val actual = programASTToTacky(input)
@@ -66,8 +66,8 @@ class ASTToTackyKtWhileTest {
                     }
                 }
             },
-            variableCount = 1,
-            types = emptyMap<String, Type>(),
+            renamedVariableCount = 1,
+            typedIdentifiers = emptyMap<String, TypedIdentifier>(),
         )
 
         val actual = programASTToTacky(input)

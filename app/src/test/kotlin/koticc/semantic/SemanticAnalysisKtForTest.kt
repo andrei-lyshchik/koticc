@@ -1,12 +1,17 @@
 package koticc.semantic
 
+import arrow.core.left
 import arrow.core.right
+import koticc.ast.AST
+import koticc.ast.DUMMY_LOCATION
 import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.initDecl
 import koticc.ast.lt
 import koticc.ast.plusAssign
 import koticc.ast.program
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -45,11 +50,11 @@ class SemanticAnalysisKtForTest {
                         return_("a.0".e)
                     }
                 },
-                variableCount = 2,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
-                    "i.1" to Type.Integer,
+                renamedVariableCount = 2,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
+                    "i.1" to Type.Integer.toIdentifier(),
                 ),
             ).right(),
             actual = actual,
@@ -129,12 +134,12 @@ class SemanticAnalysisKtForTest {
                         return_("a.0".e)
                     }
                 },
-                variableCount = 3,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
-                    "i.1" to Type.Integer,
-                    "i.2" to Type.Integer,
+                renamedVariableCount = 3,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
+                    "i.1" to Type.Integer.toIdentifier(),
+                    "i.2" to Type.Integer.toIdentifier(),
                 ),
             ).right(),
             actual = actual,
@@ -214,12 +219,12 @@ class SemanticAnalysisKtForTest {
                         return_("a.0".e)
                     }
                 },
-                variableCount = 3,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
-                    "i.1" to Type.Integer,
-                    "j.2" to Type.Integer,
+                renamedVariableCount = 3,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
+                    "i.1" to Type.Integer.toIdentifier(),
+                    "j.2" to Type.Integer.toIdentifier(),
                 ),
             ).right(),
             actual = actual,
@@ -267,15 +272,45 @@ class SemanticAnalysisKtForTest {
                         return_("a.0".e)
                     }
                 },
-                variableCount = 4,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "a.0" to Type.Integer,
-                    "i.1" to Type.Integer,
-                    "i.2" to Type.Integer,
-                    "i.3" to Type.Integer,
+                renamedVariableCount = 4,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
+                    "i.1" to Type.Integer.toIdentifier(),
+                    "i.2" to Type.Integer.toIdentifier(),
+                    "i.3" to Type.Integer.toIdentifier(),
                 ),
             ).right(),
+            actual = actual,
+        )
+    }
+
+    @ParameterizedTest
+    @EnumSource(AST.StorageClass::class)
+    fun `can't use static or extern in for initializer`(storageClass: AST.StorageClass) {
+        val input = program {
+            function("main") {
+                for_(
+                    initDecl("i", 3.e).let {
+                        it.copy(
+                            declaration = it.declaration.copy(storageClass = storageClass),
+                        )
+                    },
+                    "i".e lt 10.e,
+                    "i".e plusAssign 1.e,
+                ) {
+                    return_("i".e)
+                }
+            }
+        }
+
+        val actual = semanticAnalysis(input)
+
+        assertEquals(
+            expected = SemanticAnalysisError(
+                message = "can't use storage class specifier in for loop initializer",
+                location = DUMMY_LOCATION,
+            ).left(),
             actual = actual,
         )
     }

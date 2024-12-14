@@ -1,7 +1,9 @@
 package koticc.semantic
 
 sealed interface Type {
-    data object Integer : Type
+    sealed interface Data : Type
+
+    data object Integer : Data
 
     data class Function(
         val parameterCount: Int,

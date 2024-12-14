@@ -33,11 +33,11 @@ class SemanticAnalysisKtFunctionsTest {
                         return_("a.0".e + "b.1".e)
                     }
                 },
-                variableCount = 2,
-                types = mapOf(
-                    "test" to Type.Function(parameterCount = 2),
-                    "a.0" to Type.Integer,
-                    "b.1" to Type.Integer,
+                renamedVariableCount = 2,
+                typedIdentifiers = mapOf(
+                    "test" to Type.Function(parameterCount = 2).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
+                    "b.1" to Type.Integer.toIdentifier(),
                 ),
             ).right(),
             actual = actual,
@@ -89,7 +89,7 @@ class SemanticAnalysisKtFunctionsTest {
     fun `should return error if nested function has a body`() {
         val program = program {
             function("test") {
-                func("test2") {
+                function("test2") {
                     return_(2.e)
                 }
                 return_(1.e)
@@ -119,9 +119,9 @@ class SemanticAnalysisKtFunctionsTest {
                     function("test1", "a.0")
                     function("test1", "a.1")
                 },
-                variableCount = 2,
-                types = mapOf(
-                    "test1" to Type.Function(parameterCount = 1),
+                renamedVariableCount = 2,
+                typedIdentifiers = mapOf(
+                    "test1" to Type.Function(parameterCount = 1).toIdentifier(defined = false),
                 ),
             ).right(),
             actual = actual,
@@ -143,9 +143,9 @@ class SemanticAnalysisKtFunctionsTest {
                     function("test1", "a.0", "c.1")
                     function("test1", "b.2", "d.3")
                 },
-                variableCount = 4,
-                types = mapOf(
-                    "test1" to Type.Function(parameterCount = 2),
+                renamedVariableCount = 4,
+                typedIdentifiers = mapOf(
+                    "test1" to Type.Function(parameterCount = 2).toIdentifier(defined = false),
                 ),
             ).right(),
             actual = actual,
@@ -157,7 +157,7 @@ class SemanticAnalysisKtFunctionsTest {
         val program = program {
             function("main") {
                 if_(1.e eq 1.e) {
-                    func("test1", "a")
+                    function("test1", "a")
                 }
             }
         }
@@ -169,14 +169,14 @@ class SemanticAnalysisKtFunctionsTest {
                 value = program {
                     function("main") {
                         if_(1.e eq 1.e) {
-                            func("test1", "a.0")
+                            function("test1", "a.0")
                         }
                     }
                 },
-                variableCount = 1,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "test1" to Type.Function(parameterCount = 1),
+                renamedVariableCount = 1,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "test1" to Type.Function(parameterCount = 1).toIdentifier(defined = false),
                 ),
             ).right(),
             actual = actual,
@@ -187,12 +187,12 @@ class SemanticAnalysisKtFunctionsTest {
         program {
             function("main") {
                 int("a") assign 1.e
-                func("a")
+                function("a")
             }
         },
         program {
             function("main") {
-                func("a")
+                function("a")
                 int("a") assign 1.e
             }
         },
@@ -234,11 +234,11 @@ class SemanticAnalysisKtFunctionsTest {
                         call("test", 1.e)
                     }
                 },
-                variableCount = 1,
-                types = mapOf(
-                    "main" to Type.Function(parameterCount = 0),
-                    "test" to Type.Function(parameterCount = 1),
-                    "a.0" to Type.Integer,
+                renamedVariableCount = 1,
+                typedIdentifiers = mapOf(
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "test" to Type.Function(parameterCount = 1).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
                 ),
             ).right(),
             actual = actual,
@@ -320,12 +320,12 @@ class SemanticAnalysisKtFunctionsTest {
                         return_("a.1".e)
                     }
                 },
-                variableCount = 2,
-                types = mapOf(
-                    "test1" to Type.Function(parameterCount = 1),
-                    "test2" to Type.Function(parameterCount = 1),
-                    "a.0" to Type.Integer,
-                    "a.1" to Type.Integer,
+                renamedVariableCount = 2,
+                typedIdentifiers = mapOf(
+                    "test1" to Type.Function(parameterCount = 1).toIdentifier(),
+                    "test2" to Type.Function(parameterCount = 1).toIdentifier(),
+                    "a.0" to Type.Integer.toIdentifier(),
+                    "a.1" to Type.Integer.toIdentifier(),
                 ),
             ).right(),
             actual = actual,
@@ -346,7 +346,7 @@ class SemanticAnalysisKtFunctionsTest {
                 return_("a".e)
             }
             function("main") {
-                func("test", "a")
+                function("test", "a")
                 return_("test"(1.e))
             }
             function("test", "a") {
@@ -362,7 +362,7 @@ class SemanticAnalysisKtFunctionsTest {
                 return_("a".e)
             }
             function("main") {
-                func("test", "a", "b")
+                function("test", "a", "b")
                 return_(1.e)
             }
         },
@@ -394,6 +394,183 @@ class SemanticAnalysisKtFunctionsTest {
 
         assertEquals(
             expected = SemanticAnalysisError("'test' is not a variable", DUMMY_LOCATION).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `nested function declarations can't have static storage`() {
+        val program = program {
+            function("main") {
+                function("test", storageClass = AST.StorageClass.Static)
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError("nested function declaration 'test' with static storage class", DUMMY_LOCATION).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `static functions are not global`() {
+        val program = program {
+            function("test", storageClass = AST.StorageClass.Static)
+
+            function("main") {
+                return_("test"())
+            }
+
+            function("test", storageClass = AST.StorageClass.Static) {
+                return_(1.e)
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("test", storageClass = AST.StorageClass.Static)
+
+                    function("main") {
+                        return_("test"())
+                    }
+
+                    function("test", storageClass = AST.StorageClass.Static) {
+                        return_(1.e)
+                    }
+                },
+                renamedVariableCount = 0,
+                typedIdentifiers = mapOf(
+                    "test" to Type.Function(parameterCount = 0).toIdentifier(global = false),
+                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `can't declare function both as static and non-static`() {
+        val program = program {
+            function("test")
+
+            function("main") {
+                return_("test"())
+            }
+
+            function("test", storageClass = AST.StorageClass.Static) {
+                return_(1.e)
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError("static function 'test' declaration follows non-static at line 0, column 0", DUMMY_LOCATION).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `can't redeclare function if variable with linkage was already declared with the same name`() {
+        val program = program {
+            int("foo") assign 10.e
+
+            function("main") {
+                // this should conflict with the variable declaration above
+                function("foo")
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError("variable 'foo' redeclared as a function", DUMMY_LOCATION).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `can declare static functions multiple times`() {
+        val program = program {
+            function("fun", storageClass = AST.StorageClass.Static)
+            function("client1") {
+                "fun"()
+            }
+            function("client2") {
+                // block-scope declarations take linkage of visible declaration
+                function("fun")
+            }
+            // this should not conflict with the static declaration above due to extern
+            function("fun", storageClass = AST.StorageClass.Extern)
+            function("fun", storageClass = AST.StorageClass.Static)
+            function("fun") {
+                return_(1.e)
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("fun", storageClass = AST.StorageClass.Static)
+                    function("client1") {
+                        "fun"()
+                    }
+                    function("client2") {
+                        function("fun")
+                    }
+                    function("fun", storageClass = AST.StorageClass.Extern)
+                    function("fun", storageClass = AST.StorageClass.Static)
+                    function("fun") {
+                        return_(1.e)
+                    }
+                },
+                renamedVariableCount = 0,
+                typedIdentifiers = mapOf(
+                    "fun" to Type.Function(parameterCount = 0).toIdentifier(global = false),
+                    "client1" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "client2" to Type.Function(parameterCount = 0).toIdentifier(),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `local variables with extern specifier can't have initializers`() {
+        val program = program {
+            function("main") {
+                int("a", storageClass = AST.StorageClass.Extern) assign 1.e
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError("extern local variable 'a' cannot have an initializer", DUMMY_LOCATION).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `can't declare local variable with extern if there's already function with the same name`() {
+        val program = program {
+            function("a")
+            function("main") {
+                int("a", storageClass = AST.StorageClass.Extern)
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError("function 'a' redeclared as a variable", DUMMY_LOCATION).left(),
             actual = actual,
         )
     }

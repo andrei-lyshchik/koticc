@@ -67,7 +67,7 @@ class ParserKtFunctionDeclarationTest {
         assertEqualsIgnoringLocations(
             expected = program {
                 function("main") {
-                    func("foo")
+                    function("foo")
                 }
             },
             actual = actual,
@@ -89,7 +89,7 @@ class ParserKtFunctionDeclarationTest {
         assertEqualsIgnoringLocations(
             expected = program {
                 function("main") {
-                    func("foo") {
+                    function("foo") {
                         return_(1.e)
                     }
                 }
