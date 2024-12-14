@@ -2,7 +2,29 @@ package koticc.assembly
 
 import koticc.VarargArgumentsProvider
 import koticc.ast.LabelName
+import koticc.semantic.empty
 import koticc.tacky.Tacky
+import koticc.tacky.and
+import koticc.tacky.complement
+import koticc.tacky.div
+import koticc.tacky.eq
+import koticc.tacky.gt
+import koticc.tacky.gte
+import koticc.tacky.lt
+import koticc.tacky.lte
+import koticc.tacky.minus
+import koticc.tacky.neq
+import koticc.tacky.not
+import koticc.tacky.or
+import koticc.tacky.plus
+import koticc.tacky.rem
+import koticc.tacky.shl
+import koticc.tacky.shr
+import koticc.tacky.t
+import koticc.tacky.tackyProgram
+import koticc.tacky.times
+import koticc.tacky.unaryMinus
+import koticc.tacky.xor
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
@@ -11,39 +33,31 @@ import kotlin.test.assertEquals
 class TackyToAssemblyKtTest {
     @Test
     fun `should generate assembly for single return`() {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Return(
-                                value = Tacky.Value.IntConstant(42),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                return_(42.t)
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(0),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(42),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(0),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(42),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                                ),
+                                Assembly.Instruction.Ret,
                             ),
-                            Assembly.Instruction.Ret,
                         ),
                     ),
                 ),
@@ -54,47 +68,36 @@ class TackyToAssemblyKtTest {
 
     @Test
     fun `should allocate stack for variables`() {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Copy(
-                                src = Tacky.Value.IntConstant(42),
-                                dst = Tacky.Value.Variable("x"),
-                            ),
-                            Tacky.Instruction.Return(
-                                value = Tacky.Value.Variable("x"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                assign("x", 42.t)
+                return_("x".t)
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(16),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(42),
-                                dst = Assembly.Operand.Stack(-4),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(16),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(42),
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Stack(-4),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                                ),
+                                Assembly.Instruction.Ret,
                             ),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Stack(-4),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
-                            ),
-                            Assembly.Instruction.Ret,
                         ),
                     ),
                 ),
@@ -114,43 +117,40 @@ class TackyToAssemblyKtTest {
         tackyOperator: Tacky.UnaryOperator,
         assemblyOperator: Assembly.UnaryOperator,
     ) {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Unary(
-                                operator = tackyOperator,
-                                src = Tacky.Value.IntConstant(42),
-                                dst = Tacky.Value.Variable("x"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                assign(
+                    "x",
+                    when (tackyOperator) {
+                        Tacky.UnaryOperator.Negate -> -(42.t)
+                        Tacky.UnaryOperator.Complement -> 42.t.complement()
+                        Tacky.UnaryOperator.LogicalNegate -> error("Not in this test")
+                    },
+                )
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(16),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(42),
-                                dst = Assembly.Operand.Stack(-4),
-                            ),
-                            Assembly.Instruction.Unary(
-                                operator = assemblyOperator,
-                                operand = Assembly.Operand.Stack(-4),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(16),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(42),
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
+                                Assembly.Instruction.Unary(
+                                    operator = assemblyOperator,
+                                    operand = Assembly.Operand.Stack(-4),
+                                ),
                             ),
                         ),
                     ),
@@ -162,47 +162,37 @@ class TackyToAssemblyKtTest {
 
     @Test
     fun `should generate assembly for logical negate`() {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Unary(
-                                operator = Tacky.UnaryOperator.LogicalNegate,
-                                src = Tacky.Value.IntConstant(42),
-                                dst = Tacky.Value.Variable("x"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                assign("x", !42.t)
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(16),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(0),
-                                dst = Assembly.Operand.Stack(-4),
-                            ),
-                            Assembly.Instruction.Cmp(
-                                src = Assembly.Operand.Immediate(42),
-                                dst = Assembly.Operand.Stack(-4),
-                            ),
-                            Assembly.Instruction.Set(
-                                operator = Assembly.ConditionalOperator.Equal,
-                                dst = Assembly.Operand.Stack(-4),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(16),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(0),
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
+                                Assembly.Instruction.Cmp(
+                                    src = Assembly.Operand.Immediate(42),
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
+                                Assembly.Instruction.Set(
+                                    operator = Assembly.ConditionalOperator.Equal,
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
                             ),
                         ),
                     ),
@@ -226,45 +216,44 @@ class TackyToAssemblyKtTest {
         tackyOperator: Tacky.BinaryOperator,
         assemblyOperator: Assembly.BinaryOperator,
     ) {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Binary(
-                                operator = tackyOperator,
-                                left = Tacky.Value.IntConstant(1),
-                                right = Tacky.Value.IntConstant(2),
-                                dst = Tacky.Value.Variable("x"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                assign(
+                    "x",
+                    when (tackyOperator) {
+                        Tacky.BinaryOperator.Add -> 1.t + 2.t
+                        Tacky.BinaryOperator.Subtract -> 1.t - 2.t
+                        Tacky.BinaryOperator.BitwiseAnd -> 1.t and 2.t
+                        Tacky.BinaryOperator.BitwiseOr -> 1.t or 2.t
+                        Tacky.BinaryOperator.BitwiseXor -> 1.t xor 2.t
+                        else -> error("Not in this test")
+                    },
+                )
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(16),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(1),
-                                dst = Assembly.Operand.Stack(-4),
-                            ),
-                            Assembly.Instruction.Binary(
-                                operator = assemblyOperator,
-                                src = Assembly.Operand.Immediate(2),
-                                dst = Assembly.Operand.Stack(-4),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(16),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(1),
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
+                                Assembly.Instruction.Binary(
+                                    operator = assemblyOperator,
+                                    src = Assembly.Operand.Immediate(2),
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
                             ),
                         ),
                     ),
@@ -276,53 +265,42 @@ class TackyToAssemblyKtTest {
 
     @Test
     fun `should generate assembly for multiplication`() {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Binary(
-                                operator = Tacky.BinaryOperator.Multiply,
-                                left = Tacky.Value.IntConstant(1),
-                                right = Tacky.Value.IntConstant(2),
-                                dst = Tacky.Value.Variable("x"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                assign("x", 1.t * 2.t)
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(16),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(1),
-                                dst = Assembly.Operand.Stack(-4),
-                            ),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Stack(-4),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
-                            ),
-                            Assembly.Instruction.Binary(
-                                operator = Assembly.BinaryOperator.Mul,
-                                src = Assembly.Operand.Immediate(2),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
-                            ),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Register(Assembly.RegisterValue.R11),
-                                dst = Assembly.Operand.Stack(-4),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(16),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(1),
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Stack(-4),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
+                                ),
+                                Assembly.Instruction.Binary(
+                                    operator = Assembly.BinaryOperator.Mul,
+                                    src = Assembly.Operand.Immediate(2),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
+                                ),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Register(Assembly.RegisterValue.R11),
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
                             ),
                         ),
                     ),
@@ -343,48 +321,44 @@ class TackyToAssemblyKtTest {
         tackyOperator: Tacky.BinaryOperator,
         register: Assembly.RegisterValue,
     ) {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Binary(
-                                operator = tackyOperator,
-                                left = Tacky.Value.IntConstant(1),
-                                right = Tacky.Value.Variable("y"),
-                                dst = Tacky.Value.Variable("x"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                assign(
+                    "x",
+                    when (tackyOperator) {
+                        Tacky.BinaryOperator.Divide -> 1.t / "y".t
+                        Tacky.BinaryOperator.Modulo -> 1.t % "y".t
+                        else -> error("Not in this test")
+                    },
+                )
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(16),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(1),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
-                            ),
-                            Assembly.Instruction.Cdq,
-                            Assembly.Instruction.Idiv(
-                                operand = Assembly.Operand.Stack(-4),
-                            ),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Register(register),
-                                dst = Assembly.Operand.Stack(-8),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(16),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(1),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                                ),
+                                Assembly.Instruction.Cdq,
+                                Assembly.Instruction.Idiv(
+                                    operand = Assembly.Operand.Stack(-4),
+                                ),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Register(register),
+                                    dst = Assembly.Operand.Stack(-8),
+                                ),
                             ),
                         ),
                     ),
@@ -409,53 +383,53 @@ class TackyToAssemblyKtTest {
         tackyOperator: Tacky.BinaryOperator,
         assemblyOperator: Assembly.ConditionalOperator,
     ) {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Binary(
-                                operator = tackyOperator,
-                                left = Tacky.Value.IntConstant(1),
-                                right = Tacky.Value.IntConstant(2),
-                                dst = Tacky.Value.Variable("x"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                assign(
+                    "x",
+                    when (tackyOperator) {
+                        Tacky.BinaryOperator.LessThan -> 1.t lt 2.t
+                        Tacky.BinaryOperator.LessThanOrEqual -> 1.t lte 2.t
+                        Tacky.BinaryOperator.GreaterThan -> 1.t gt 2.t
+                        Tacky.BinaryOperator.GreaterThanOrEqual -> 1.t gte 2.t
+                        Tacky.BinaryOperator.Equal -> 1.t eq 2.t
+                        Tacky.BinaryOperator.NotEqual -> 1.t neq 2.t
+                        else -> error("Not in this test")
+                    },
+                )
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(16),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(0),
-                                dst = Assembly.Operand.Stack(-4),
-                            ),
-                            // should not have cmp with immediate operand as dst
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(1),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            ),
-                            Assembly.Instruction.Cmp(
-                                src = Assembly.Operand.Immediate(2),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            ),
-                            Assembly.Instruction.Set(
-                                operator = assemblyOperator,
-                                dst = Assembly.Operand.Stack(-4),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(16),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(0),
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
+                                // should not have cmp with immediate operand as dst
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(1),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                ),
+                                Assembly.Instruction.Cmp(
+                                    src = Assembly.Operand.Immediate(2),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                ),
+                                Assembly.Instruction.Set(
+                                    operator = assemblyOperator,
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
                             ),
                         ),
                     ),
@@ -476,48 +450,44 @@ class TackyToAssemblyKtTest {
         tackyOperator: Tacky.BinaryOperator,
         assemblyOperator: Assembly.ShiftOperator,
     ) {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Binary(
-                                operator = tackyOperator,
-                                left = Tacky.Value.IntConstant(1),
-                                right = Tacky.Value.IntConstant(2),
-                                dst = Tacky.Value.Variable("x"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                assign(
+                    "x",
+                    when (tackyOperator) {
+                        Tacky.BinaryOperator.ShiftLeft -> 1.t shl 2.t
+                        Tacky.BinaryOperator.ShiftRight -> 1.t shr 2.t
+                        else -> error("Not in this test")
+                    },
+                )
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(16),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(1),
-                                dst = Assembly.Operand.Stack(-4),
-                            ),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(2),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.Cx),
-                            ),
-                            Assembly.Instruction.Shift(
-                                operator = assemblyOperator,
-                                dst = Assembly.Operand.Stack(-4),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(16),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(1),
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(2),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.Cx),
+                                ),
+                                Assembly.Instruction.Shift(
+                                    operator = assemblyOperator,
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
                             ),
                         ),
                     ),
@@ -529,36 +499,28 @@ class TackyToAssemblyKtTest {
 
     @Test
     fun `should generate label instruction`() {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Label(
-                                label = LabelName("start"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                label("start")
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(0),
-                            Assembly.Instruction.Label(
-                                label = LabelName("start"),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(0),
+                                Assembly.Instruction.Label(
+                                    label = LabelName("start"),
+                                ),
                             ),
                         ),
                     ),
@@ -570,46 +532,37 @@ class TackyToAssemblyKtTest {
 
     @Test
     fun `should generate assembly for jump if not zero`() {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.JumpIfNotZero(
-                                src = Tacky.Value.IntConstant(42),
-                                target = LabelName("start"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                jumpIfNotZero(42.t, "start")
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(0),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(0),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            ),
-                            Assembly.Instruction.Cmp(
-                                src = Assembly.Operand.Immediate(42),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            ),
-                            Assembly.Instruction.ConditionalJump(
-                                operator = Assembly.ConditionalOperator.NotEqual,
-                                target = LabelName("start"),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(0),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(0),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                ),
+                                Assembly.Instruction.Cmp(
+                                    src = Assembly.Operand.Immediate(42),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                ),
+                                Assembly.Instruction.ConditionalJump(
+                                    operator = Assembly.ConditionalOperator.NotEqual,
+                                    target = LabelName("start"),
+                                ),
                             ),
                         ),
                     ),
@@ -621,46 +574,37 @@ class TackyToAssemblyKtTest {
 
     @Test
     fun `should generate assembly for jump if zero`() {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.JumpIfZero(
-                                src = Tacky.Value.IntConstant(42),
-                                target = LabelName("start"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                jumpIfZero(42.t, "start")
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(0),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(0),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            ),
-                            Assembly.Instruction.Cmp(
-                                src = Assembly.Operand.Immediate(42),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            ),
-                            Assembly.Instruction.ConditionalJump(
-                                operator = Assembly.ConditionalOperator.Equal,
-                                target = LabelName("start"),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(0),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(0),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                ),
+                                Assembly.Instruction.Cmp(
+                                    src = Assembly.Operand.Immediate(42),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                ),
+                                Assembly.Instruction.ConditionalJump(
+                                    operator = Assembly.ConditionalOperator.Equal,
+                                    target = LabelName("start"),
+                                ),
                             ),
                         ),
                     ),
@@ -672,36 +616,28 @@ class TackyToAssemblyKtTest {
 
     @Test
     fun `should generate assembly for jump`() {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Jump(
-                                target = LabelName("start"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                jump("start")
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(0),
-                            Assembly.Instruction.Jump(
-                                target = LabelName("start"),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(0),
+                                Assembly.Instruction.Jump(
+                                    target = LabelName("start"),
+                                ),
                             ),
                         ),
                     ),
@@ -713,42 +649,33 @@ class TackyToAssemblyKtTest {
 
     @Test
     fun `should not have mov with two stack offsets`() {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Copy(
-                                src = Tacky.Value.Variable("x"),
-                                dst = Tacky.Value.Variable("y"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                assign("y", "x".t)
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(16),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Stack(-4),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            ),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                                dst = Assembly.Operand.Stack(-8),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(16),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Stack(-4),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                ),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                    dst = Assembly.Operand.Stack(-8),
+                                ),
                             ),
                         ),
                     ),
@@ -760,52 +687,41 @@ class TackyToAssemblyKtTest {
 
     @Test
     fun `should not have cmp with two stack offsets`() {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Binary(
-                                operator = Tacky.BinaryOperator.LessThan,
-                                left = Tacky.Value.Variable("x"),
-                                right = Tacky.Value.Variable("y"),
-                                dst = Tacky.Value.Variable("z"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                assign("z", "x".t lt "y".t)
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(16),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(0),
-                                dst = Assembly.Operand.Stack(-4),
-                            ),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Stack(-8),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            ),
-                            Assembly.Instruction.Cmp(
-                                src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                                dst = Assembly.Operand.Stack(-12),
-                            ),
-                            Assembly.Instruction.Set(
-                                operator = Assembly.ConditionalOperator.LessThan,
-                                dst = Assembly.Operand.Stack(-4),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(16),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(0),
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Stack(-8),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                ),
+                                Assembly.Instruction.Cmp(
+                                    src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                    dst = Assembly.Operand.Stack(-12),
+                                ),
+                                Assembly.Instruction.Set(
+                                    operator = Assembly.ConditionalOperator.LessThan,
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
                             ),
                         ),
                     ),
@@ -817,52 +733,41 @@ class TackyToAssemblyKtTest {
 
     @Test
     fun `should not have immediate operand as operand of idiv`() {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
-                listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Binary(
-                                operator = Tacky.BinaryOperator.Divide,
-                                left = Tacky.Value.IntConstant(1),
-                                right = Tacky.Value.IntConstant(2),
-                                dst = Tacky.Value.Variable("x"),
-                            ),
-                        ),
-                    ),
-                ),
-            )
+        val tacky = tackyProgram {
+            function("main") {
+                assign("x", 1.t / 2.t)
+            }
+        }
 
-        val assembly = tackyProgramToAssembly(tacky)
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(16),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(1),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
-                            ),
-                            Assembly.Instruction.Cdq,
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(2),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            ),
-                            Assembly.Instruction.Idiv(
-                                operand = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            ),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
-                                dst = Assembly.Operand.Stack(-4),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(16),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(1),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                                ),
+                                Assembly.Instruction.Cdq,
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(2),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                ),
+                                Assembly.Instruction.Idiv(
+                                    operand = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                ),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                                    dst = Assembly.Operand.Stack(-4),
+                                ),
                             ),
                         ),
                     ),
@@ -874,53 +779,77 @@ class TackyToAssemblyKtTest {
 
     @Test
     fun `should not have binary operators with two stack offsets`() {
-        val tacky =
-            Tacky.Program(
-                functionDefinitions =
+        val tacky = tackyProgram {
+            function("main") {
+                assign("z", "x".t + "y".t)
+            }
+        }
+
+        val assembly = tackyProgramToAssembly(tacky, empty())
+
+        assertEquals(
+            Assembly.Program(
+                topLevel =
                 listOf(
-                    Tacky.FunctionDefinition(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        listOf(
-                            Tacky.Instruction.Binary(
-                                operator = Tacky.BinaryOperator.Add,
-                                left = Tacky.Value.Variable("x"),
-                                right = Tacky.Value.Variable("y"),
-                                dst = Tacky.Value.Variable("z"),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(16),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Stack(-4),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                ),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                    dst = Assembly.Operand.Stack(-8),
+                                ),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Stack(-12),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                ),
+                                Assembly.Instruction.Binary(
+                                    operator = Assembly.BinaryOperator.Add,
+                                    src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                                    dst = Assembly.Operand.Stack(-8),
+                                ),
                             ),
                         ),
                     ),
                 ),
-            )
+            ),
+            assembly,
+        )
+    }
 
-        val assembly = tackyProgramToAssembly(tacky)
+    @Test
+    fun `should copy global attribute for functions`() {
+        val tacky = tackyProgram {
+            nonGlobalFunction("foo") {
+                return_(42.t)
+            }
+        }
+
+        val assembly = tackyProgramToAssembly(tacky, empty())
 
         assertEquals(
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.AllocateStack(16),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Stack(-4),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            ),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                                dst = Assembly.Operand.Stack(-8),
-                            ),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Stack(-12),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            ),
-                            Assembly.Instruction.Binary(
-                                operator = Assembly.BinaryOperator.Add,
-                                src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                                dst = Assembly.Operand.Stack(-8),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "foo",
+                            global = false,
+                            body =
+                            listOf(
+                                Assembly.Instruction.AllocateStack(0),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(42),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                                ),
+                                Assembly.Instruction.Ret,
                             ),
                         ),
                     ),

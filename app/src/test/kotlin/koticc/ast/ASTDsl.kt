@@ -523,7 +523,7 @@ infix operator fun AST.Expression.times(other: AST.Expression): AST.Expression {
     )
 }
 
-infix fun AST.Expression.div(other: AST.Expression): AST.Expression {
+infix operator fun AST.Expression.div(other: AST.Expression): AST.Expression {
     return AST.Expression.Binary(
         operator = AST.BinaryOperator.Divide,
         left = this,
@@ -531,7 +531,7 @@ infix fun AST.Expression.div(other: AST.Expression): AST.Expression {
     )
 }
 
-infix fun AST.Expression.mod(other: AST.Expression): AST.Expression {
+infix operator fun AST.Expression.rem(other: AST.Expression): AST.Expression {
     return AST.Expression.Binary(
         operator = AST.BinaryOperator.Modulo,
         left = this,
@@ -541,7 +541,7 @@ infix fun AST.Expression.mod(other: AST.Expression): AST.Expression {
 
 infix fun AST.Expression.and(other: AST.Expression): AST.Expression {
     return AST.Expression.Binary(
-        operator = AST.BinaryOperator.BitwiseAnd,
+        operator = AST.BinaryOperator.LogicalAnd,
         left = this,
         right = other,
     )
@@ -594,3 +594,10 @@ infix fun AST.Expression.ne(other: AST.Expression): AST.Expression {
         right = other,
     )
 }
+
+fun cond(condition: AST.Expression, thenExpression: AST.Expression, elseExpression: AST.Expression) =
+    AST.Expression.Conditional(
+        condition = condition,
+        thenExpression = thenExpression,
+        elseExpression = elseExpression,
+    )

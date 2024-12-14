@@ -33,3 +33,18 @@ sealed interface InitialValue {
     data class Constant(val value: Int) : InitialValue
     data object NoInitializer : InitialValue
 }
+
+typealias TypedIdentifiers = Map<String, TypedIdentifier>
+
+fun empty(): TypedIdentifiers = emptyMap()
+
+fun TypedIdentifiers.functionType(functionName: String): TypedIdentifier.Function =
+    this[functionName] as? TypedIdentifier.Function
+        ?: error("Bug: function $functionName should have been typed during semantic analysis, got $this")
+
+fun TypedIdentifiers.variableType(variableName: String): TypedIdentifier.Variable =
+    variableTypeOrNull(variableName)
+        ?: error("Bug: variable $variableName should have been typed during semantic analysis, got $this")
+
+fun TypedIdentifiers.variableTypeOrNull(variableName: String): TypedIdentifier.Variable? =
+    this[variableName]?.let { it as TypedIdentifier.Variable }

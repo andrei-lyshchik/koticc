@@ -63,6 +63,14 @@ class E2ETest {
             file1 = "/programs/hello_world.c",
             file2ForGccOnly = "/programs/stdio.c",
         ),
+        MultipleFilesTestCase(
+            file1 = "/programs/static_impl.c",
+            file2ForGccOnly = "/programs/static_client.c",
+        ),
+        MultipleFilesTestCase(
+            file1 = "/programs/static_client.c",
+            file2ForGccOnly = "/programs/static_impl.c",
+        ),
     )
 
     data class MultipleFilesTestCase(

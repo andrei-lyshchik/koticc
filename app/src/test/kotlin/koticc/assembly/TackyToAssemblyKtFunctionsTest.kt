@@ -303,4 +303,29 @@ class TackyToAssemblyKtFunctionsTest {
             actual = actual,
         )
     }
+
+    @Test
+    fun `should handle static functions`() {
+        val tacky = tackyProgram {
+            nonGlobalFunction("foo") {
+                return_(1.t)
+            }
+        }
+
+        val assembly = tackyProgramToAssemblyString(tacky)
+
+        assertEquals(
+            expected = """
+            _foo:
+                pushq %rbp
+                movq %rsp, %rbp
+                subq $0, %rsp
+                movl $1, %eax
+                movq %rbp, %rsp
+                popq %rbp
+                ret
+            """.trimIndent(),
+            actual = assembly,
+        )
+    }
 }

@@ -1,5 +1,6 @@
 package koticc.tacky
 
+import com.sun.tools.javac.jvm.ByteCodes.return_
 import koticc.ast.e
 import koticc.ast.plus
 import koticc.ast.program
@@ -17,7 +18,9 @@ class ASTToTackyFunctionsTest {
                 function("foo")
             },
             renamedVariableCount = 0,
-            typedIdentifiers = emptyMap(),
+            typedIdentifiers = mapOf(
+                "foo" to Type.Function(parameterCount = 0).toIdentifier(defined = false),
+            ),
         )
 
         val actual = programASTToTacky(input)
@@ -40,7 +43,10 @@ class ASTToTackyFunctionsTest {
                 }
             },
             renamedVariableCount = 0,
-            typedIdentifiers = emptyMap(),
+            typedIdentifiers = mapOf(
+                "foo" to Type.Function(parameterCount = 0).toIdentifier(),
+                "bar" to Type.Function(parameterCount = 0).toIdentifier(),
+            ),
         )
 
         val actual = programASTToTacky(input)
@@ -69,7 +75,9 @@ class ASTToTackyFunctionsTest {
                 }
             },
             renamedVariableCount = 0,
-            typedIdentifiers = emptyMap(),
+            typedIdentifiers = mapOf(
+                "main" to Type.Function(parameterCount = 0).toIdentifier(),
+            ),
         )
 
         val actual = programASTToTacky(program)
@@ -94,7 +102,9 @@ class ASTToTackyFunctionsTest {
                 }
             },
             renamedVariableCount = 0,
-            typedIdentifiers = emptyMap(),
+            typedIdentifiers = mapOf(
+                "main" to Type.Function(parameterCount = 0).toIdentifier(),
+            ),
         )
 
         val actual = programASTToTacky(program)
@@ -134,6 +144,33 @@ class ASTToTackyFunctionsTest {
                 function("foo", "a", "b") {
                     assign("tmp.2", "a".t + "b".t)
                     return_("tmp.2".t)
+                    return_(0.t)
+                }
+            },
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should support non-global functions`() {
+        val program = ValidASTProgram(
+            value = program {
+                function("foo") {
+                    return_(1.e)
+                }
+            },
+            renamedVariableCount = 0,
+            typedIdentifiers = mapOf(
+                "foo" to Type.Function(parameterCount = 0).toIdentifier(global = false),
+            ),
+        )
+
+        val actual = programASTToTacky(program)
+
+        assertEquals(
+            expected = tackyProgram {
+                nonGlobalFunction("foo") {
+                    return_(1.t)
                     return_(0.t)
                 }
             },

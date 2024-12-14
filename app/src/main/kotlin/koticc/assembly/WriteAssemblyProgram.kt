@@ -10,13 +10,21 @@ fun writeAssemblyProgram(
     assemblyProgram: Assembly.Program,
     writer: Writer,
 ): Either<IOException, Unit> = either {
-    assemblyProgram.functionDefinitions.forEachIndexed { index, functionDefinition ->
-        writeAssemblyFunctionDefinition(functionDefinition, writer).bind()
-        if (index != assemblyProgram.functionDefinitions.size - 1) {
+    assemblyProgram.topLevel.forEachIndexed { index, functionDefinition ->
+        when (functionDefinition) {
+            is Assembly.TopLevel.FunctionDefinition -> {
+                writeAssemblyFunctionDefinition(functionDefinition.value, writer).bind()
+            }
+            is Assembly.TopLevel.StaticVariable -> {
+                writeAssemblyStaticVariable(functionDefinition.value, writer).bind()
+            }
+        }
+        if (index != assemblyProgram.topLevel.size - 1) {
             Either.catchOrThrow<IOException, Unit> {
                 writer.write("\n\n")
             }.bind()
         }
+        writer.flush()
     }
 }
 
@@ -25,22 +33,49 @@ private fun writeAssemblyFunctionDefinition(
     writer: Writer,
 ): Either<IOException, Unit> =
     Either.catchOrThrow<IOException, Unit> {
-        writer.write("    .globl _${functionDefinition.name}\n")
-        writer.write("_${functionDefinition.name}:\n")
-        writer.write("    pushq %rbp\n")
-        writer.write("    movq %rsp, %rbp\n")
-        functionDefinition.body.forEachIndexed { index, instruction ->
-            val indent =
-                when (instruction) {
-                    is Assembly.Instruction.Label -> ""
-                    else -> "    "
+        with(writer) {
+            if (functionDefinition.global) {
+                write("    .globl _${functionDefinition.name}\n")
+            }
+            write("_${functionDefinition.name}:\n")
+            write("    pushq %rbp\n")
+            write("    movq %rsp, %rbp\n")
+            functionDefinition.body.forEachIndexed { index, instruction ->
+                val indent =
+                    when (instruction) {
+                        is Assembly.Instruction.Label -> ""
+                        else -> "    "
+                    }
+                write("$indent${instruction.toOutputString()}")
+                if (index != functionDefinition.body.size - 1) {
+                    write("\n")
                 }
-            writer.write("$indent${instruction.toOutputString()}")
-            if (index != functionDefinition.body.size - 1) {
-                writer.write("\n")
             }
         }
-        writer.flush()
+    }
+
+private fun writeAssemblyStaticVariable(
+    staticVariable: Assembly.StaticVariable,
+    writer: Writer,
+): Either<IOException, Unit> =
+    Either.catchOrThrow<IOException, Unit> {
+        with(writer) {
+            if (staticVariable.global) {
+                write("    .globl _${staticVariable.name}\n")
+            }
+            if (staticVariable.initialValue == 0) {
+                write("    .bss\n")
+            } else {
+                write("    .data\n")
+            }
+            write("    .balign 4\n")
+            write("_${staticVariable.name}:\n")
+            if (staticVariable.initialValue == 0) {
+                write("    .zero 4")
+            } else {
+                write("    .long ${staticVariable.initialValue}")
+            }
+        }
     }
 
 private fun Assembly.Instruction.toOutputString(): String =
@@ -90,6 +125,7 @@ private fun Assembly.Operand.toOutputString(size: Size = Size.FourByte): String 
         is Assembly.Operand.Register -> value.toOutputString(size)
         is Assembly.Operand.Stack -> "$offset(%rbp)"
         is Assembly.Operand.Immediate -> "\$$value"
+        is Assembly.Operand.Data -> "_$name(%rip)"
         is Assembly.Operand.PseudoIdentifier ->
             error(
                 "Bug: pseudo identifiers should be removed " +

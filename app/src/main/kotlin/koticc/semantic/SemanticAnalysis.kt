@@ -9,7 +9,7 @@ import koticc.token.Location
 data class ValidASTProgram(
     val value: AST.Program,
     val renamedVariableCount: Int,
-    val typedIdentifiers: Map<String, TypedIdentifier>,
+    val typedIdentifiers: TypedIdentifiers,
 )
 
 data class SemanticAnalysisError(

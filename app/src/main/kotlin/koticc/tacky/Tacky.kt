@@ -4,13 +4,25 @@ import koticc.ast.LabelName
 
 object Tacky {
     data class Program(
-        val functionDefinitions: List<FunctionDefinition>,
+        val topLevel: List<TopLevel>,
     )
+
+    sealed interface TopLevel {
+        data class FunctionDefinition(val value: Tacky.FunctionDefinition) : TopLevel
+        data class StaticVariable(val value: Tacky.StaticVariable) : TopLevel
+    }
 
     data class FunctionDefinition(
         val name: String,
         val parameters: List<String>,
+        val global: Boolean,
         val body: List<Instruction>,
+    )
+
+    data class StaticVariable(
+        val name: String,
+        val global: Boolean,
+        val initialValue: Int,
     )
 
     sealed interface Instruction {

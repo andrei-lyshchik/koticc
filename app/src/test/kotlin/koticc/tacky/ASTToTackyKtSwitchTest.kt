@@ -3,8 +3,9 @@ package koticc.tacky
 import koticc.ast.e
 import koticc.ast.plus
 import koticc.ast.program
-import koticc.semantic.TypedIdentifier
+import koticc.semantic.Type
 import koticc.semantic.ValidASTProgram
+import koticc.semantic.toIdentifier
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -29,7 +30,10 @@ class ASTToTackyKtSwitchTest {
                 }
             },
             renamedVariableCount = 1,
-            typedIdentifiers = emptyMap<String, TypedIdentifier>(),
+            typedIdentifiers = mapOf(
+                "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                "a" to Type.Integer.toIdentifier(),
+            ),
         )
 
         val tacky = programASTToTacky(program)
@@ -84,7 +88,10 @@ class ASTToTackyKtSwitchTest {
                 }
             },
             renamedVariableCount = 1,
-            typedIdentifiers = emptyMap<String, TypedIdentifier>(),
+            typedIdentifiers = mapOf(
+                "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                "a" to Type.Integer.toIdentifier(),
+            ),
         )
 
         val actual = programASTToTacky(program)

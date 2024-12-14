@@ -12,7 +12,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     private fun originalIdentifierName(name: String): String = nameMapping[name]
         ?: name
 
-    fun typecheck(program: AST.Program): Either<SemanticAnalysisError, Map<String, TypedIdentifier>> = either {
+    fun typecheck(program: AST.Program): Either<SemanticAnalysisError, TypedIdentifiers> = either {
         program.declarations.forEach { declaration ->
             when (declaration) {
                 is AST.Declaration.Function -> typecheckFunctionDeclaration(declaration).bind()

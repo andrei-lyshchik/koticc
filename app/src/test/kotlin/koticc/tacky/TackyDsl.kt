@@ -7,14 +7,22 @@ import koticc.ast.LabelName
 fun tackyProgram(block: TackyProgramBuilder.() -> Unit): Tacky.Program = TackyProgramBuilder().apply(block).build()
 
 class TackyProgramBuilder {
-    private val functions = mutableListOf<Tacky.FunctionDefinition>()
+    private val topLevel = mutableListOf<Tacky.TopLevel>()
 
     fun function(name: String, vararg parameters: String, block: FunctionBuilder.() -> Unit) {
-        functions += FunctionBuilder(name, parameters).apply(block).build()
+        topLevel += Tacky.TopLevel.FunctionDefinition(FunctionBuilder(name, parameters, global = true).apply(block).build())
+    }
+
+    fun nonGlobalFunction(name: String, vararg parameters: String, block: FunctionBuilder.() -> Unit) {
+        topLevel += Tacky.TopLevel.FunctionDefinition(FunctionBuilder(name, parameters, global = false).apply(block).build())
+    }
+
+    fun staticVariable(name: String, global: Boolean, initialValue: Int) {
+        topLevel += Tacky.TopLevel.StaticVariable(Tacky.StaticVariable(name, global = global, initialValue))
     }
 
     fun build(): Tacky.Program {
-        return Tacky.Program(functions)
+        return Tacky.Program(topLevel)
     }
 }
 
@@ -24,10 +32,8 @@ val Int.t
 val String.t
     get() = Tacky.Value.Variable(this)
 
-class FunctionBuilder(private val name: String, private val parameters: Array<out String>) {
+class FunctionBuilder(private val name: String, private val parameters: Array<out String>, private val global: Boolean) {
     private val instructions = mutableListOf<Tacky.Instruction>()
-
-    fun i(instruction: Tacky.Instruction) = instructions.add(instruction)
 
     fun assign(dst: String, builder: TackyInstructionWithDstBuilder) = instructions.add(builder.build(Tacky.Value.Variable(dst)))
 
@@ -43,7 +49,7 @@ class FunctionBuilder(private val name: String, private val parameters: Array<ou
 
     fun jumpIfNotZero(src: Tacky.Value, target: String) = instructions.add(Tacky.Instruction.JumpIfNotZero(src, LabelName(target)))
 
-    fun build() = Tacky.FunctionDefinition(name, parameters.toList(), instructions)
+    fun build() = Tacky.FunctionDefinition(name, parameters.toList(), global, instructions)
 }
 
 interface TackyInstructionWithDstBuilder {

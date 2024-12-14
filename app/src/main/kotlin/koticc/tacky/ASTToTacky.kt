@@ -2,14 +2,23 @@ package koticc.tacky
 
 import koticc.ast.AST
 import koticc.ast.LabelName
+import koticc.semantic.InitialValue
+import koticc.semantic.TypedIdentifier
+import koticc.semantic.TypedIdentifiers
 import koticc.semantic.ValidASTProgram
+import koticc.semantic.VariableAttributes
+import koticc.semantic.functionType
+import koticc.semantic.variableType
 
 fun programASTToTacky(validASTProgram: ValidASTProgram): Tacky.Program {
-    val generator = TackyGenerator(initialVariableCount = validASTProgram.renamedVariableCount)
+    val generator = TackyGenerator(
+        initialVariableCount = validASTProgram.renamedVariableCount,
+        typedIdentifiers = validASTProgram.typedIdentifiers,
+    )
     return generator.generateProgram(validASTProgram.value)
 }
 
-private class TackyGenerator(initialVariableCount: Int) {
+private class TackyGenerator(initialVariableCount: Int, private val typedIdentifiers: TypedIdentifiers) {
     private var variableCount = initialVariableCount
     private val instructions: MutableList<Tacky.Instruction> = mutableListOf()
     private var labelCount = 0
@@ -20,15 +29,43 @@ private class TackyGenerator(initialVariableCount: Int) {
 
     fun generateProgram(program: AST.Program): Tacky.Program {
         return Tacky.Program(
-            functionDefinitions =
-            program.declarations.mapNotNull {
-                when (it) {
-                    is AST.Declaration.Function -> generateFunctionDefinition(it)
-                    is AST.Declaration.Variable -> null
-                }
-            },
+            topLevel =
+            generateFunctionDefinitions(program) + generateStaticVariables(typedIdentifiers),
         )
     }
+
+    private fun generateFunctionDefinitions(program: AST.Program) =
+        program.declarations
+            .mapNotNull { declaration ->
+                when (declaration) {
+                    is AST.Declaration.Function -> {
+                        generateFunctionDefinition(declaration)
+                    }
+                    is AST.Declaration.Variable -> null
+                }
+            }.map(Tacky.TopLevel::FunctionDefinition)
+
+    private fun generateStaticVariables(typedIdentifiers: TypedIdentifiers) =
+        typedIdentifiers
+            .mapNotNull { (name, type) ->
+                when (type) {
+                    is TypedIdentifier.Variable -> {
+                        when (type.attributes) {
+                            is VariableAttributes.Static -> {
+                                val initialValue = when (val initialValue = type.attributes.initialValue) {
+                                    is InitialValue.Constant -> initialValue.value
+                                    InitialValue.Tentative -> 0
+                                    InitialValue.NoInitializer -> return@mapNotNull null
+                                }
+                                Tacky.StaticVariable(name, global = type.attributes.global, initialValue = initialValue)
+                            }
+                            else -> null
+                        }
+                    }
+                    else -> null
+                }
+            }
+            .map(Tacky.TopLevel::StaticVariable)
 
     private fun generateFunctionDefinition(functionDeclaration: AST.Declaration.Function): Tacky.FunctionDefinition? {
         val body = functionDeclaration.body ?: return null
@@ -41,6 +78,7 @@ private class TackyGenerator(initialVariableCount: Int) {
         val tackyFunction = Tacky.FunctionDefinition(
             name = functionDeclaration.name,
             parameters = functionDeclaration.parameters.map { it.name },
+            global = typedIdentifiers.functionType(functionDeclaration.name).global,
             body = instructions.toList(),
         )
         instructions.clear()
@@ -58,6 +96,9 @@ private class TackyGenerator(initialVariableCount: Int) {
     }
 
     private fun generateVariableDeclaration(declaration: AST.Declaration.Variable) {
+        val variableType = typedIdentifiers.variableType(declaration.name)
+        if (variableType.attributes is VariableAttributes.Static) return
+
         val initialValue = declaration.initializer?.let { generateExpression(it) }
         val variable = Tacky.Value.Variable(declaration.name)
         if (initialValue != null) {

@@ -119,9 +119,12 @@ class WriteAssemblyProgramKtTest {
         val assemblyProgram =
             Assembly.Program(
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body = listOf(instruction),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body = listOf(instruction),
+                        ),
                     ),
                 ),
             )
@@ -148,9 +151,12 @@ class WriteAssemblyProgramKtTest {
         val assemblyProgram =
             Assembly.Program(
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body = listOf(Assembly.Instruction.Ret),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body = listOf(Assembly.Instruction.Ret),
+                        ),
                     ),
                 ),
             )
@@ -173,22 +179,25 @@ class WriteAssemblyProgramKtTest {
     fun `test for multiple instructions`() {
         val assembly =
             Assembly.Program(
-                functionDefinitions =
+                topLevel =
                 listOf(
-                    Assembly.FunctionDefinition(
-                        name = "main",
-                        body =
-                        listOf(
-                            Assembly.Instruction.Label(LabelName("start")),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Immediate(42),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                    Assembly.TopLevel.FunctionDefinition(
+                        Assembly.FunctionDefinition(
+                            name = "main",
+                            global = true,
+                            body =
+                            listOf(
+                                Assembly.Instruction.Label(LabelName("start")),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Immediate(42),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                                ),
+                                Assembly.Instruction.Mov(
+                                    src = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                                    dst = Assembly.Operand.Register(Assembly.RegisterValue.Dx),
+                                ),
+                                Assembly.Instruction.Ret,
                             ),
-                            Assembly.Instruction.Mov(
-                                src = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
-                                dst = Assembly.Operand.Register(Assembly.RegisterValue.Dx),
-                            ),
-                            Assembly.Instruction.Ret,
                         ),
                     ),
                 ),

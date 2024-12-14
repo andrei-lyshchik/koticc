@@ -4,12 +4,24 @@ import koticc.ast.LabelName
 
 object Assembly {
     data class Program(
-        val functionDefinitions: List<FunctionDefinition>,
+        val topLevel: List<TopLevel>,
     )
+
+    sealed interface TopLevel {
+        data class FunctionDefinition(val value: Assembly.FunctionDefinition) : TopLevel
+        data class StaticVariable(val value: Assembly.StaticVariable) : TopLevel
+    }
 
     data class FunctionDefinition(
         val name: String,
+        val global: Boolean,
         val body: List<Instruction>,
+    )
+
+    data class StaticVariable(
+        val name: String,
+        val global: Boolean,
+        val initialValue: Int,
     )
 
     sealed interface Instruction {
@@ -89,6 +101,8 @@ object Assembly {
         data class Immediate(val value: Int) : Operand
 
         data class Stack(val offset: Int) : Operand
+
+        data class Data(val name: String) : Operand
 
         data class PseudoIdentifier(val name: String) : Operand
     }
