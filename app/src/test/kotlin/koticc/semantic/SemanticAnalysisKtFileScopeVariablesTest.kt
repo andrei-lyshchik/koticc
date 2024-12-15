@@ -27,7 +27,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
                     int("b") assign 1.e
                 },
                 renamedVariableCount = 0,
-                typedIdentifiers = mapOf(
+                symbolTable = mapOf(
                     "a" to Type.Integer.toIdentifier(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Tentative,
@@ -76,7 +76,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
                     int("foo", storageClass = AST.StorageClass.Extern) assign 2.e
                 },
                 renamedVariableCount = 1,
-                typedIdentifiers = mapOf(
+                symbolTable = mapOf(
                     "main" to Type.Function(parameterCount = 0).toIdentifier(),
                     "foo.0" to Type.Integer.toIdentifier(attributes = VariableAttributes.Local),
                     "foo" to Type.Integer.toIdentifier(

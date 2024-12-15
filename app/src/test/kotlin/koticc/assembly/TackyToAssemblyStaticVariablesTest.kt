@@ -50,7 +50,7 @@ class TackyToAssemblyStaticVariablesTest {
 
         val assembly = tackyProgramToAssemblyString(
             tacky,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "a" to Type.Integer.toIdentifier(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(0), global = true)),
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
             ),

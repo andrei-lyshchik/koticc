@@ -33,7 +33,7 @@ class SemanticAnalysisKtStaticVariables {
                     }
                 },
                 renamedVariableCount = 1,
-                typedIdentifiers = mapOf(
+                symbolTable = mapOf(
                     "foo" to Type.Function(parameterCount = 0).toIdentifier(),
                     "i.0" to Type.Integer.toIdentifier(
                         attributes = VariableAttributes.Static(
@@ -64,7 +64,7 @@ class SemanticAnalysisKtStaticVariables {
             expected = ValidASTProgram(
                 value = program,
                 renamedVariableCount = 0,
-                typedIdentifiers = mapOf(
+                symbolTable = mapOf(
                     "x" to Type.Integer.toIdentifier(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(5),
@@ -117,7 +117,7 @@ class SemanticAnalysisKtStaticVariables {
                     int("x", storageClass = AST.StorageClass.Static)
                 },
                 renamedVariableCount = 1,
-                typedIdentifiers = mapOf(
+                symbolTable = mapOf(
                     "x" to Type.Integer.toIdentifier(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(5),
@@ -171,7 +171,7 @@ class SemanticAnalysisKtStaticVariables {
                     }
                 },
                 renamedVariableCount = 1,
-                typedIdentifiers = mapOf(
+                symbolTable = mapOf(
                     "foo" to Type.Function(parameterCount = 0).toIdentifier(),
                     "i.0" to Type.Integer.toIdentifier(
                         attributes = VariableAttributes.Static(

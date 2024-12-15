@@ -18,7 +18,7 @@ class ASTToTackyFunctionsTest {
                 function("foo")
             },
             renamedVariableCount = 0,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "foo" to Type.Function(parameterCount = 0).toIdentifier(defined = false),
             ),
         )
@@ -43,7 +43,7 @@ class ASTToTackyFunctionsTest {
                 }
             },
             renamedVariableCount = 0,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "foo" to Type.Function(parameterCount = 0).toIdentifier(),
                 "bar" to Type.Function(parameterCount = 0).toIdentifier(),
             ),
@@ -75,7 +75,7 @@ class ASTToTackyFunctionsTest {
                 }
             },
             renamedVariableCount = 0,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
             ),
         )
@@ -102,7 +102,7 @@ class ASTToTackyFunctionsTest {
                 }
             },
             renamedVariableCount = 0,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
             ),
         )
@@ -130,7 +130,7 @@ class ASTToTackyFunctionsTest {
                 }
             },
             renamedVariableCount = 2,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "foo" to Type.Function(parameterCount = 2).toIdentifier(),
                 "a" to Type.Integer.toIdentifier(),
                 "b" to Type.Integer.toIdentifier(),
@@ -160,7 +160,7 @@ class ASTToTackyFunctionsTest {
                 }
             },
             renamedVariableCount = 0,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "foo" to Type.Function(parameterCount = 0).toIdentifier(global = false),
             ),
         )

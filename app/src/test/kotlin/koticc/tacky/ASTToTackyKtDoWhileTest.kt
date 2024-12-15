@@ -24,7 +24,7 @@ class ASTToTackyKtDoWhileTest {
                 }
             },
             renamedVariableCount = 1,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "a" to Type.Integer.toIdentifier(),
             ),
@@ -74,7 +74,7 @@ class ASTToTackyKtDoWhileTest {
                 }
             },
             renamedVariableCount = 1,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "a.0" to Type.Integer.toIdentifier(),
             ),

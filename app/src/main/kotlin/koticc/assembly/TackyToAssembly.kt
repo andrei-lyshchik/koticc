@@ -1,14 +1,14 @@
 package koticc.assembly
 
-import koticc.semantic.TypedIdentifiers
+import koticc.semantic.SymbolTable
 import koticc.semantic.VariableAttributes
-import koticc.semantic.variableTypeOrNull
+import koticc.semantic.variableSymbolOrNull
 import koticc.tacky.Tacky
 
-fun tackyProgramToAssembly(tackyProgram: Tacky.Program, typedIdentifiers: TypedIdentifiers): Assembly.Program =
-    TackyAssemblyGenerator(typedIdentifiers).tackyProgramToAssembly(tackyProgram)
+fun tackyProgramToAssembly(tackyProgram: Tacky.Program, symbolTable: SymbolTable): Assembly.Program =
+    TackyAssemblyGenerator(symbolTable).tackyProgramToAssembly(tackyProgram)
 
-class TackyAssemblyGenerator(private val typedIdentifiers: TypedIdentifiers) {
+class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
     fun tackyProgramToAssembly(tackyProgram: Tacky.Program): Assembly.Program =
         Assembly.Program(
             topLevel = tackyProgram.topLevel.map { tackyTopLevelToAssembly(it) },
@@ -287,12 +287,12 @@ class TackyAssemblyGenerator(private val typedIdentifiers: TypedIdentifiers) {
         when (tackyValue) {
             is Tacky.Value.IntConstant -> Assembly.Operand.Immediate(tackyValue.value)
             is Tacky.Value.Variable -> {
-                val variableType = typedIdentifiers.variableTypeOrNull(tackyValue.name)
-                if (variableType == null) {
-                    // if the variable is not found in the typed identifiers, it's a temp tacky variable, so it's a local/lives on the stack
+                val variableSymbol = symbolTable.variableSymbolOrNull(tackyValue.name)
+                if (variableSymbol == null) {
+                    // if the variable is not found in the symbol table, it's a temp tacky variable, so it's a local/lives on the stack
                     Assembly.Operand.PseudoIdentifier(tackyValue.name)
                 } else {
-                    when (variableType.attributes) {
+                    when (variableSymbol.attributes) {
                         VariableAttributes.Local -> Assembly.Operand.PseudoIdentifier(tackyValue.name)
                         is VariableAttributes.Static -> Assembly.Operand.Data(tackyValue.name)
                     }

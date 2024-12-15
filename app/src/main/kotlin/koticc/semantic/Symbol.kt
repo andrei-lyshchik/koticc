@@ -1,16 +1,16 @@
 package koticc.semantic
 
-sealed interface TypedIdentifier {
+sealed interface Symbol {
     data class Variable(
         val type: Type.Data,
         val attributes: VariableAttributes,
-    ) : TypedIdentifier
+    ) : Symbol
 
     data class Function(
         val type: Type.Function,
         val defined: Boolean,
         val global: Boolean,
-    ) : TypedIdentifier
+    ) : Symbol
 }
 
 sealed interface VariableAttributes {
@@ -34,17 +34,17 @@ sealed interface InitialValue {
     data object NoInitializer : InitialValue
 }
 
-typealias TypedIdentifiers = Map<String, TypedIdentifier>
+typealias SymbolTable = Map<String, Symbol>
 
-fun empty(): TypedIdentifiers = emptyMap()
+fun empty(): SymbolTable = emptyMap()
 
-fun TypedIdentifiers.functionType(functionName: String): TypedIdentifier.Function =
-    this[functionName] as? TypedIdentifier.Function
-        ?: error("Bug: function $functionName should have been typed during semantic analysis, got $this")
+fun SymbolTable.functionSymbol(functionName: String): Symbol.Function =
+    this[functionName] as? Symbol.Function
+        ?: error("Bug: function $functionName should have been added to the symbol table during semantic analysis, got $this")
 
-fun TypedIdentifiers.variableType(variableName: String): TypedIdentifier.Variable =
-    variableTypeOrNull(variableName)
-        ?: error("Bug: variable $variableName should have been typed during semantic analysis, got $this")
+fun SymbolTable.variableSymbol(variableName: String): Symbol.Variable =
+    variableSymbolOrNull(variableName)
+        ?: error("Bug: variable $variableName should have been added to the symbol table during semantic analysis, got $this")
 
-fun TypedIdentifiers.variableTypeOrNull(variableName: String): TypedIdentifier.Variable? =
-    this[variableName]?.let { it as TypedIdentifier.Variable }
+fun SymbolTable.variableSymbolOrNull(variableName: String): Symbol.Variable? =
+    this[variableName]?.let { it as Symbol.Variable }

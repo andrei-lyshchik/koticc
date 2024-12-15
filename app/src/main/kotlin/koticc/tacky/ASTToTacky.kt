@@ -3,22 +3,22 @@ package koticc.tacky
 import koticc.ast.AST
 import koticc.ast.LabelName
 import koticc.semantic.InitialValue
-import koticc.semantic.TypedIdentifier
-import koticc.semantic.TypedIdentifiers
+import koticc.semantic.Symbol
+import koticc.semantic.SymbolTable
 import koticc.semantic.ValidASTProgram
 import koticc.semantic.VariableAttributes
-import koticc.semantic.functionType
-import koticc.semantic.variableType
+import koticc.semantic.functionSymbol
+import koticc.semantic.variableSymbol
 
 fun programASTToTacky(validASTProgram: ValidASTProgram): Tacky.Program {
     val generator = TackyGenerator(
         initialVariableCount = validASTProgram.renamedVariableCount,
-        typedIdentifiers = validASTProgram.typedIdentifiers,
+        symbolTable = validASTProgram.symbolTable,
     )
     return generator.generateProgram(validASTProgram.value)
 }
 
-private class TackyGenerator(initialVariableCount: Int, private val typedIdentifiers: TypedIdentifiers) {
+private class TackyGenerator(initialVariableCount: Int, private val symbolTable: SymbolTable) {
     private var variableCount = initialVariableCount
     private val instructions: MutableList<Tacky.Instruction> = mutableListOf()
     private var labelCount = 0
@@ -30,7 +30,7 @@ private class TackyGenerator(initialVariableCount: Int, private val typedIdentif
     fun generateProgram(program: AST.Program): Tacky.Program {
         return Tacky.Program(
             topLevel =
-            generateFunctionDefinitions(program) + generateStaticVariables(typedIdentifiers),
+            generateFunctionDefinitions(program) + generateStaticVariables(symbolTable),
         )
     }
 
@@ -45,19 +45,19 @@ private class TackyGenerator(initialVariableCount: Int, private val typedIdentif
                 }
             }.map(Tacky.TopLevel::FunctionDefinition)
 
-    private fun generateStaticVariables(typedIdentifiers: TypedIdentifiers) =
-        typedIdentifiers
-            .mapNotNull { (name, type) ->
-                when (type) {
-                    is TypedIdentifier.Variable -> {
-                        when (type.attributes) {
+    private fun generateStaticVariables(symbolTable: SymbolTable) =
+        symbolTable
+            .mapNotNull { (name, symbol) ->
+                when (symbol) {
+                    is Symbol.Variable -> {
+                        when (symbol.attributes) {
                             is VariableAttributes.Static -> {
-                                val initialValue = when (val initialValue = type.attributes.initialValue) {
+                                val initialValue = when (val initialValue = symbol.attributes.initialValue) {
                                     is InitialValue.Constant -> initialValue.value
                                     InitialValue.Tentative -> 0
                                     InitialValue.NoInitializer -> return@mapNotNull null
                                 }
-                                Tacky.StaticVariable(name, global = type.attributes.global, initialValue = initialValue)
+                                Tacky.StaticVariable(name, global = symbol.attributes.global, initialValue = initialValue)
                             }
                             else -> null
                         }
@@ -78,7 +78,7 @@ private class TackyGenerator(initialVariableCount: Int, private val typedIdentif
         val tackyFunction = Tacky.FunctionDefinition(
             name = functionDeclaration.name,
             parameters = functionDeclaration.parameters.map { it.name },
-            global = typedIdentifiers.functionType(functionDeclaration.name).global,
+            global = symbolTable.functionSymbol(functionDeclaration.name).global,
             body = instructions.toList(),
         )
         instructions.clear()
@@ -96,7 +96,7 @@ private class TackyGenerator(initialVariableCount: Int, private val typedIdentif
     }
 
     private fun generateVariableDeclaration(declaration: AST.Declaration.Variable) {
-        val variableType = typedIdentifiers.variableType(declaration.name)
+        val variableType = symbolTable.variableSymbol(declaration.name)
         if (variableType.attributes is VariableAttributes.Static) return
 
         val initialValue = declaration.initializer?.let { generateExpression(it) }

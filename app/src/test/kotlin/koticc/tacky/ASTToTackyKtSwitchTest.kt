@@ -30,7 +30,7 @@ class ASTToTackyKtSwitchTest {
                 }
             },
             renamedVariableCount = 1,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "a" to Type.Integer.toIdentifier(),
             ),
@@ -88,7 +88,7 @@ class ASTToTackyKtSwitchTest {
                 }
             },
             renamedVariableCount = 1,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "a" to Type.Integer.toIdentifier(),
             ),

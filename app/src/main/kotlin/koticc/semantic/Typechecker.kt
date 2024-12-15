@@ -7,19 +7,19 @@ import koticc.ast.AST
 import koticc.token.Location
 
 internal class Typechecker(private val nameMapping: Map<String, String>) {
-    private val typedIdentifiers: MutableMap<String, TypedIdentifierWithLocation> = mutableMapOf()
+    private val symbolTable: MutableMap<String, SymbolWithLocation> = mutableMapOf()
 
     private fun originalIdentifierName(name: String): String = nameMapping[name]
         ?: name
 
-    fun typecheck(program: AST.Program): Either<SemanticAnalysisError, TypedIdentifiers> = either {
+    fun typecheck(program: AST.Program): Either<SemanticAnalysisError, SymbolTable> = either {
         program.declarations.forEach { declaration ->
             when (declaration) {
                 is AST.Declaration.Function -> typecheckFunctionDeclaration(declaration).bind()
                 is AST.Declaration.Variable -> typecheckFileScopeVariableDeclaration(declaration).bind()
             }
         }
-        typedIdentifiers.mapValues { (_, type) -> type.value }
+        symbolTable.mapValues { (_, symbolWithLocation) -> symbolWithLocation.value }
     }
 
     private fun typecheckDeclaration(
@@ -36,32 +36,32 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     ): Either<SemanticAnalysisError, Unit> = either {
         val functionType = Type.Function(parameterCount = functionDeclaration.parameters.size)
         val global = functionDeclaration.storageClass != AST.StorageClass.Static
-        val existingTypedIdentifier = typedIdentifiers[functionDeclaration.name]
-        val (previouslyDefined, previouslyGlobal) = when (existingTypedIdentifier?.value) {
-            is TypedIdentifier.Function -> {
-                val bothDefined = existingTypedIdentifier.value.defined && functionDeclaration.body != null
-                val conflictingTypes = existingTypedIdentifier.value.type != functionType
+        val existingSymbol = symbolTable[functionDeclaration.name]
+        val (previouslyDefined, previouslyGlobal) = when (existingSymbol?.value) {
+            is Symbol.Function -> {
+                val bothDefined = existingSymbol.value.defined && functionDeclaration.body != null
+                val conflictingTypes = existingSymbol.value.type != functionType
                 if (bothDefined || conflictingTypes) {
                     raise(
                         SemanticAnalysisError(
                             "conflicting declaration of '${originalIdentifierName(functionDeclaration.name)}' " +
-                                "at ${existingTypedIdentifier.location.toHumanReadableString()}",
+                                "at ${existingSymbol.location.toHumanReadableString()}",
                             functionDeclaration.location,
                         ),
                     )
                 }
-                if (existingTypedIdentifier.value.global && functionDeclaration.storageClass == AST.StorageClass.Static) {
+                if (existingSymbol.value.global && functionDeclaration.storageClass == AST.StorageClass.Static) {
                     raise(
                         SemanticAnalysisError(
                             "static function '${originalIdentifierName(functionDeclaration.name)}' declaration " +
-                                "follows non-static at ${existingTypedIdentifier.location.toHumanReadableString()}",
+                                "follows non-static at ${existingSymbol.location.toHumanReadableString()}",
                             functionDeclaration.location,
                         ),
                     )
                 }
-                existingTypedIdentifier.value.defined to existingTypedIdentifier.value.global
+                existingSymbol.value.defined to existingSymbol.value.global
             }
-            is TypedIdentifier.Variable -> raise(
+            is Symbol.Variable -> raise(
                 SemanticAnalysisError(
                     "variable '${originalIdentifierName(functionDeclaration.name)}' redeclared as a function",
                     functionDeclaration.location,
@@ -71,8 +71,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 false to null
             }
         }
-        typedIdentifiers[functionDeclaration.name] = TypedIdentifierWithLocation(
-            value = TypedIdentifier.Function(
+        symbolTable[functionDeclaration.name] = SymbolWithLocation(
+            value = Symbol.Function(
                 type = functionType,
                 defined = functionDeclaration.body != null || previouslyDefined,
                 global = previouslyGlobal ?: global,
@@ -81,8 +81,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         )
         functionDeclaration.body?.let {
             functionDeclaration.parameters.forEach { parameter ->
-                typedIdentifiers[parameter.name] = TypedIdentifierWithLocation(
-                    value = TypedIdentifier.Variable(type = Type.Integer, attributes = VariableAttributes.Local),
+                symbolTable[parameter.name] = SymbolWithLocation(
+                    value = Symbol.Variable(type = Type.Integer, attributes = VariableAttributes.Local),
                     location = functionDeclaration.location,
                 )
             }
@@ -111,11 +111,11 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         }
         var global = declaration.storageClass != AST.StorageClass.Static
 
-        val existingTypeIdentifier = typedIdentifiers[declaration.name]
-        if (existingTypeIdentifier != null) {
-            val existingVariable = when (existingTypeIdentifier.value) {
-                is TypedIdentifier.Variable -> existingTypeIdentifier.value
-                is TypedIdentifier.Function -> raise(
+        val existingSymbol = symbolTable[declaration.name]
+        if (existingSymbol != null) {
+            val existingVariable = when (existingSymbol.value) {
+                is Symbol.Variable -> existingSymbol.value
+                is Symbol.Function -> raise(
                     SemanticAnalysisError(
                         "function '${originalIdentifierName(declaration.name)}' redeclared as a variable",
                         declaration.location,
@@ -128,7 +128,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 raise(
                     SemanticAnalysisError(
                         "static variable '${originalIdentifierName(declaration.name)}' declaration " +
-                            "follows non-static at ${existingTypeIdentifier.location.toHumanReadableString()}",
+                            "follows non-static at ${existingSymbol.location.toHumanReadableString()}",
                         declaration.location,
                     ),
                 )
@@ -157,8 +157,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             }
         }
 
-        typedIdentifiers[declaration.name] = TypedIdentifierWithLocation(
-            value = TypedIdentifier.Variable(
+        symbolTable[declaration.name] = SymbolWithLocation(
+            value = Symbol.Variable(
                 type = Type.Integer,
                 attributes = VariableAttributes.Static(
                     initialValue = initialValue,
@@ -191,18 +191,18 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                         ),
                     )
                 }
-                val existingTypedIdentifier = typedIdentifiers[variableDeclaration.name]
-                when (existingTypedIdentifier?.value) {
-                    is TypedIdentifier.Function -> raise(
+                val existingSymbol = symbolTable[variableDeclaration.name]
+                when (existingSymbol?.value) {
+                    is Symbol.Function -> raise(
                         SemanticAnalysisError(
                             "function '${originalIdentifierName(variableDeclaration.name)}' redeclared as a variable",
                             variableDeclaration.location,
                         ),
                     )
-                    is TypedIdentifier.Variable -> {}
+                    is Symbol.Variable -> {}
                     null -> {
-                        typedIdentifiers[variableDeclaration.name] = TypedIdentifierWithLocation(
-                            value = TypedIdentifier.Variable(
+                        symbolTable[variableDeclaration.name] = SymbolWithLocation(
+                            value = Symbol.Variable(
                                 type = Type.Integer,
                                 attributes = VariableAttributes.Static(
                                     initialValue = InitialValue.NoInitializer,
@@ -225,8 +225,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                         ),
                     )
                 }
-                typedIdentifiers[variableDeclaration.name] = TypedIdentifierWithLocation(
-                    value = TypedIdentifier.Variable(
+                symbolTable[variableDeclaration.name] = SymbolWithLocation(
+                    value = Symbol.Variable(
                         type = Type.Integer,
                         attributes = VariableAttributes.Static(
                             initialValue = initialValue,
@@ -238,8 +238,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             }
             null -> {
                 val variableType = Type.Integer
-                typedIdentifiers[variableDeclaration.name] = TypedIdentifierWithLocation(
-                    value = TypedIdentifier.Variable(type = variableType, attributes = VariableAttributes.Local),
+                symbolTable[variableDeclaration.name] = SymbolWithLocation(
+                    value = Symbol.Variable(type = variableType, attributes = VariableAttributes.Local),
                     location = variableDeclaration.location,
                 )
                 variableDeclaration.initializer?.let { typecheckExpression(it).bind() }
@@ -319,9 +319,9 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 typecheckExpression(expression.elseExpression).bind()
             }
             is AST.Expression.FunctionCall -> {
-                val typeIdentifier = typedIdentifiers[expression.name]
-                val functionType = when (typeIdentifier?.value) {
-                    is TypedIdentifier.Function -> typeIdentifier.value
+                val functionSymbol = symbolTable[expression.name]
+                val functionType = when (functionSymbol?.value) {
+                    is Symbol.Function -> functionSymbol.value
                     else -> raise(
                         SemanticAnalysisError(
                             "'${originalIdentifierName(expression.name)}' is not a function",
@@ -330,7 +330,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     )
                 }
                 ensure(functionType.type.parameterCount == expression.arguments.size) {
-                    SemanticAnalysisError("function '${originalIdentifierName(expression.name)}' expects ${typeIdentifier.value.type.parameterCount} arguments, but ${expression.arguments.size} were provided", expression.location)
+                    SemanticAnalysisError("function '${originalIdentifierName(expression.name)}' expects ${functionSymbol.value.type.parameterCount} arguments, but ${expression.arguments.size} were provided", expression.location)
                 }
             }
             is AST.Expression.IntLiteral -> {}
@@ -341,16 +341,16 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 typecheckExpression(expression.operand).bind()
             }
             is AST.Expression.Variable -> {
-                val type = typedIdentifiers[expression.name]
-                ensure(type?.value is TypedIdentifier.Variable) {
+                val type = symbolTable[expression.name]
+                ensure(type?.value is Symbol.Variable) {
                     SemanticAnalysisError("'${originalIdentifierName(expression.name)}' is not a variable", expression.location)
                 }
             }
         }
     }
 
-    private data class TypedIdentifierWithLocation(
-        val value: TypedIdentifier,
+    private data class SymbolWithLocation(
+        val value: Symbol,
         val location: Location,
     )
 }

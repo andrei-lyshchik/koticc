@@ -27,7 +27,7 @@ class ASTToTackyKtForTest {
                 }
             },
             renamedVariableCount = 2,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "a.0" to Type.Integer.toIdentifier(),
                 "i.1" to Type.Integer.toIdentifier(),
@@ -76,7 +76,7 @@ class ASTToTackyKtForTest {
                 }
             },
             renamedVariableCount = 1,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "a.0" to Type.Integer.toIdentifier(),
             ),
@@ -124,7 +124,7 @@ class ASTToTackyKtForTest {
                 }
             },
             renamedVariableCount = 2,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "a.0" to Type.Integer.toIdentifier(),
                 "i.1" to Type.Integer.toIdentifier(),
@@ -171,7 +171,7 @@ class ASTToTackyKtForTest {
                 }
             },
             renamedVariableCount = 2,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "a.0" to Type.Integer.toIdentifier(),
                 "i.1" to Type.Integer.toIdentifier(),
@@ -223,7 +223,7 @@ class ASTToTackyKtForTest {
                 }
             },
             renamedVariableCount = 2,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "a.0" to Type.Integer.toIdentifier(),
                 "i.1" to Type.Integer.toIdentifier(),

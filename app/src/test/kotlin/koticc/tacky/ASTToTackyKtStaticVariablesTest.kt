@@ -20,7 +20,7 @@ class ASTToTackyKtStaticVariablesTest {
                 int("c") assign 3.e
             },
             renamedVariableCount = 3,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 // No initializer => defined somewhere else, so we should skip it
                 "a" to Type.Integer.toIdentifier(
                     attributes = VariableAttributes.Static(
@@ -72,7 +72,7 @@ class ASTToTackyKtStaticVariablesTest {
                 }
             },
             renamedVariableCount = 3,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "a" to Type.Integer.toIdentifier(
                     attributes = VariableAttributes.Static(

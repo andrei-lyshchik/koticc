@@ -51,7 +51,7 @@ class SemanticAnalysisKtForTest {
                     }
                 },
                 renamedVariableCount = 2,
-                typedIdentifiers = mapOf(
+                symbolTable = mapOf(
                     "main" to Type.Function(parameterCount = 0).toIdentifier(),
                     "a.0" to Type.Integer.toIdentifier(),
                     "i.1" to Type.Integer.toIdentifier(),
@@ -135,7 +135,7 @@ class SemanticAnalysisKtForTest {
                     }
                 },
                 renamedVariableCount = 3,
-                typedIdentifiers = mapOf(
+                symbolTable = mapOf(
                     "main" to Type.Function(parameterCount = 0).toIdentifier(),
                     "a.0" to Type.Integer.toIdentifier(),
                     "i.1" to Type.Integer.toIdentifier(),
@@ -220,7 +220,7 @@ class SemanticAnalysisKtForTest {
                     }
                 },
                 renamedVariableCount = 3,
-                typedIdentifiers = mapOf(
+                symbolTable = mapOf(
                     "main" to Type.Function(parameterCount = 0).toIdentifier(),
                     "a.0" to Type.Integer.toIdentifier(),
                     "i.1" to Type.Integer.toIdentifier(),
@@ -273,7 +273,7 @@ class SemanticAnalysisKtForTest {
                     }
                 },
                 renamedVariableCount = 4,
-                typedIdentifiers = mapOf(
+                symbolTable = mapOf(
                     "main" to Type.Function(parameterCount = 0).toIdentifier(),
                     "a.0" to Type.Integer.toIdentifier(),
                     "i.1" to Type.Integer.toIdentifier(),

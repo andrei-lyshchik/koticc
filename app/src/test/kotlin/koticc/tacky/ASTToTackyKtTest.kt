@@ -34,7 +34,7 @@ class ASTToTackyKtTest {
                     }
                 },
                 renamedVariableCount = 0,
-                typedIdentifiers = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
+                symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
             )
 
         val tacky = programASTToTacky(program)
@@ -92,7 +92,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 renamedVariableCount = 0,
-                typedIdentifiers = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
+                symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
             )
 
         val tacky = programASTToTacky(program)
@@ -178,7 +178,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 renamedVariableCount = 0,
-                typedIdentifiers = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
+                symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
             )
 
         val tacky = programASTToTacky(program)
@@ -220,7 +220,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 0,
-            typedIdentifiers = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
+            symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
         )
 
         val tacky = programASTToTacky(program)
@@ -251,7 +251,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 0,
-            typedIdentifiers = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
+            symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
         )
 
         val tacky = programASTToTacky(program)
@@ -288,7 +288,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 0,
-            typedIdentifiers = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
+            symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
         )
 
         val tacky = programASTToTacky(program)
@@ -323,7 +323,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 1,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "x" to Type.Integer.toIdentifier(),
             ),
@@ -352,7 +352,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 1,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "x" to Type.Integer.toIdentifier(),
             ),
@@ -380,7 +380,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 123,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "x" to Type.Integer.toIdentifier(),
             ),
@@ -411,7 +411,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 1,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "x" to Type.Integer.toIdentifier(),
             ),
@@ -487,7 +487,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 renamedVariableCount = 1,
-                typedIdentifiers = mapOf(
+                symbolTable = mapOf(
                     "main" to Type.Function(parameterCount = 0).toIdentifier(),
                     "x" to Type.Integer.toIdentifier(),
                 ),
@@ -598,7 +598,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 renamedVariableCount = 2,
-                typedIdentifiers = mapOf(
+                symbolTable = mapOf(
                     "main" to Type.Function(parameterCount = 0).toIdentifier(),
                     "x" to Type.Integer.toIdentifier(),
                     "y" to Type.Integer.toIdentifier(),
@@ -673,7 +673,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 2,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "x" to Type.Integer.toIdentifier(),
                 "y" to Type.Integer.toIdentifier(),
@@ -715,7 +715,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 2,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "x" to Type.Integer.toIdentifier(),
                 "y" to Type.Integer.toIdentifier(),
@@ -757,7 +757,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 2,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "a.0" to Type.Integer.toIdentifier(),
                 "b.1" to Type.Integer.toIdentifier(),
@@ -802,7 +802,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 1,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "x" to Type.Integer.toIdentifier(),
             ),
@@ -838,7 +838,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 1,
-            typedIdentifiers = mapOf(
+            symbolTable = mapOf(
                 "main" to Type.Function(parameterCount = 0).toIdentifier(),
                 "x" to Type.Integer.toIdentifier(),
             ),
