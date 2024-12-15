@@ -3,6 +3,7 @@ package koticc.semantic
 import arrow.core.left
 import arrow.core.right
 import koticc.ast.DUMMY_LOCATION
+import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.program
 import org.junit.jupiter.api.Assertions.assertEquals

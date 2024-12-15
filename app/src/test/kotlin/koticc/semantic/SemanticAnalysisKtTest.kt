@@ -3,6 +3,7 @@ package koticc.semantic
 import arrow.core.left
 import arrow.core.right
 import koticc.ast.AST
+import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.program
 import koticc.token.Location

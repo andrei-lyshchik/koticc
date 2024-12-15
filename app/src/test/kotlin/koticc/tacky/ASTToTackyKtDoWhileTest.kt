@@ -1,10 +1,10 @@
 package koticc.tacky
 
+import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.lt
 import koticc.ast.program
-import koticc.semantic.Type
 import koticc.semantic.ValidASTProgram
 import koticc.semantic.toIdentifier
 import kotlin.test.Test

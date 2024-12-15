@@ -1,6 +1,7 @@
 package koticc.semantic
 
 import arrow.core.right
+import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.gt

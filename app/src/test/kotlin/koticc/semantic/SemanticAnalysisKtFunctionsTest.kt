@@ -5,6 +5,7 @@ import arrow.core.right
 import koticc.VarargArgumentsProvider
 import koticc.ast.AST
 import koticc.ast.DUMMY_LOCATION
+import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.invoke

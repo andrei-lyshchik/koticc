@@ -1,9 +1,9 @@
 package koticc.tacky
 
+import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.program
 import koticc.semantic.InitialValue
-import koticc.semantic.Type
 import koticc.semantic.ValidASTProgram
 import koticc.semantic.VariableAttributes
 import koticc.semantic.toIdentifier

@@ -4,6 +4,7 @@ import arrow.core.left
 import arrow.core.right
 import koticc.ast.AST
 import koticc.ast.DUMMY_LOCATION
+import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.plus
 import koticc.ast.program

@@ -1,7 +1,7 @@
 package koticc.assembly
 
+import koticc.ast.Type
 import koticc.semantic.InitialValue
-import koticc.semantic.Type
 import koticc.semantic.VariableAttributes
 import koticc.semantic.toIdentifier
 import koticc.tacky.plus

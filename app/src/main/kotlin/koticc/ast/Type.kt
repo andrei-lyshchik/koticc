@@ -1,4 +1,4 @@
-package koticc.semantic
+package koticc.ast
 
 sealed interface Type {
     sealed interface Data : Type

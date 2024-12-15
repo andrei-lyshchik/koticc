@@ -2,6 +2,7 @@ package koticc.tacky
 
 import koticc.VarargArgumentsProvider
 import koticc.ast.AST
+import koticc.ast.Type
 import koticc.ast.and
 import koticc.ast.assign
 import koticc.ast.cond
@@ -13,7 +14,6 @@ import koticc.ast.or
 import koticc.ast.plus
 import koticc.ast.program
 import koticc.ast.times
-import koticc.semantic.Type
 import koticc.semantic.ValidASTProgram
 import koticc.semantic.toIdentifier
 import koticc.token.Location

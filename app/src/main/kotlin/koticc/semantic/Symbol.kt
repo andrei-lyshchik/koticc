@@ -1,5 +1,7 @@
 package koticc.semantic
 
+import koticc.ast.Type
+
 sealed interface Symbol {
     data class Variable(
         val type: Type.Data,
