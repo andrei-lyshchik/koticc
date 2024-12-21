@@ -160,7 +160,7 @@ internal class IdentifierResolver {
         location: Location,
     ) = SemanticAnalysisError(
         "'$originalName' already declared at" +
-            " ${previousLocation.toHumanReadableString()}",
+            " ${previousLocation.toDisplayString()}",
         location,
     )
 
@@ -291,15 +291,16 @@ internal class IdentifierResolver {
                 is AST.Expression.Variable -> {
                     val newName = identifierMapping[expression.name]
                     ensureNotNull(newName) {
-                        SemanticAnalysisError("undeclared variable '${expression.name}'", expression.location)
+                        SemanticAnalysisError("undeclared variable '${expression.toDisplayString()}'", expression.location)
                     }
-                    AST.Expression.Variable(newName.name, expression.location)
+                    AST.Expression.Variable(newName.name, null, expression.location)
                 }
 
                 is AST.Expression.Unary -> {
                     AST.Expression.Unary(
                         operator = expression.operator,
                         operand = resolveExpression(expression.operand, identifierMapping).bind(),
+                        type = null,
                         location = expression.location,
                     )
                 }
@@ -309,6 +310,7 @@ internal class IdentifierResolver {
                         operator = expression.operator,
                         left = resolveExpression(expression.left, identifierMapping).bind(),
                         right = resolveExpression(expression.right, identifierMapping).bind(),
+                        type = null,
                     )
                 }
 
@@ -329,6 +331,7 @@ internal class IdentifierResolver {
                         condition = resolveExpression(expression.condition, identifierMapping).bind(),
                         thenExpression = resolveExpression(expression.thenExpression, identifierMapping).bind(),
                         elseExpression = resolveExpression(expression.elseExpression, identifierMapping).bind(),
+                        type = null,
                     )
                 }
 
@@ -357,14 +360,14 @@ internal class IdentifierResolver {
                         raise(
                             SemanticAnalysisError(
                                 "left side of assignment must be a left-value, " +
-                                    "got ${assignment.left}",
+                                    "got '${assignment.left.toDisplayString()}'",
                                 assignment.location,
                             ),
                         )
                 }
             val right = resolveExpression(assignment.right, identifierMapping).bind()
 
-            AST.Expression.Assignment(left, right)
+            AST.Expression.Assignment(left, right, null)
         }
 
     private fun resolveCompoundAssignment(
@@ -379,14 +382,14 @@ internal class IdentifierResolver {
                         raise(
                             SemanticAnalysisError(
                                 "left side of compound assignment must be a left-value, " +
-                                    "got ${assignment.left}",
+                                    "got '${assignment.left.toDisplayString()}'",
                                 assignment.location,
                             ),
                         )
                 }
             val right = resolveExpression(assignment.right, identifierMapping).bind()
 
-            AST.Expression.CompoundAssignment(assignment.operator, left, right)
+            AST.Expression.CompoundAssignment(assignment.operator, left, right, null)
         }
 
     private fun resolvePostfix(postfix: AST.Expression.Postfix, identifierMapping: MutableMap<String, DeclaredIdentifier>): Either<SemanticAnalysisError, AST.Expression.Postfix> =
@@ -398,12 +401,12 @@ internal class IdentifierResolver {
                         raise(
                             SemanticAnalysisError(
                                 "operand of postfix operator must be a left-value, " +
-                                    "got ${postfix.operand}",
+                                    "got '${postfix.operand.toDisplayString()}'",
                                 postfix.location,
                             ),
                         )
                 }
-            AST.Expression.Postfix(postfix.operator, operand)
+            AST.Expression.Postfix(postfix.operator, operand, null)
         }
 
     private data class DeclaredIdentifier(

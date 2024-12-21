@@ -117,7 +117,7 @@ internal class GotoLabelResolver {
                     raise(
                         SemanticAnalysisError(
                             "label '${statement.label.value}' already declared at" +
-                                " ${existingLocation.toHumanReadableString()}",
+                                " ${existingLocation.toDisplayString()}",
                             statement.location,
                         ),
                     )

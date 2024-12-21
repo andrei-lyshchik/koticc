@@ -16,7 +16,7 @@ data class SemanticAnalysisError(
     val message: String,
     val location: Location,
 ) : CompilerError {
-    override fun message(): String = "semantic analysis error, at ${location.toHumanReadableString()}: $message"
+    override fun message(): String = "semantic analysis error, at ${location.toDisplayString()}: $message"
 }
 
 fun semanticAnalysis(program: AST.Program): Either<SemanticAnalysisError, ValidASTProgram> =

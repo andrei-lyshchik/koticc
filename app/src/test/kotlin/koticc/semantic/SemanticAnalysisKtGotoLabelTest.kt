@@ -34,8 +34,8 @@ class SemanticAnalysisKtGotoLabelTest {
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "a.0" to Type.Integer.toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "a.0" to Type.Integer.toSymbol(),
                 ),
             )
 
@@ -116,7 +116,7 @@ class SemanticAnalysisKtGotoLabelTest {
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
-                    "foo" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "foo" to Type.Function(parameterCount = 0).toSymbol(),
                 ),
             )
 
@@ -166,7 +166,7 @@ class SemanticAnalysisKtGotoLabelTest {
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
             ),
         )
 
@@ -195,8 +195,8 @@ class SemanticAnalysisKtGotoLabelTest {
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "foo" to Type.Function(parameterCount = 0).toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "foo" to Type.Function(parameterCount = 0).toSymbol(),
             ),
         )
 

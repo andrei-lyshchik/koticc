@@ -6,7 +6,7 @@ import koticc.ast.program
 import koticc.semantic.InitialValue
 import koticc.semantic.ValidASTProgram
 import koticc.semantic.VariableAttributes
-import koticc.semantic.toIdentifier
+import koticc.semantic.toSymbol
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -22,25 +22,25 @@ class ASTToTackyKtStaticVariablesTest {
             renamedVariableCount = 3,
             symbolTable = mapOf(
                 // No initializer => defined somewhere else, so we should skip it
-                "a" to Type.Integer.toIdentifier(
+                "a" to Type.Integer.toSymbol(
                     attributes = VariableAttributes.Static(
                         initialValue = InitialValue.NoInitializer,
                         global = true,
                     ),
                 ),
-                "b" to Type.Integer.toIdentifier(
+                "b" to Type.Integer.toSymbol(
                     attributes = VariableAttributes.Static(
                         initialValue = InitialValue.Tentative,
                         global = true,
                     ),
                 ),
-                "c" to Type.Integer.toIdentifier(
+                "c" to Type.Integer.toSymbol(
                     attributes = VariableAttributes.Static(
                         initialValue = InitialValue.Constant(2),
                         global = true,
                     ),
                 ),
-                "d" to Type.Integer.toIdentifier(
+                "d" to Type.Integer.toSymbol(
                     attributes = VariableAttributes.Static(
                         initialValue = InitialValue.Constant(3),
                         global = false,
@@ -73,14 +73,14 @@ class ASTToTackyKtStaticVariablesTest {
             },
             renamedVariableCount = 3,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "a" to Type.Integer.toIdentifier(
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "a" to Type.Integer.toSymbol(
                     attributes = VariableAttributes.Static(
                         initialValue = InitialValue.Tentative,
                         global = false,
                     ),
                 ),
-                "b" to Type.Integer.toIdentifier(
+                "b" to Type.Integer.toSymbol(
                     attributes = VariableAttributes.Static(
                         initialValue = InitialValue.Constant(2),
                         global = false,

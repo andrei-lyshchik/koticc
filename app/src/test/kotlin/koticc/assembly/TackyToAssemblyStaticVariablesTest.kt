@@ -3,7 +3,7 @@ package koticc.assembly
 import koticc.ast.Type
 import koticc.semantic.InitialValue
 import koticc.semantic.VariableAttributes
-import koticc.semantic.toIdentifier
+import koticc.semantic.toSymbol
 import koticc.tacky.plus
 import koticc.tacky.t
 import koticc.tacky.tackyProgram
@@ -51,8 +51,8 @@ class TackyToAssemblyStaticVariablesTest {
         val assembly = tackyProgramToAssemblyString(
             tacky,
             symbolTable = mapOf(
-                "a" to Type.Integer.toIdentifier(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(0), global = true)),
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                "a" to Type.Integer.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(0), global = true)),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
             ),
         )
 

@@ -55,13 +55,16 @@ class SemanticAnalysisKtTest {
                                             left =
                                             AST.Expression.Variable(
                                                 "a",
+                                                null,
                                                 Location(4, 12),
                                             ),
                                             right =
                                             AST.Expression.Variable(
                                                 "b",
+                                                null,
                                                 Location(4, 16),
                                             ),
+                                            type = null,
                                         ),
                                         location = Location(4, 5),
                                     ),
@@ -116,13 +119,16 @@ class SemanticAnalysisKtTest {
                                                 left =
                                                 AST.Expression.Variable(
                                                     "a.0",
+                                                    null,
                                                     Location(4, 12),
                                                 ),
                                                 right =
                                                 AST.Expression.Variable(
                                                     "b.1",
+                                                    null,
                                                     Location(4, 16),
                                                 ),
+                                                type = null,
                                             ),
                                             location = Location(4, 5),
                                         ),
@@ -136,9 +142,9 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "a.0" to Type.Integer.toIdentifier(),
-                    "b.1" to Type.Integer.toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "a.0" to Type.Integer.toSymbol(),
+                    "b.1" to Type.Integer.toSymbol(),
                 ),
             )
 
@@ -164,6 +170,7 @@ class SemanticAnalysisKtTest {
                                         expression =
                                         AST.Expression.Variable(
                                             "a",
+                                            null,
                                             Location(2, 5),
                                         ),
                                     ),
@@ -251,6 +258,7 @@ class SemanticAnalysisKtTest {
                                             AST.Expression.IntLiteral(1, Location(2, 5)),
                                             right =
                                             AST.Expression.IntLiteral(2, Location(2, 9)),
+                                            type = null,
                                         ),
                                     ),
                                 ),
@@ -264,7 +272,7 @@ class SemanticAnalysisKtTest {
 
         val expected =
             SemanticAnalysisError(
-                "left side of assignment must be a left-value, got IntLiteral(value=1, location=Location(line=2, column=5))",
+                "left side of assignment must be a left-value, got '1'",
                 Location(2, 5),
             )
 
@@ -297,6 +305,7 @@ class SemanticAnalysisKtTest {
                                             AST.Expression.IntLiteral(1, Location(2, 5)),
                                             right =
                                             AST.Expression.IntLiteral(2, Location(2, 9)),
+                                            type = null,
                                         ),
                                     ),
                                 ),
@@ -310,7 +319,7 @@ class SemanticAnalysisKtTest {
 
         val expected =
             SemanticAnalysisError(
-                "left side of compound assignment must be a left-value, got IntLiteral(value=1, location=Location(line=2, column=5))",
+                "left side of compound assignment must be a left-value, got '1'",
                 Location(2, 5),
             )
 
@@ -338,6 +347,7 @@ class SemanticAnalysisKtTest {
                                         AST.Expression.Postfix(
                                             operator = postfixOperator,
                                             operand = AST.Expression.IntLiteral(1, Location(2, 5)),
+                                            type = null,
                                         ),
                                     ),
                                 ),
@@ -351,7 +361,7 @@ class SemanticAnalysisKtTest {
 
         val expected =
             SemanticAnalysisError(
-                "operand of postfix operator must be a left-value, got IntLiteral(value=1, location=Location(line=2, column=5))",
+                "operand of postfix operator must be a left-value, got '1'",
                 Location(2, 5),
             )
 
@@ -387,7 +397,8 @@ class SemanticAnalysisKtTest {
                                         expression =
                                         AST.Expression.Postfix(
                                             operator = postfixOperator,
-                                            operand = AST.Expression.Variable("a", Location(3, 5)),
+                                            operand = AST.Expression.Variable("a", null, Location(3, 5)),
+                                            type = null,
                                         ),
                                     ),
                                 ),
@@ -427,7 +438,8 @@ class SemanticAnalysisKtTest {
                                             expression =
                                             AST.Expression.Postfix(
                                                 operator = postfixOperator,
-                                                operand = AST.Expression.Variable("a.0", Location(3, 5)),
+                                                operand = AST.Expression.Variable("a.0", null, Location(3, 5)),
+                                                type = null,
                                             ),
                                         ),
                                     ),
@@ -440,8 +452,8 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "a.0" to Type.Integer.toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "a.0" to Type.Integer.toSymbol(),
                 ),
             )
 
@@ -489,13 +501,16 @@ class SemanticAnalysisKtTest {
                                             left =
                                             AST.Expression.Variable(
                                                 "a",
+                                                null,
                                                 Location(2, 13),
                                             ),
                                             right =
                                             AST.Expression.Variable(
                                                 "b",
+                                                null,
                                                 Location(2, 17),
                                             ),
+                                            type = null,
                                         ),
                                         storageClass = null,
                                         location = Location(2, 5),
@@ -550,13 +565,16 @@ class SemanticAnalysisKtTest {
                                                 left =
                                                 AST.Expression.Variable(
                                                     "a.0",
+                                                    null,
                                                     Location(2, 13),
                                                 ),
                                                 right =
                                                 AST.Expression.Variable(
                                                     "b.1",
+                                                    null,
                                                     Location(2, 17),
                                                 ),
+                                                type = null,
                                             ),
                                             storageClass = null,
                                             location = Location(2, 5),
@@ -571,10 +589,10 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 3,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "a.0" to Type.Integer.toIdentifier(),
-                    "b.1" to Type.Integer.toIdentifier(),
-                    "c.2" to Type.Integer.toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "a.0" to Type.Integer.toSymbol(),
+                    "b.1" to Type.Integer.toSymbol(),
+                    "c.2" to Type.Integer.toSymbol(),
                 ),
             )
 
@@ -606,8 +624,10 @@ class SemanticAnalysisKtTest {
                                             right =
                                             AST.Expression.Variable(
                                                 "a",
+                                                null,
                                                 Location(2, 17),
                                             ),
+                                            type = null,
                                         ),
                                         storageClass = null,
                                         location = Location(2, 5),
@@ -646,8 +666,10 @@ class SemanticAnalysisKtTest {
                                                 right =
                                                 AST.Expression.Variable(
                                                     "a.0",
+                                                    null,
                                                     Location(2, 17),
                                                 ),
+                                                type = null,
                                             ),
                                             storageClass = null,
                                             location = Location(2, 5),
@@ -662,8 +684,8 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "a.0" to Type.Integer.toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "a.0" to Type.Integer.toSymbol(),
                 ),
             )
 
@@ -702,10 +724,12 @@ class SemanticAnalysisKtTest {
                                             left =
                                             AST.Expression.Variable(
                                                 "a",
+                                                null,
                                                 Location(3, 13),
                                             ),
                                             right =
                                             AST.Expression.IntLiteral(1, Location(3, 17)),
+                                            type = null,
                                         ),
                                         thenStatement =
                                         AST.Statement.Expression(
@@ -714,10 +738,12 @@ class SemanticAnalysisKtTest {
                                                 left =
                                                 AST.Expression.Variable(
                                                     "a",
+                                                    null,
                                                     Location(4, 5),
                                                 ),
                                                 right =
                                                 AST.Expression.IntLiteral(2, Location(4, 9)),
+                                                type = null,
                                             ),
                                         ),
                                         elseStatement =
@@ -727,10 +753,12 @@ class SemanticAnalysisKtTest {
                                                 left =
                                                 AST.Expression.Variable(
                                                     "a",
+                                                    null,
                                                     Location(5, 5),
                                                 ),
                                                 right =
                                                 AST.Expression.IntLiteral(3, Location(5, 9)),
+                                                type = null,
                                             ),
                                         ),
                                     ),
@@ -775,10 +803,12 @@ class SemanticAnalysisKtTest {
                                                 left =
                                                 AST.Expression.Variable(
                                                     "a.0",
+                                                    null,
                                                     Location(3, 13),
                                                 ),
                                                 right =
                                                 AST.Expression.IntLiteral(1, Location(3, 17)),
+                                                type = null,
                                             ),
                                             thenStatement =
                                             AST.Statement.Expression(
@@ -787,10 +817,12 @@ class SemanticAnalysisKtTest {
                                                     left =
                                                     AST.Expression.Variable(
                                                         "a.0",
+                                                        null,
                                                         Location(4, 5),
                                                     ),
                                                     right =
                                                     AST.Expression.IntLiteral(2, Location(4, 9)),
+                                                    type = null,
                                                 ),
                                             ),
                                             elseStatement =
@@ -800,10 +832,12 @@ class SemanticAnalysisKtTest {
                                                     left =
                                                     AST.Expression.Variable(
                                                         "a.0",
+                                                        null,
                                                         Location(5, 5),
                                                     ),
                                                     right =
                                                     AST.Expression.IntLiteral(3, Location(5, 9)),
+                                                    type = null,
                                                 ),
                                             ),
                                         ),
@@ -817,8 +851,8 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "a.0" to Type.Integer.toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "a.0" to Type.Integer.toSymbol(),
                 ),
             )
 
@@ -864,19 +898,23 @@ class SemanticAnalysisKtTest {
                                             condition =
                                             AST.Expression.Binary(
                                                 operator = AST.BinaryOperator.Equal,
-                                                left = AST.Expression.Variable("a", Location(3, 13)),
+                                                left = AST.Expression.Variable("a", null, Location(3, 13)),
                                                 right = AST.Expression.IntLiteral(1, Location(3, 17)),
+                                                type = null,
                                             ),
                                             thenExpression =
                                             AST.Expression.Assignment(
-                                                left = AST.Expression.Variable("b", Location(4, 5)),
+                                                left = AST.Expression.Variable("b", null, Location(4, 5)),
                                                 right = AST.Expression.IntLiteral(2, Location(4, 9)),
+                                                type = null,
                                             ),
                                             elseExpression =
                                             AST.Expression.Assignment(
-                                                left = AST.Expression.Variable("b", Location(5, 5)),
+                                                left = AST.Expression.Variable("b", null, Location(5, 5)),
                                                 right = AST.Expression.IntLiteral(3, Location(5, 9)),
+                                                type = null,
                                             ),
+                                            type = null,
                                         ),
                                     ),
                                 ),
@@ -927,19 +965,23 @@ class SemanticAnalysisKtTest {
                                                 condition =
                                                 AST.Expression.Binary(
                                                     operator = AST.BinaryOperator.Equal,
-                                                    left = AST.Expression.Variable("a.0", Location(3, 13)),
+                                                    left = AST.Expression.Variable("a.0", null, Location(3, 13)),
                                                     right = AST.Expression.IntLiteral(1, Location(3, 17)),
+                                                    type = null,
                                                 ),
                                                 thenExpression =
                                                 AST.Expression.Assignment(
-                                                    left = AST.Expression.Variable("b.1", Location(4, 5)),
+                                                    left = AST.Expression.Variable("b.1", null, Location(4, 5)),
                                                     right = AST.Expression.IntLiteral(2, Location(4, 9)),
+                                                    type = null,
                                                 ),
                                                 elseExpression =
                                                 AST.Expression.Assignment(
-                                                    left = AST.Expression.Variable("b.1", Location(5, 5)),
+                                                    left = AST.Expression.Variable("b.1", null, Location(5, 5)),
                                                     right = AST.Expression.IntLiteral(3, Location(5, 9)),
+                                                    type = null,
                                                 ),
+                                                type = null,
                                             ),
                                         ),
                                     ),
@@ -952,9 +994,9 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "a.0" to Type.Integer.toIdentifier(),
-                    "b.1" to Type.Integer.toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "a.0" to Type.Integer.toSymbol(),
+                    "b.1" to Type.Integer.toSymbol(),
                 ),
             )
 
@@ -1078,9 +1120,9 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "a.0" to Type.Integer.toIdentifier(),
-                    "a.1" to Type.Integer.toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "a.0" to Type.Integer.toSymbol(),
+                    "a.1" to Type.Integer.toSymbol(),
                 ),
             )
 
@@ -1126,6 +1168,7 @@ class SemanticAnalysisKtTest {
                                                                 left =
                                                                 AST.Expression.Variable(
                                                                     "a",
+                                                                    null,
                                                                     Location(4, 5),
                                                                 ),
                                                                 right =
@@ -1133,6 +1176,7 @@ class SemanticAnalysisKtTest {
                                                                     2,
                                                                     Location(4, 9),
                                                                 ),
+                                                                type = null,
                                                             ),
                                                         ),
                                                     ),
@@ -1192,6 +1236,7 @@ class SemanticAnalysisKtTest {
                                                                     left =
                                                                     AST.Expression.Variable(
                                                                         "a.0",
+                                                                        null,
                                                                         Location(4, 5),
                                                                     ),
                                                                     right =
@@ -1199,6 +1244,7 @@ class SemanticAnalysisKtTest {
                                                                         2,
                                                                         Location(4, 9),
                                                                     ),
+                                                                    type = null,
                                                                 ),
                                                             ),
                                                         ),
@@ -1217,8 +1263,8 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "a.0" to Type.Integer.toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "a.0" to Type.Integer.toSymbol(),
                 ),
             )
 
@@ -1261,12 +1307,14 @@ class SemanticAnalysisKtTest {
                                                         AST.Expression.Assignment(
                                                             left = AST.Expression.Variable(
                                                                 "a",
+                                                                null,
                                                                 Location(2, 5),
                                                             ),
                                                             right = AST.Expression.IntLiteral(
                                                                 1,
                                                                 Location(2, 9),
                                                             ),
+                                                            type = null,
                                                         ),
                                                     ),
                                                 ),
@@ -1317,8 +1365,9 @@ class SemanticAnalysisKtTest {
                                                 AST.BlockItem.Statement(
                                                     statement = AST.Statement.Expression(
                                                         expression = AST.Expression.Assignment(
-                                                            left = AST.Expression.Variable("a.0", Location(2, 5)),
+                                                            left = AST.Expression.Variable("a.0", null, Location(2, 5)),
                                                             right = AST.Expression.IntLiteral(1, Location(2, 9)),
+                                                            type = null,
                                                         ),
                                                     ),
                                                 ),
@@ -1343,9 +1392,9 @@ class SemanticAnalysisKtTest {
             ),
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "a.0" to Type.Integer.toIdentifier(),
-                "a.1" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "a.0" to Type.Integer.toSymbol(),
+                "a.1" to Type.Integer.toSymbol(),
             ),
         )
 

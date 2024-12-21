@@ -6,7 +6,7 @@ import koticc.ast.eq
 import koticc.ast.lt
 import koticc.ast.program
 import koticc.semantic.ValidASTProgram
-import koticc.semantic.toIdentifier
+import koticc.semantic.toSymbol
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -25,8 +25,8 @@ class ASTToTackyKtDoWhileTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "a" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "a" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -75,8 +75,8 @@ class ASTToTackyKtDoWhileTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "a.0" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "a.0" to Type.Integer.toSymbol(),
             ),
         )
 

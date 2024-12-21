@@ -15,7 +15,7 @@ import koticc.ast.plus
 import koticc.ast.program
 import koticc.ast.times
 import koticc.semantic.ValidASTProgram
-import koticc.semantic.toIdentifier
+import koticc.semantic.toSymbol
 import koticc.token.Location
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -34,7 +34,7 @@ class ASTToTackyKtTest {
                     }
                 },
                 renamedVariableCount = 0,
-                symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
+                symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toSymbol()),
             )
 
         val tacky = programASTToTacky(program)
@@ -80,6 +80,7 @@ class ASTToTackyKtTest {
                                             AST.Expression.Unary(
                                                 operator = astUnaryOperator,
                                                 operand = AST.Expression.IntLiteral(1, Location(1, 0)),
+                                                type = null,
                                                 location = Location(1, 0),
                                             ),
                                         ),
@@ -92,7 +93,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 renamedVariableCount = 0,
-                symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
+                symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toSymbol()),
             )
 
         val tacky = programASTToTacky(program)
@@ -167,6 +168,7 @@ class ASTToTackyKtTest {
                                                 operator = astBinaryOperator,
                                                 left = AST.Expression.IntLiteral(1, Location(1, 0)),
                                                 right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                type = null,
                                             ),
                                         ),
                                     ),
@@ -178,7 +180,7 @@ class ASTToTackyKtTest {
                     ),
                 ),
                 renamedVariableCount = 0,
-                symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
+                symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toSymbol()),
             )
 
         val tacky = programASTToTacky(program)
@@ -220,7 +222,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 0,
-            symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
+            symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toSymbol()),
         )
 
         val tacky = programASTToTacky(program)
@@ -251,7 +253,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 0,
-            symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
+            symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toSymbol()),
         )
 
         val tacky = programASTToTacky(program)
@@ -288,7 +290,7 @@ class ASTToTackyKtTest {
                 }
             },
             renamedVariableCount = 0,
-            symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toIdentifier()),
+            symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toSymbol()),
         )
 
         val tacky = programASTToTacky(program)
@@ -324,8 +326,8 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "x" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "x" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -353,8 +355,8 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "x" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "x" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -381,8 +383,8 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 123,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "x" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "x" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -412,8 +414,8 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "x" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "x" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -474,8 +476,9 @@ class ASTToTackyKtTest {
                                         AST.Statement.Expression(
                                             AST.Expression.CompoundAssignment(
                                                 operator = astCompoundAssignmentOperator,
-                                                left = AST.Expression.Variable("x", Location(1, 0)),
+                                                left = AST.Expression.Variable("x", null, Location(1, 0)),
                                                 right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                type = null,
                                             ),
                                         ),
                                     ),
@@ -488,8 +491,8 @@ class ASTToTackyKtTest {
                 ),
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "x" to Type.Integer.toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "x" to Type.Integer.toSymbol(),
                 ),
             )
 
@@ -571,9 +574,11 @@ class ASTToTackyKtTest {
                                                 left =
                                                 AST.Expression.Postfix(
                                                     operator = postfixOperator,
-                                                    operand = AST.Expression.Variable("x", Location(1, 0)),
+                                                    operand = AST.Expression.Variable("x", null, Location(1, 0)),
+                                                    type = null,
                                                 ),
                                                 right = AST.Expression.IntLiteral(2, Location(1, 0)),
+                                                type = null,
                                             ),
                                             storageClass = null,
                                             location = Location(1, 0),
@@ -584,8 +589,9 @@ class ASTToTackyKtTest {
                                             expression =
                                             AST.Expression.Binary(
                                                 operator = AST.BinaryOperator.Add,
-                                                left = AST.Expression.Variable("x", Location(1, 0)),
-                                                right = AST.Expression.Variable("y", Location(1, 0)),
+                                                left = AST.Expression.Variable("x", null, Location(1, 0)),
+                                                right = AST.Expression.Variable("y", null, Location(1, 0)),
+                                                type = null,
                                             ),
                                             location = Location(1, 0),
                                         ),
@@ -599,9 +605,9 @@ class ASTToTackyKtTest {
                 ),
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "x" to Type.Integer.toIdentifier(),
-                    "y" to Type.Integer.toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "x" to Type.Integer.toSymbol(),
+                    "y" to Type.Integer.toSymbol(),
                 ),
             )
 
@@ -674,9 +680,9 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "x" to Type.Integer.toIdentifier(),
-                "y" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "x" to Type.Integer.toSymbol(),
+                "y" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -716,9 +722,9 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "x" to Type.Integer.toIdentifier(),
-                "y" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "x" to Type.Integer.toSymbol(),
+                "y" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -758,9 +764,9 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "a.0" to Type.Integer.toIdentifier(),
-                "b.1" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "a.0" to Type.Integer.toSymbol(),
+                "b.1" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -803,8 +809,8 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "x" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "x" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -839,8 +845,8 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "x" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "x" to Type.Integer.toSymbol(),
             ),
         )
 

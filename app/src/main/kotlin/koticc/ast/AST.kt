@@ -1,5 +1,6 @@
 package koticc.ast
 
+import koticc.common.Displayable
 import koticc.token.Location
 import koticc.token.LocationAware
 
@@ -185,69 +186,118 @@ object AST {
         }
     }
 
-    sealed interface Expression : LocationAware {
-        data class IntLiteral(val value: Int, override val location: Location) : Expression
+    sealed interface Expression : LocationAware, Displayable {
+        // at parse time this would be null, and would be filled in during semantic analysis
+        val type: Type?
 
-        data class Variable(val name: String, override val location: Location) : Expression
+        data class IntLiteral(
+            val value: Int,
+            override val location: Location,
+        ) : Expression {
+            override val type: Type
+                get() = Type.Integer
+            override fun toDisplayString(): String = value.toString()
+        }
 
-        data class Unary(val operator: UnaryOperator, val operand: Expression, override val location: Location) :
-            Expression
+        data class Variable(
+            val name: String,
+            override val type: Type?,
+            override val location: Location,
+        ) : Expression {
+            override fun toDisplayString(): String = name
+        }
+
+        data class Unary(
+            val operator: UnaryOperator,
+            val operand: Expression,
+            override val type: Type?,
+            override val location: Location,
+        ) : Expression {
+            override fun toDisplayString(): String = "${operator.toDisplayString()}${operand.toDisplayString()}"
+        }
 
         data class Binary(
             val operator: BinaryOperator,
             val left: Expression,
             val right: Expression,
+            override val type: Type?,
         ) : Expression {
             override val location: Location
                 get() = left.location
+
+            override fun toDisplayString(): String = "${left.toDisplayString()} ${operator.toDisplayString()} ${right.toDisplayString()}"
         }
 
-        data class Assignment(val left: Expression, val right: Expression) :
-            Expression {
+        data class Assignment(
+            val left: Expression,
+            val right: Expression,
+            override val type: Type?,
+        ) : Expression {
             override val location: Location
                 get() = left.location
+
+            override fun toDisplayString(): String = "${left.toDisplayString()} = ${right.toDisplayString()}"
         }
 
         data class CompoundAssignment(
             val operator: CompoundAssignmentOperator,
             val left: Expression,
             val right: Expression,
+            override val type: Type?,
         ) : Expression {
             override val location: Location
                 get() = left.location
+
+            override fun toDisplayString(): String = "${left.toDisplayString()} ${operator.toDisplayString()} ${right.toDisplayString()}"
         }
 
         data class Postfix(
             val operator: PostfixOperator,
             val operand: Expression,
+            override val type: Type?,
         ) : Expression {
             override val location: Location
                 get() = operand.location
+
+            override fun toDisplayString(): String = "${operand.toDisplayString()}${operator.toDisplayString()}"
         }
 
         data class Conditional(
             val condition: Expression,
             val thenExpression: Expression,
             val elseExpression: Expression,
+            override val type: Type?,
         ) : Expression {
             override val location: Location
                 get() = condition.location
+
+            override fun toDisplayString(): String = "${condition.toDisplayString()} ? ${thenExpression.toDisplayString()} : ${elseExpression.toDisplayString()}"
         }
 
         data class FunctionCall(
             val name: String,
             val arguments: List<Expression>,
             override val location: Location,
-        ) : Expression
+            override val type: Type?,
+        ) : Expression {
+            override fun toDisplayString(): String = "$name(${arguments.joinToString(", ") { it.toDisplayString() }})"
+        }
     }
 
-    enum class UnaryOperator {
+    enum class UnaryOperator : Displayable {
         Negate,
         Complement,
         LogicalNegate,
+        ;
+
+        override fun toDisplayString(): String = when (this) {
+            Negate -> "-"
+            Complement -> "~"
+            LogicalNegate -> "!"
+        }
     }
 
-    enum class BinaryOperator {
+    enum class BinaryOperator : Displayable {
         Add,
         Subtract,
         Multiply,
@@ -266,9 +316,31 @@ object AST {
         BitwiseXor,
         ShiftLeft,
         ShiftRight,
+        ;
+
+        override fun toDisplayString(): String = when (this) {
+            Add -> "+"
+            Subtract -> "-"
+            Multiply -> "*"
+            Divide -> "/"
+            Modulo -> "%"
+            Equal -> "=="
+            NotEqual -> "!="
+            LessThan -> "<"
+            LessThanOrEqual -> "<="
+            GreaterThan -> ">"
+            GreaterThanOrEqual -> ">="
+            LogicalAnd -> "&&"
+            LogicalOr -> "||"
+            BitwiseAnd -> "&"
+            BitwiseOr -> "|"
+            BitwiseXor -> "^"
+            ShiftLeft -> "<<"
+            ShiftRight -> ">>"
+        }
     }
 
-    enum class CompoundAssignmentOperator {
+    enum class CompoundAssignmentOperator : Displayable {
         Add,
         Subtract,
         Multiply,
@@ -279,10 +351,30 @@ object AST {
         BitwiseXor,
         ShiftLeft,
         ShiftRight,
+        ;
+
+        override fun toDisplayString(): String = when (this) {
+            Add -> "+="
+            Subtract -> "-="
+            Multiply -> "*="
+            Divide -> "/="
+            Modulo -> "%="
+            BitwiseAnd -> "&="
+            BitwiseOr -> "|="
+            BitwiseXor -> "^="
+            ShiftLeft -> "<<="
+            ShiftRight -> ">>="
+        }
     }
 
-    enum class PostfixOperator {
+    enum class PostfixOperator : Displayable {
         Increment,
         Decrement,
+        ;
+
+        override fun toDisplayString(): String = when (this) {
+            Increment -> "++"
+            Decrement -> "--"
+        }
     }
 }

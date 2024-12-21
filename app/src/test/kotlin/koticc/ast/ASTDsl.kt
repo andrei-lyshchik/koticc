@@ -101,8 +101,9 @@ class BlockBuilder {
             AST.BlockItem.Statement(
                 AST.Statement.Expression(
                     AST.Expression.Assignment(
-                        AST.Expression.Variable(left, DUMMY_LOCATION),
+                        AST.Expression.Variable(left, null, DUMMY_LOCATION),
                         right,
+                        null,
                     ),
                 ),
             ),
@@ -115,8 +116,9 @@ class BlockBuilder {
                 AST.Statement.Expression(
                     AST.Expression.CompoundAssignment(
                         AST.CompoundAssignmentOperator.Add,
-                        AST.Expression.Variable(left, DUMMY_LOCATION),
+                        AST.Expression.Variable(left, null, DUMMY_LOCATION),
                         right,
+                        null,
                     ),
                 ),
             ),
@@ -129,8 +131,9 @@ class BlockBuilder {
                 AST.Statement.Expression(
                     AST.Expression.CompoundAssignment(
                         AST.CompoundAssignmentOperator.Multiply,
-                        AST.Expression.Variable(left, DUMMY_LOCATION),
+                        AST.Expression.Variable(left, null, DUMMY_LOCATION),
                         right,
+                        null,
                     ),
                 ),
             ),
@@ -187,6 +190,7 @@ class BlockBuilder {
                         name = functionName,
                         arguments = arguments.toList(),
                         location = DUMMY_LOCATION,
+                        type = null,
                     ),
                 ),
             ),
@@ -450,13 +454,14 @@ val Int.e
     get() = AST.Expression.IntLiteral(this, DUMMY_LOCATION)
 
 val String.e
-    get() = AST.Expression.Variable(this, DUMMY_LOCATION)
+    get() = AST.Expression.Variable(this, null, DUMMY_LOCATION)
 
 operator fun String.invoke(vararg args: AST.Expression): AST.Expression {
     return AST.Expression.FunctionCall(
         name = this,
         arguments = args.toList(),
         location = DUMMY_LOCATION,
+        type = null,
     )
 }
 
@@ -464,6 +469,7 @@ infix fun AST.Expression.assign(other: AST.Expression): AST.Expression {
     return AST.Expression.Assignment(
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -472,6 +478,7 @@ operator fun AST.Expression.plus(other: AST.Expression): AST.Expression {
         operator = AST.BinaryOperator.Add,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -480,6 +487,7 @@ infix fun AST.Expression.plusAssign(other: AST.Expression): AST.Expression {
         operator = AST.CompoundAssignmentOperator.Add,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -488,6 +496,7 @@ infix fun AST.Expression.plusMultiply(other: AST.Expression): AST.Expression {
         operator = AST.CompoundAssignmentOperator.Multiply,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -496,6 +505,7 @@ infix fun AST.Expression.gt(other: AST.Expression): AST.Expression {
         operator = AST.BinaryOperator.GreaterThan,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -504,6 +514,7 @@ infix fun AST.Expression.eq(other: AST.Expression): AST.Expression {
         operator = AST.BinaryOperator.Equal,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -512,6 +523,7 @@ infix fun AST.Expression.minus(other: AST.Expression): AST.Expression {
         operator = AST.BinaryOperator.Subtract,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -520,6 +532,7 @@ infix operator fun AST.Expression.times(other: AST.Expression): AST.Expression {
         operator = AST.BinaryOperator.Multiply,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -528,6 +541,7 @@ infix operator fun AST.Expression.div(other: AST.Expression): AST.Expression {
         operator = AST.BinaryOperator.Divide,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -536,6 +550,7 @@ infix operator fun AST.Expression.rem(other: AST.Expression): AST.Expression {
         operator = AST.BinaryOperator.Modulo,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -544,6 +559,7 @@ infix fun AST.Expression.and(other: AST.Expression): AST.Expression {
         operator = AST.BinaryOperator.LogicalAnd,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -552,6 +568,7 @@ infix fun AST.Expression.or(other: AST.Expression): AST.Expression {
         operator = AST.BinaryOperator.LogicalOr,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -560,6 +577,7 @@ infix fun AST.Expression.eq(other: Int): AST.Expression {
         operator = AST.BinaryOperator.Equal,
         left = this,
         right = AST.Expression.IntLiteral(other, DUMMY_LOCATION),
+        type = null,
     )
 }
 
@@ -568,6 +586,7 @@ infix fun AST.Expression.lt(other: AST.Expression): AST.Expression {
         operator = AST.BinaryOperator.LessThan,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -576,6 +595,7 @@ infix fun AST.Expression.lte(other: AST.Expression): AST.Expression {
         operator = AST.BinaryOperator.LessThanOrEqual,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -584,6 +604,7 @@ infix fun AST.Expression.gte(other: AST.Expression): AST.Expression {
         operator = AST.BinaryOperator.GreaterThanOrEqual,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -592,6 +613,7 @@ infix fun AST.Expression.ne(other: AST.Expression): AST.Expression {
         operator = AST.BinaryOperator.NotEqual,
         left = this,
         right = other,
+        type = null,
     )
 }
 
@@ -600,4 +622,5 @@ fun cond(condition: AST.Expression, thenExpression: AST.Expression, elseExpressi
         condition = condition,
         thenExpression = thenExpression,
         elseExpression = elseExpression,
+        type = null,
     )

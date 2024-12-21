@@ -8,7 +8,7 @@ import arrow.core.raise.ensure
 import koticc.CompilerError
 
 data class LexerError(val message: String, val location: Location) : CompilerError {
-    override fun message(): String = "lexer error, at ${location.toHumanReadableString()}: $message"
+    override fun message(): String = "lexer error, at ${location.toDisplayString()}: $message"
 }
 
 fun lexer(input: String): Either<LexerError, List<TokenWithLocation>> =

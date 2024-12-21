@@ -53,7 +53,7 @@ class ParserKtFunctionCallTest {
 
         assertEquals(
             expected = ParserError(
-                message = "expected token Comma, but got IntLiteral(value=2)",
+                message = "expected token ,, but got 2",
                 location = Location(2, 11),
             ).left(),
             actual = actual,
@@ -72,7 +72,7 @@ class ParserKtFunctionCallTest {
 
         assertEquals(
             expected = ParserError(
-                message = "expected factor, got CloseParen",
+                message = "expected factor, got ')'",
                 location = Location(2, 14),
             ).left(),
             actual = actual,

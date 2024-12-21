@@ -1,12 +1,11 @@
 package koticc.tacky
 
-import com.sun.tools.javac.jvm.ByteCodes.return_
 import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.plus
 import koticc.ast.program
 import koticc.semantic.ValidASTProgram
-import koticc.semantic.toIdentifier
+import koticc.semantic.toSymbol
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -19,7 +18,7 @@ class ASTToTackyFunctionsTest {
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "foo" to Type.Function(parameterCount = 0).toIdentifier(defined = false),
+                "foo" to Type.Function(parameterCount = 0).toSymbol(defined = false),
             ),
         )
 
@@ -44,8 +43,8 @@ class ASTToTackyFunctionsTest {
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "foo" to Type.Function(parameterCount = 0).toIdentifier(),
-                "bar" to Type.Function(parameterCount = 0).toIdentifier(),
+                "foo" to Type.Function(parameterCount = 0).toSymbol(),
+                "bar" to Type.Function(parameterCount = 0).toSymbol(),
             ),
         )
 
@@ -76,7 +75,7 @@ class ASTToTackyFunctionsTest {
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
             ),
         )
 
@@ -103,7 +102,7 @@ class ASTToTackyFunctionsTest {
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
             ),
         )
 
@@ -131,9 +130,9 @@ class ASTToTackyFunctionsTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "foo" to Type.Function(parameterCount = 2).toIdentifier(),
-                "a" to Type.Integer.toIdentifier(),
-                "b" to Type.Integer.toIdentifier(),
+                "foo" to Type.Function(parameterCount = 2).toSymbol(),
+                "a" to Type.Integer.toSymbol(),
+                "b" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -161,7 +160,7 @@ class ASTToTackyFunctionsTest {
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "foo" to Type.Function(parameterCount = 0).toIdentifier(global = false),
+                "foo" to Type.Function(parameterCount = 0).toSymbol(global = false),
             ),
         )
 

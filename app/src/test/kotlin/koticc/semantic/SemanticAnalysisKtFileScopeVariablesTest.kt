@@ -29,13 +29,13 @@ class SemanticAnalysisKtFileScopeVariablesTest {
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
-                    "a" to Type.Integer.toIdentifier(
+                    "a" to Type.Integer.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Tentative,
                             global = true,
                         ),
                     ),
-                    "b" to Type.Integer.toIdentifier(
+                    "b" to Type.Integer.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(1),
                             global = true,
@@ -78,9 +78,9 @@ class SemanticAnalysisKtFileScopeVariablesTest {
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "foo.0" to Type.Integer.toIdentifier(attributes = VariableAttributes.Local),
-                    "foo" to Type.Integer.toIdentifier(
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "foo.0" to Type.Integer.toSymbol(attributes = VariableAttributes.Local),
+                    "foo" to Type.Integer.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(2),
                             global = true,

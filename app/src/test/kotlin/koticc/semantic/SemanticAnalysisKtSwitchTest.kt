@@ -54,8 +54,8 @@ class SemanticAnalysisKtSwitchTest {
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "a.0" to Type.Integer.toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "a.0" to Type.Integer.toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -87,7 +87,7 @@ class SemanticAnalysisKtSwitchTest {
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -243,7 +243,7 @@ class SemanticAnalysisKtSwitchTest {
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toIdentifier(),
+                    "main" to Type.Function(parameterCount = 0).toSymbol(),
                 ),
             ).right(),
             actual = actual,

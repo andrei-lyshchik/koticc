@@ -14,7 +14,7 @@ import koticc.token.Token
 import koticc.token.TokenWithLocation
 
 data class ParserError(val message: String, val location: Location?) : CompilerError {
-    override fun message(): String = "parser error, at ${location?.toHumanReadableString() ?: "EOF"}: $message"
+    override fun message(): String = "parser error, at ${location?.toDisplayString() ?: "EOF"}: $message"
 }
 
 fun parse(tokens: List<TokenWithLocation>): Either<ParserError, AST.Program> = Parser(tokens).parse()
@@ -50,9 +50,9 @@ private class Parser(
             nextToken.right()
         } else {
             if (nextToken == null) {
-                ParserError("expected token $expected, but got EOF", null).left()
+                ParserError("expected token ${expected.toDisplayString()}, but got EOF", null).left()
             } else {
-                ParserError("expected token $expected, but got ${nextToken.value}", nextToken.location)
+                ParserError("expected token ${expected.toDisplayString()}, but got ${nextToken.value.toDisplayString()}", nextToken.location)
                     .left()
             }
         }
@@ -63,7 +63,7 @@ private class Parser(
         return when (val tokenValue = nextToken?.value) {
             is Token.Identifier -> TokenIdentifierWithLocation(tokenValue, nextToken.location).right()
             else ->
-                ParserError("expected identifier, got ${nextToken?.value ?: "EOF"}", nextToken?.location)
+                ParserError("expected identifier, got ${nextToken?.value.toDisplayString()}", nextToken?.location)
                     .left()
         }
     }
@@ -89,7 +89,7 @@ private class Parser(
                     nextToken()
                     null
                 }
-                else -> raise(ParserError("expected block or semicolon, got ${peekToken?.value}", peekToken?.location))
+                else -> raise(ParserError("expected block or semicolon, got ${peekToken?.value.toDisplayString()}", peekToken?.location))
             }
 
             return AST.Declaration.Function(
@@ -121,7 +121,7 @@ private class Parser(
                         else -> raise(
                             ParserError(
                                 "expected comma or close parenthesis in parameters list, " +
-                                    "got ${peekToken?.value}",
+                                    "got ${peekToken?.value.toDisplayString()}",
                                 peekToken?.location,
                             ),
                         )
@@ -129,7 +129,7 @@ private class Parser(
                 }
                 params
             }
-            else -> raise(ParserError("expected void or int, got ${paramOrVoidToken?.value}", paramOrVoidToken?.location))
+            else -> raise(ParserError("expected 'void' or 'int', got ${paramOrVoidToken?.value.toDisplayString()}", paramOrVoidToken?.location))
         }
     }
 
@@ -195,7 +195,7 @@ private class Parser(
                     }
                 }
                 else -> {
-                    raise(ParserError("expected = or (, got ${peekToken()?.value}", peekToken()?.location))
+                    raise(ParserError("expected '=' or '(', got ${peekToken()?.value.toDisplayString()}", peekToken()?.location))
                 }
             }
         }
@@ -428,12 +428,14 @@ private class Parser(
                                 left = left,
                                 // minPrecedence = precedence + 1 => left associative
                                 right = parseExpression(precedence + 1).bind(),
+                                type = null,
                             )
                         is BinaryOperatorLike.Assignment ->
                             AST.Expression.Assignment(
                                 left = left,
                                 // minPrecedence = precedence => right associative
                                 right = parseExpression(precedence).bind(),
+                                type = null,
                             )
                         is BinaryOperatorLike.CompoundAssignmentOperator ->
                             AST.Expression.CompoundAssignment(
@@ -441,6 +443,7 @@ private class Parser(
                                 left = left,
                                 // minPrecedence = precedence => right associative
                                 right = parseExpression(precedence).bind(),
+                                type = null,
                             )
                         is BinaryOperatorLike.Conditional -> {
                             // any expression can be between ? and : - even assignment
@@ -452,6 +455,7 @@ private class Parser(
                                 condition = left,
                                 thenExpression = thenExpression,
                                 elseExpression = elseExpression,
+                                type = null,
                             )
                         }
                     }
@@ -480,9 +484,10 @@ private class Parser(
                                 name = peekTokenValue.value,
                                 arguments = arguments,
                                 location = peekToken.location,
+                                type = null,
                             )
                         } else {
-                            AST.Expression.Variable(peekTokenValue.value, peekToken.location)
+                            AST.Expression.Variable(peekTokenValue.value, null, peekToken.location)
                         }
                     }
                     is Token.OpenParen -> {
@@ -500,7 +505,7 @@ private class Parser(
                     is Token.DoublePlus, Token.DoubleMinus -> {
                         parseFactorWithPossiblePrefix().bind()
                     }
-                    else -> raise(ParserError("expected factor, got $peekTokenValue", peekToken?.location))
+                    else -> raise(ParserError("expected factor, got ${peekTokenValue.toDisplayString()}", peekToken?.location))
                 }
             var postfixOperator = peekToken()?.value?.toPostfixOperatorOrNull()
             while (postfixOperator != null) {
@@ -509,6 +514,7 @@ private class Parser(
                     AST.Expression.Postfix(
                         operator = postfixOperator,
                         operand = factor,
+                        type = null,
                     )
                 postfixOperator = peekToken()?.value?.toPostfixOperatorOrNull()
             }
@@ -539,7 +545,7 @@ private class Parser(
                     else ->
                         raise(
                             ParserError(
-                                "expected prefix increment or decrement, got ${peekToken?.value}",
+                                "expected prefix increment or decrement, got ${peekToken?.value.toDisplayString()}",
                                 peekToken?.location,
                             ),
                         )
@@ -550,6 +556,7 @@ private class Parser(
                 operator = operator,
                 left = operand,
                 right = AST.Expression.IntLiteral(1, peekToken.location),
+                type = null,
             )
         }
 
@@ -564,14 +571,14 @@ private class Parser(
                     else ->
                         raise(
                             ParserError(
-                                "expected unary operator, got ${peekToken?.value}",
+                                "expected unary operator, got ${peekToken?.value.toDisplayString()}",
                                 peekToken?.location,
                             ),
                         )
                 }
             nextToken()
             val operand = parseFactor().bind()
-            AST.Expression.Unary(unaryOperator, operand, peekToken.location)
+            AST.Expression.Unary(unaryOperator, operand, null, peekToken.location)
         }
 
     private fun toBinaryOperatorLikeOrNull(token: TokenWithLocation): BinaryOperatorLike? {
@@ -701,6 +708,12 @@ private class Parser(
             Token.DoubleMinus -> AST.PostfixOperator.Decrement
             else -> null
         }
+
+    private fun Token?.toDisplayString() = if (this != null) {
+        "'${this.toDisplayString()}'"
+    } else {
+        "EOF"
+    }
 }
 
 private data class TokenIdentifierWithLocation(

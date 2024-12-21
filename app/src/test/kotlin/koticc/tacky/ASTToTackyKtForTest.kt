@@ -10,7 +10,7 @@ import koticc.ast.lt
 import koticc.ast.plusAssign
 import koticc.ast.program
 import koticc.semantic.ValidASTProgram
-import koticc.semantic.toIdentifier
+import koticc.semantic.toSymbol
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -28,9 +28,9 @@ class ASTToTackyKtForTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "a.0" to Type.Integer.toIdentifier(),
-                "i.1" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "a.0" to Type.Integer.toSymbol(),
+                "i.1" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -77,8 +77,8 @@ class ASTToTackyKtForTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "a.0" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "a.0" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -125,9 +125,9 @@ class ASTToTackyKtForTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "a.0" to Type.Integer.toIdentifier(),
-                "i.1" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "a.0" to Type.Integer.toSymbol(),
+                "i.1" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -172,9 +172,9 @@ class ASTToTackyKtForTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "a.0" to Type.Integer.toIdentifier(),
-                "i.1" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "a.0" to Type.Integer.toSymbol(),
+                "i.1" to Type.Integer.toSymbol(),
             ),
         )
 
@@ -224,9 +224,9 @@ class ASTToTackyKtForTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toIdentifier(),
-                "a.0" to Type.Integer.toIdentifier(),
-                "i.1" to Type.Integer.toIdentifier(),
+                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "a.0" to Type.Integer.toSymbol(),
+                "i.1" to Type.Integer.toSymbol(),
             ),
         )
 

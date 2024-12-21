@@ -144,7 +144,7 @@ internal class LoopAndSwitchResolver {
                     }
 
                     ensure(!switchContext.caseExpressions.containsKey(statement.expression.value)) {
-                        SemanticAnalysisError("duplicate case expression: ${statement.expression.value}", statement.location)
+                        SemanticAnalysisError("duplicate case expression: ${statement.expression.toDisplayString()}", statement.location)
                     }
 
                     switchContext.caseExpressions[statement.expression.value] = caseId

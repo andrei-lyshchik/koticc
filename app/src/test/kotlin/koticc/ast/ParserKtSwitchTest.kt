@@ -62,7 +62,7 @@ x                }
 
         assertEquals(
             expected = ParserError(
-                message = "expected factor, got IntKeyword",
+                message = "expected factor, got 'int'",
                 location = Location(4, 25),
             ).left(),
             actual = actual,
@@ -87,7 +87,7 @@ x                }
 
         assertEquals(
             expected = ParserError(
-                message = "expected factor, got IntKeyword",
+                message = "expected factor, got 'int'",
                 location = Location(6, 13),
             ).left(),
             actual = actual,

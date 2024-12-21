@@ -35,8 +35,8 @@ class SemanticAnalysisKtStaticVariables {
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "foo" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "i.0" to Type.Integer.toIdentifier(
+                    "foo" to Type.Function(parameterCount = 0).toSymbol(),
+                    "i.0" to Type.Integer.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(1),
                             global = false,
@@ -66,7 +66,7 @@ class SemanticAnalysisKtStaticVariables {
                 value = program,
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
-                    "x" to Type.Integer.toIdentifier(
+                    "x" to Type.Integer.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(5),
                             global = false,
@@ -119,15 +119,15 @@ class SemanticAnalysisKtStaticVariables {
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "x" to Type.Integer.toIdentifier(
+                    "x" to Type.Integer.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(5),
                             global = false,
                         ),
                     ),
-                    "read_x" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "update_x" to Type.Function(parameterCount = 1).toIdentifier(),
-                    "new_val.0" to Type.Integer.toIdentifier(),
+                    "read_x" to Type.Function(parameterCount = 0).toSymbol(),
+                    "update_x" to Type.Function(parameterCount = 1).toSymbol(),
+                    "new_val.0" to Type.Integer.toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -173,8 +173,8 @@ class SemanticAnalysisKtStaticVariables {
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "foo" to Type.Function(parameterCount = 0).toIdentifier(),
-                    "i.0" to Type.Integer.toIdentifier(
+                    "foo" to Type.Function(parameterCount = 0).toSymbol(),
+                    "i.0" to Type.Integer.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(0),
                             global = false,

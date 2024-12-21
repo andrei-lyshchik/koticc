@@ -46,7 +46,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     raise(
                         SemanticAnalysisError(
                             "conflicting declaration of '${originalIdentifierName(functionDeclaration.name)}' " +
-                                "at ${existingSymbol.location.toHumanReadableString()}",
+                                "at ${existingSymbol.location.toDisplayString()}",
                             functionDeclaration.location,
                         ),
                     )
@@ -55,7 +55,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     raise(
                         SemanticAnalysisError(
                             "static function '${originalIdentifierName(functionDeclaration.name)}' declaration " +
-                                "follows non-static at ${existingSymbol.location.toHumanReadableString()}",
+                                "follows non-static at ${existingSymbol.location.toDisplayString()}",
                             functionDeclaration.location,
                         ),
                     )
@@ -129,7 +129,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 raise(
                     SemanticAnalysisError(
                         "static variable '${originalIdentifierName(declaration.name)}' declaration " +
-                            "follows non-static at ${existingSymbol.location.toHumanReadableString()}",
+                            "follows non-static at ${existingSymbol.location.toDisplayString()}",
                         declaration.location,
                     ),
                 )
