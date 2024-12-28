@@ -75,7 +75,7 @@ object Tacky {
     }
 
     sealed interface Value {
-        data class IntConstant(val value: AST.Constant) : Value
+        data class Constant(val value: AST.Constant) : Value
 
         data class Variable(val name: String) : Value
     }

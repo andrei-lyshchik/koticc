@@ -111,10 +111,10 @@ class ASTToTackyKtTest {
                             listOf(
                                 Tacky.Instruction.Unary(
                                     operator = tackyUnaryOperator,
-                                    src = Tacky.Value.IntConstant(AST.IntConstant(1)),
+                                    src = Tacky.Value.Constant(AST.IntConstant(1)),
                                     dst = Tacky.Value.Variable("tmp.0"),
                                 ),
-                                Tacky.Instruction.Return(Tacky.Value.IntConstant(AST.IntConstant(0))),
+                                Tacky.Instruction.Return(Tacky.Value.Constant(AST.IntConstant(0))),
                             ),
                         ),
                     ),
@@ -198,11 +198,11 @@ class ASTToTackyKtTest {
                             listOf(
                                 Tacky.Instruction.Binary(
                                     operator = tackyBinaryOperator,
-                                    left = Tacky.Value.IntConstant(AST.IntConstant(1)),
-                                    right = Tacky.Value.IntConstant(AST.IntConstant(2)),
+                                    left = Tacky.Value.Constant(AST.IntConstant(1)),
+                                    right = Tacky.Value.Constant(AST.IntConstant(2)),
                                     dst = Tacky.Value.Variable("tmp.0"),
                                 ),
-                                Tacky.Instruction.Return(Tacky.Value.IntConstant(AST.IntConstant(0))),
+                                Tacky.Instruction.Return(Tacky.Value.Constant(AST.IntConstant(0))),
                             ),
                         ),
                     ),
@@ -510,20 +510,20 @@ class ASTToTackyKtTest {
                             body =
                             listOf(
                                 Tacky.Instruction.Copy(
-                                    src = Tacky.Value.IntConstant(AST.IntConstant(1)),
+                                    src = Tacky.Value.Constant(AST.IntConstant(1)),
                                     dst = Tacky.Value.Variable("x"),
                                 ),
                                 Tacky.Instruction.Binary(
                                     operator = tackyBinaryOperator,
                                     left = Tacky.Value.Variable("x"),
-                                    right = Tacky.Value.IntConstant(AST.IntConstant(2)),
+                                    right = Tacky.Value.Constant(AST.IntConstant(2)),
                                     dst = Tacky.Value.Variable("tmp.1"),
                                 ),
                                 Tacky.Instruction.Copy(
                                     src = Tacky.Value.Variable("tmp.1"),
                                     dst = Tacky.Value.Variable("x"),
                                 ),
-                                Tacky.Instruction.Return(Tacky.Value.IntConstant(AST.IntConstant(0))),
+                                Tacky.Instruction.Return(Tacky.Value.Constant(AST.IntConstant(0))),
                             ),
                         ),
                     ),
@@ -625,7 +625,7 @@ class ASTToTackyKtTest {
                             body =
                             listOf(
                                 Tacky.Instruction.Copy(
-                                    src = Tacky.Value.IntConstant(AST.IntConstant(1)),
+                                    src = Tacky.Value.Constant(AST.IntConstant(1)),
                                     dst = Tacky.Value.Variable("x"),
                                 ),
                                 Tacky.Instruction.Copy(
@@ -635,13 +635,13 @@ class ASTToTackyKtTest {
                                 Tacky.Instruction.Binary(
                                     operator = tackyBinaryOperator,
                                     left = Tacky.Value.Variable("x"),
-                                    right = Tacky.Value.IntConstant(AST.IntConstant(1)),
+                                    right = Tacky.Value.Constant(AST.IntConstant(1)),
                                     dst = Tacky.Value.Variable("x"),
                                 ),
                                 Tacky.Instruction.Binary(
                                     operator = Tacky.BinaryOperator.Add,
                                     left = Tacky.Value.Variable("tmp.2"),
-                                    right = Tacky.Value.IntConstant(AST.IntConstant(2)),
+                                    right = Tacky.Value.Constant(AST.IntConstant(2)),
                                     dst = Tacky.Value.Variable("tmp.3"),
                                 ),
                                 Tacky.Instruction.Copy(
@@ -655,7 +655,7 @@ class ASTToTackyKtTest {
                                     dst = Tacky.Value.Variable("tmp.4"),
                                 ),
                                 Tacky.Instruction.Return(Tacky.Value.Variable("tmp.4")),
-                                Tacky.Instruction.Return(Tacky.Value.IntConstant(AST.IntConstant(0))),
+                                Tacky.Instruction.Return(Tacky.Value.Constant(AST.IntConstant(0))),
                             ),
                         ),
                     ),

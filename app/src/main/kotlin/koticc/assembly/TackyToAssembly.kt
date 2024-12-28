@@ -286,7 +286,7 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
 
     private fun tackyValueToOperand(tackyValue: Tacky.Value): Assembly.Operand =
         when (tackyValue) {
-            is Tacky.Value.IntConstant -> {
+            is Tacky.Value.Constant -> {
                 when (tackyValue.value) {
                     is AST.IntConstant -> Assembly.Operand.Immediate(tackyValue.value.value)
                 }
