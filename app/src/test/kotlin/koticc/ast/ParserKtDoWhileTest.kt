@@ -23,7 +23,7 @@ class ParserKtDoWhileTest {
                 function("main") {
                     int("a") assign 1.e
                     do_ {
-                        plusAssign("a", 1.e)
+                        plusAssign("a".e, 1.e)
                     }.while_("a".e lt 10.e)
                     return_("a".e)
                 }

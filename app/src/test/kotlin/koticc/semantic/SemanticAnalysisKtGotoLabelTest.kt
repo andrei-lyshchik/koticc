@@ -5,6 +5,7 @@ import arrow.core.right
 import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
 import koticc.ast.e
+import koticc.ast.integer
 import koticc.ast.program
 import org.junit.jupiter.api.Assertions.assertEquals
 import kotlin.test.Test
@@ -16,7 +17,7 @@ class SemanticAnalysisKtGotoLabelTest {
             function("main") {
                 int("a") assign 1.e
                 label("label") {
-                    assign("a", 2.e)
+                    assign("a".e, 2.e)
                 }
             }
         }
@@ -26,9 +27,9 @@ class SemanticAnalysisKtGotoLabelTest {
                 value =
                 program {
                     function("main") {
-                        int("a.0") assign 1.e
+                        int("a.0") assign 1.e.integer()
                         label("main.label") {
-                            assign("a.0", 2.e)
+                            assign("a.0".e.integer(), 2.e.integer(), type = Type.Integer)
                         }
                     }
                 },
@@ -105,7 +106,7 @@ class SemanticAnalysisKtGotoLabelTest {
             ValidASTProgram(
                 value = program {
                     function("foo") {
-                        if_(1.e) {
+                        if_(1.e.integer()) {
                             label("foo.label_if") { null_() }
                         } else_ {
                             label("foo.label_else") { null_() }

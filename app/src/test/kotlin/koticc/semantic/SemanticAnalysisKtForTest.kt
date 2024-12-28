@@ -8,6 +8,7 @@ import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.initDecl
+import koticc.ast.integer
 import koticc.ast.lt
 import koticc.ast.plusAssign
 import koticc.ast.program
@@ -27,7 +28,7 @@ class SemanticAnalysisKtForTest {
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
-                    plusAssign("a", "i".e)
+                    plusAssign("a".e, "i".e)
                 }
                 return_("a".e)
             }
@@ -39,16 +40,16 @@ class SemanticAnalysisKtForTest {
             expected = ValidASTProgram(
                 value = program {
                     function("main") {
-                        int("a.0") assign 1.e
+                        int("a.0") assign 1.e.integer()
                         for_(
-                            initDecl("i.1", 0.e),
-                            "i.1".e lt 10.e,
-                            "i.1".e plusAssign 1.e,
+                            initDecl("i.1", 0.e.integer()),
+                            ("i.1".e.integer() lt 10.e.integer()).integer(),
+                            ("i.1".e.integer() plusAssign 1.e.integer()).integer(),
                             loopId = 0,
                         ) {
-                            plusAssign("a.0", "i.1".e)
+                            plusAssign("a.0".e.integer(), "i.1".e.integer(), type = Type.Integer)
                         }
-                        return_("a.0".e)
+                        return_("a.0".e.integer())
                     }
                 },
                 renamedVariableCount = 2,
@@ -72,7 +73,7 @@ class SemanticAnalysisKtForTest {
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
-                    plusAssign("a", "i".e)
+                    plusAssign("a".e, "i".e)
                     if_("a".e eq 5.e) {
                         break_()
                     }
@@ -85,7 +86,7 @@ class SemanticAnalysisKtForTest {
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
-                    plusAssign("a", "i".e)
+                    plusAssign("a".e, "i".e)
                     if_("a".e eq 20.e) {
                         break_()
                     }
@@ -103,36 +104,36 @@ class SemanticAnalysisKtForTest {
             expected = ValidASTProgram(
                 value = program {
                     function("main") {
-                        int("a.0") assign 1.e
+                        int("a.0") assign 1.e.integer()
                         for_(
-                            initDecl("i.1", 0.e),
-                            "i.1".e lt 10.e,
-                            "i.1".e plusAssign 1.e,
+                            initDecl("i.1", 0.e.integer()),
+                            ("i.1".e.integer() lt 10.e.integer()).integer(),
+                            ("i.1".e.integer() plusAssign 1.e.integer()).integer(),
                             loopId = 0,
                         ) {
-                            plusAssign("a.0", "i.1".e)
-                            if_("a.0".e eq 5.e) {
+                            plusAssign("a.0".e.integer(), "i.1".e.integer(), type = Type.Integer)
+                            if_(("a.0".e.integer() eq 5.e.integer()).integer()) {
                                 breakLoop(0)
                             }
-                            if_("a.0".e eq 3.e) {
+                            if_(("a.0".e.integer() eq 3.e.integer()).integer()) {
                                 continue_(0)
                             }
                         }
                         for_(
-                            initDecl("i.2", 0.e),
-                            "i.2".e lt 10.e,
-                            "i.2".e plusAssign 1.e,
+                            initDecl("i.2", 0.e.integer()),
+                            ("i.2".e.integer() lt 10.e.integer()).integer(),
+                            ("i.2".e.integer() plusAssign 1.e.integer()).integer(),
                             loopId = 1,
                         ) {
-                            plusAssign("a.0", "i.2".e)
-                            if_("a.0".e eq 20.e) {
+                            plusAssign("a.0".e.integer(), "i.2".e.integer(), type = Type.Integer)
+                            if_(("a.0".e.integer() eq 20.e.integer()).integer()) {
                                 breakLoop(1)
                             }
-                            if_("a.0".e eq 10.e) {
+                            if_(("a.0".e.integer() eq 10.e.integer()).integer()) {
                                 continue_(1)
                             }
                         }
-                        return_("a.0".e)
+                        return_("a.0".e.integer())
                     }
                 },
                 renamedVariableCount = 3,
@@ -157,13 +158,13 @@ class SemanticAnalysisKtForTest {
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
-                    plusAssign("a", "i".e)
+                    plusAssign("a".e, "i".e)
                     for_(
                         initDecl("j", 0.e),
                         "j".e lt 10.e,
                         "j".e plusAssign 1.e,
                     ) {
-                        plusAssign("a", "j".e)
+                        plusAssign("a".e, "j".e)
                         if_("a".e eq 5.e) {
                             break_()
                         }
@@ -188,36 +189,36 @@ class SemanticAnalysisKtForTest {
             expected = ValidASTProgram(
                 value = program {
                     function("main") {
-                        int("a.0") assign 1.e
+                        int("a.0") assign 1.e.integer()
                         for_(
-                            initDecl("i.1", 0.e),
-                            "i.1".e lt 10.e,
-                            "i.1".e plusAssign 1.e,
+                            initDecl("i.1", 0.e.integer()),
+                            ("i.1".e.integer() lt 10.e.integer()).integer(),
+                            ("i.1".e.integer() plusAssign 1.e.integer()).integer(),
                             loopId = 0,
                         ) {
-                            plusAssign("a.0", "i.1".e)
+                            plusAssign("a.0".e.integer(), "i.1".e.integer(), type = Type.Integer)
                             for_(
-                                initDecl("j.2", 0.e),
-                                "j.2".e lt 10.e,
-                                "j.2".e plusAssign 1.e,
+                                initDecl("j.2", 0.e.integer()),
+                                ("j.2".e.integer() lt 10.e.integer()).integer(),
+                                ("j.2".e.integer() plusAssign 1.e.integer()).integer(),
                                 loopId = 1,
                             ) {
-                                plusAssign("a.0", "j.2".e)
-                                if_("a.0".e eq 5.e) {
+                                plusAssign("a.0".e.integer(), "j.2".e.integer(), type = Type.Integer)
+                                if_(("a.0".e.integer() eq 5.e.integer()).integer()) {
                                     breakLoop(1)
                                 }
-                                if_("a.0".e eq 3.e) {
+                                if_(("a.0".e.integer() eq 3.e.integer()).integer()) {
                                     continue_(1)
                                 }
                             }
-                            if_("a.0".e eq 20.e) {
+                            if_(("a.0".e.integer() eq 20.e.integer()).integer()) {
                                 breakLoop(0)
                             }
-                            if_("a.0".e eq 10.e) {
+                            if_(("a.0".e.integer() eq 10.e.integer()).integer()) {
                                 continue_(0)
                             }
                         }
-                        return_("a.0".e)
+                        return_("a.0".e.integer())
                     }
                 },
                 renamedVariableCount = 3,
@@ -247,7 +248,7 @@ class SemanticAnalysisKtForTest {
                     // this is again a nested scope,
                     // so the variable i is different from the one outside and the one in the header
                     int("i") assign 4.e
-                    plusAssign("a", "i".e)
+                    plusAssign("a".e, "i".e)
                 }
                 return_("a".e)
             }
@@ -259,18 +260,18 @@ class SemanticAnalysisKtForTest {
             expected = ValidASTProgram(
                 value = program {
                     function("main") {
-                        int("a.0") assign 1.e
-                        int("i.1") assign 2.e
+                        int("a.0") assign 1.e.integer()
+                        int("i.1") assign 2.e.integer()
                         for_(
-                            initDecl("i.2", 3.e),
-                            "i.2".e lt 10.e,
-                            "i.2".e plusAssign 1.e,
+                            initDecl("i.2", 3.e.integer()),
+                            ("i.2".e.integer() lt 10.e.integer()).integer(),
+                            ("i.2".e.integer() plusAssign 1.e.integer()).integer(),
                             loopId = 0,
                         ) {
-                            int("i.3") assign 4.e
-                            plusAssign("a.0", "i.3".e)
+                            int("i.3") assign 4.e.integer()
+                            plusAssign("a.0".e.integer(), "i.3".e.integer(), type = Type.Integer)
                         }
-                        return_("a.0".e)
+                        return_("a.0".e.integer())
                     }
                 },
                 renamedVariableCount = 4,

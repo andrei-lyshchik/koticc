@@ -79,11 +79,11 @@ class ASTToTackyKtSwitchTest {
                     int("a") assign 1.e
                     switch("a".e, switchId = 0, hasDefault = false, caseExpressions = mapOf(1.c to 0, 2.c to 1)) {
                         case(1.e, caseId = 0, switchId = 0) {
-                            assign("a", 3.e)
+                            assign("a".e, 3.e)
                         }
                         breakSwitch(0)
                         case(2.e, caseId = 1, switchId = 0) {
-                            assign("a", 2.e)
+                            assign("a".e, 2.e)
                         }
                     }
                 }

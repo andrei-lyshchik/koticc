@@ -8,9 +8,11 @@ import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.eq
+import koticc.ast.integer
 import koticc.ast.invoke
 import koticc.ast.plus
 import koticc.ast.program
+import koticc.ast.times
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 import kotlin.test.Test
@@ -31,7 +33,7 @@ class SemanticAnalysisKtFunctionsTest {
             expected = ValidASTProgram(
                 value = program {
                     function("test", "a.0", "b.1") {
-                        return_("a.0".e + "b.1".e)
+                        return_(("a.0".e.integer() + "b.1".e.integer()).integer())
                     }
                 },
                 renamedVariableCount = 2,
@@ -169,7 +171,7 @@ class SemanticAnalysisKtFunctionsTest {
             expected = ValidASTProgram(
                 value = program {
                     function("main") {
-                        if_(1.e eq 1.e) {
+                        if_((1.e.integer() eq 1.e.integer()).integer()) {
                             function("test1", "a.0")
                         }
                     }
@@ -229,10 +231,10 @@ class SemanticAnalysisKtFunctionsTest {
             expected = ValidASTProgram(
                 value = program {
                     function("test", "a.0") {
-                        return_(1.e + "a.0".e)
+                        return_((1.e.integer() + "a.0".e.integer()).integer())
                     }
                     function("main") {
-                        call("test", 1.e)
+                        call("test", 1.e.integer(), type = Type.Integer)
                     }
                 },
                 renamedVariableCount = 1,
@@ -315,10 +317,10 @@ class SemanticAnalysisKtFunctionsTest {
             expected = ValidASTProgram(
                 value = program {
                     function("test1", "a.0") {
-                        return_("a.0".e)
+                        return_("a.0".e.integer())
                     }
                     function("test2", "a.1") {
-                        return_("a.1".e)
+                        return_("a.1".e.integer())
                     }
                 },
                 renamedVariableCount = 2,
@@ -437,11 +439,11 @@ class SemanticAnalysisKtFunctionsTest {
                     function("test", storageClass = AST.StorageClass.Static)
 
                     function("main") {
-                        return_("test"())
+                        return_("test"().integer())
                     }
 
                     function("test", storageClass = AST.StorageClass.Static) {
-                        return_(1.e)
+                        return_(1.e.integer())
                     }
                 },
                 renamedVariableCount = 0,
@@ -500,7 +502,7 @@ class SemanticAnalysisKtFunctionsTest {
         val program = program {
             function("fun", storageClass = AST.StorageClass.Static)
             function("client1") {
-                "fun"()
+                call("fun")
             }
             function("client2") {
                 // block-scope declarations take linkage of visible declaration
@@ -521,7 +523,7 @@ class SemanticAnalysisKtFunctionsTest {
                 value = program {
                     function("fun", storageClass = AST.StorageClass.Static)
                     function("client1") {
-                        "fun"()
+                        call("fun", type = Type.Integer)
                     }
                     function("client2") {
                         function("fun")
@@ -529,7 +531,7 @@ class SemanticAnalysisKtFunctionsTest {
                     function("fun", storageClass = AST.StorageClass.Extern)
                     function("fun", storageClass = AST.StorageClass.Static)
                     function("fun") {
-                        return_(1.e)
+                        return_(1.e.integer())
                     }
                 },
                 renamedVariableCount = 0,

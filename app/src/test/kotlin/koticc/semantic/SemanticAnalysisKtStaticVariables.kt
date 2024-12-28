@@ -6,6 +6,7 @@ import koticc.ast.AST
 import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
 import koticc.ast.e
+import koticc.ast.integer
 import koticc.ast.plus
 import koticc.ast.program
 import kotlin.test.Test
@@ -17,7 +18,7 @@ class SemanticAnalysisKtStaticVariables {
         val program = program {
             function("foo") {
                 int("i", storageClass = AST.StorageClass.Static) assign 1.e
-                plusAssign("i", 1.e)
+                plusAssign("i".e, 1.e)
                 return_("i".e)
             }
         }
@@ -28,9 +29,9 @@ class SemanticAnalysisKtStaticVariables {
             expected = ValidASTProgram(
                 value = program {
                     function("foo") {
-                        int("i.0", storageClass = AST.StorageClass.Static) assign 1.e
-                        plusAssign("i.0", 1.e)
-                        return_("i.0".e)
+                        int("i.0", storageClass = AST.StorageClass.Static) assign 1.e.integer()
+                        plusAssign("i.0".e.integer(), 1.e.integer(), type = Type.Integer)
+                        return_("i.0".e.integer())
                     }
                 },
                 renamedVariableCount = 1,
@@ -63,7 +64,12 @@ class SemanticAnalysisKtStaticVariables {
 
         assertEquals(
             expected = ValidASTProgram(
-                value = program,
+                value = program {
+                    int("x", storageClass = AST.StorageClass.Static)
+                    int("x", storageClass = AST.StorageClass.Extern)
+                    int("x", storageClass = AST.StorageClass.Static) assign 5.e.integer()
+                    int("x", storageClass = AST.StorageClass.Static)
+                },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
                     "x" to Type.Integer.toSymbol(
@@ -88,7 +94,7 @@ class SemanticAnalysisKtStaticVariables {
             function("update_x", "new_val") {
                 // this refers to x already in scope due to extern
                 int("x", storageClass = AST.StorageClass.Extern)
-                assign("x", "new_val".e)
+                assign("x".e, "new_val".e)
             }
             // x is already in scope, so this refers to that x
             int("x", storageClass = AST.StorageClass.Extern)
@@ -104,16 +110,16 @@ class SemanticAnalysisKtStaticVariables {
                 value = program {
                     int("x", storageClass = AST.StorageClass.Static)
                     function("read_x") {
-                        return_("x".e)
+                        return_("x".e.integer())
                     }
                     function("update_x", "new_val.0") {
                         // this refers to x already in scope due to extern
                         int("x", storageClass = AST.StorageClass.Extern)
-                        assign("x", "new_val.0".e)
+                        assign("x".e.integer(), "new_val.0".e.integer(), type = Type.Integer)
                     }
                     // x is already in scope, so this refers to that x
                     int("x", storageClass = AST.StorageClass.Extern)
-                    int("x", storageClass = AST.StorageClass.Static) assign 5.e
+                    int("x", storageClass = AST.StorageClass.Static) assign 5.e.integer()
                     // tentative definition can follow a definition with an initializer
                     int("x", storageClass = AST.StorageClass.Static)
                 },
@@ -168,7 +174,7 @@ class SemanticAnalysisKtStaticVariables {
                 value = program {
                     function("foo") {
                         int("i.0", storageClass = AST.StorageClass.Static)
-                        return_("i.0".e)
+                        return_("i.0".e.integer())
                     }
                 },
                 renamedVariableCount = 1,

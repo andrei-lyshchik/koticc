@@ -6,6 +6,7 @@ import koticc.ast.AST
 import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
 import koticc.ast.e
+import koticc.ast.integer
 import koticc.ast.plus
 import koticc.ast.program
 import org.junit.jupiter.api.Test
@@ -25,7 +26,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
             expected = ValidASTProgram(
                 value = program {
                     int("a")
-                    int("b") assign 1.e
+                    int("b") assign 1.e.integer()
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
@@ -67,14 +68,14 @@ class SemanticAnalysisKtFileScopeVariablesTest {
             expected = ValidASTProgram(
                 value = program {
                     function("main") {
-                        int("foo.0") assign 1.e
-                        if_("foo.0".e) {
+                        int("foo.0") assign 1.e.integer()
+                        if_("foo.0".e.integer()) {
                             int("foo", storageClass = AST.StorageClass.Extern)
                             int("foo", storageClass = AST.StorageClass.Extern)
-                            return_("foo".e)
+                            return_("foo".e.integer())
                         }
                     }
-                    int("foo", storageClass = AST.StorageClass.Extern) assign 2.e
+                    int("foo", storageClass = AST.StorageClass.Extern) assign 2.e.integer()
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(

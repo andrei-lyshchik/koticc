@@ -409,7 +409,7 @@ class ASTToTackyKtTest {
             program {
                 function("main") {
                     int("x")
-                    assign("x", 1.e)
+                    assign("x".e, 1.e)
                 }
             },
             renamedVariableCount = 1,
@@ -673,7 +673,7 @@ class ASTToTackyKtTest {
                     int("x") assign 1.e
                     int("y") assign 0.e
                     if_("x".e eq 1.e) {
-                        assign("y", 2.e)
+                        assign("y".e, 2.e)
                     }
                     return_("y".e)
                 }
@@ -713,9 +713,9 @@ class ASTToTackyKtTest {
                     int("x") assign 1.e
                     int("y") assign 0.e
                     if_("x".e eq 1.e) {
-                        assign("y", 2.e)
+                        assign("y".e, 2.e)
                     } else_ {
-                        assign("y", 3.e)
+                        assign("y".e, 3.e)
                     }
                     return_("y".e)
                 }
@@ -758,7 +758,7 @@ class ASTToTackyKtTest {
                 function("main") {
                     int("a.0") assign 1.e
                     int("b.1")
-                    assign("a.0", cond("a.0".e eq 1.e, "b.1".e assign 2.e, "b.1".e assign 3.e))
+                    assign("a.0".e, cond("a.0".e eq 1.e, "b.1".e assign 2.e, "b.1".e assign 3.e))
                     return_("b.1".e)
                 }
             },
@@ -801,7 +801,7 @@ class ASTToTackyKtTest {
                 function("main") {
                     int("x") assign 1.e
                     label("label") {
-                        assign("x", 2.e)
+                        assign("x".e, 2.e)
                     }
                     goto("label")
                     return_(0.e)
@@ -838,7 +838,7 @@ class ASTToTackyKtTest {
                 function("main") {
                     nested {
                         int("x") assign 1.e
-                        assign("x", 2.e)
+                        assign("x".e, 2.e)
                     }
                     return_("x".e)
                 }

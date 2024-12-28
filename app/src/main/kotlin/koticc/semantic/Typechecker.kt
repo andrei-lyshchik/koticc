@@ -7,25 +7,33 @@ import koticc.ast.AST
 import koticc.ast.Type
 import koticc.token.Location
 
+internal data class TypecheckedProgram(
+    val value: AST.Program,
+    val symbolTable: SymbolTable,
+)
+
 internal class Typechecker(private val nameMapping: Map<String, String>) {
     private val symbolTable: MutableMap<String, SymbolWithLocation> = mutableMapOf()
 
     private fun originalIdentifierName(name: String): String = nameMapping[name]
         ?: name
 
-    fun typecheck(program: AST.Program): Either<SemanticAnalysisError, SymbolTable> = either {
-        program.declarations.forEach { declaration ->
-            when (declaration) {
-                is AST.Declaration.Function -> typecheckFunctionDeclaration(declaration).bind()
-                is AST.Declaration.Variable -> typecheckFileScopeVariableDeclaration(declaration).bind()
-            }
-        }
-        symbolTable.mapValues { (_, symbolWithLocation) -> symbolWithLocation.value }
+    fun typecheck(program: AST.Program): Either<SemanticAnalysisError, TypecheckedProgram> = either {
+        val programWithTypes = program.copy(
+            declarations = program.declarations.map { declaration ->
+                when (declaration) {
+                    is AST.Declaration.Function -> typecheckFunctionDeclaration(declaration).bind()
+                    is AST.Declaration.Variable -> typecheckFileScopeVariableDeclaration(declaration).bind()
+                }
+            },
+        )
+        val symbolTable = symbolTable.mapValues { (_, symbolWithLocation) -> symbolWithLocation.value }
+        TypecheckedProgram(programWithTypes, symbolTable)
     }
 
     private fun typecheckDeclaration(
         declaration: AST.Declaration,
-    ): Either<SemanticAnalysisError, Unit> = either {
+    ): Either<SemanticAnalysisError, AST.Declaration> = either {
         when (declaration) {
             is AST.Declaration.Function -> typecheckFunctionDeclaration(declaration).bind()
             is AST.Declaration.Variable -> typecheckVariableDeclaration(declaration).bind()
@@ -34,7 +42,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
 
     private fun typecheckFunctionDeclaration(
         functionDeclaration: AST.Declaration.Function,
-    ): Either<SemanticAnalysisError, Unit> = either {
+    ): Either<SemanticAnalysisError, AST.Declaration.Function> = either {
         val functionType = Type.Function(parameterCount = functionDeclaration.parameters.size)
         val global = functionDeclaration.storageClass != AST.StorageClass.Static
         val existingSymbol = symbolTable[functionDeclaration.name]
@@ -80,20 +88,22 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             ),
             location = functionDeclaration.location,
         )
-        functionDeclaration.body?.let {
-            functionDeclaration.parameters.forEach { parameter ->
-                symbolTable[parameter.name] = SymbolWithLocation(
-                    value = Symbol.Variable(type = Type.Integer, attributes = VariableAttributes.Local),
-                    location = functionDeclaration.location,
-                )
-            }
-            typecheckBlock(it).bind()
-        }
+        functionDeclaration.copy(
+            body = functionDeclaration.body?.let {
+                functionDeclaration.parameters.forEach { parameter ->
+                    symbolTable[parameter.name] = SymbolWithLocation(
+                        value = Symbol.Variable(type = Type.Integer, attributes = VariableAttributes.Local),
+                        location = functionDeclaration.location,
+                    )
+                }
+                typecheckBlock(it).bind()
+            },
+        )
     }
 
     private fun typecheckFileScopeVariableDeclaration(
         declaration: AST.Declaration.Variable,
-    ): Either<SemanticAnalysisError, Unit> = either {
+    ): Either<SemanticAnalysisError, AST.Declaration.Variable> = either {
         var initialValue = when (declaration.initializer) {
             is AST.Expression.Constant -> {
                 when (declaration.initializer.value) {
@@ -172,20 +182,29 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             ),
             location = declaration.location,
         )
+        declaration.copy(
+            initializer = declaration.initializer?.let { typecheckExpression(it).bind() },
+        )
     }
 
-    private fun typecheckBlock(block: AST.Block): Either<SemanticAnalysisError, Unit> = either {
-        block.blockItems.forEach { blockItem ->
-            when (blockItem) {
-                is AST.BlockItem.Declaration -> typecheckDeclaration(blockItem.declaration).bind()
-                is AST.BlockItem.Statement -> typecheckStatement(blockItem.statement).bind()
-            }
-        }
+    private fun typecheckBlock(block: AST.Block): Either<SemanticAnalysisError, AST.Block> = either {
+        block.copy(
+            blockItems = block.blockItems.map { blockItem ->
+                when (blockItem) {
+                    is AST.BlockItem.Declaration -> blockItem.copy(
+                        declaration = typecheckDeclaration(blockItem.declaration).bind(),
+                    )
+                    is AST.BlockItem.Statement -> blockItem.copy(
+                        statement = typecheckStatement(blockItem.statement).bind(),
+                    )
+                }
+            },
+        )
     }
 
     private fun typecheckVariableDeclaration(
         variableDeclaration: AST.Declaration.Variable,
-    ): Either<SemanticAnalysisError, Unit> = either {
+    ): Either<SemanticAnalysisError, AST.Declaration.Variable> = either {
         when (variableDeclaration.storageClass) {
             AST.StorageClass.Extern -> {
                 if (variableDeclaration.initializer != null) {
@@ -254,78 +273,117 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 variableDeclaration.initializer?.let { typecheckExpression(it).bind() }
             }
         }
+        variableDeclaration.copy(
+            initializer = variableDeclaration.initializer?.let { typecheckExpression(it).bind() },
+        )
     }
 
-    private fun typecheckStatement(statement: AST.Statement): Either<SemanticAnalysisError, Unit> = either {
+    private fun typecheckStatement(statement: AST.Statement): Either<SemanticAnalysisError, AST.Statement> = either {
         when (statement) {
-            is AST.Statement.Break -> {}
-            is AST.Statement.BreakLoop -> {}
-            is AST.Statement.BreakSwitch -> {}
-            is AST.Statement.Case -> typecheckStatement(statement.body).bind()
-            is AST.Statement.Compound -> typecheckBlock(statement.block).bind()
-            is AST.Statement.Continue -> {}
-            is AST.Statement.Default -> typecheckStatement(statement.body).bind()
+            is AST.Statement.Break -> statement
+            is AST.Statement.BreakLoop -> statement
+            is AST.Statement.BreakSwitch -> statement
+            is AST.Statement.Case -> statement.copy(
+                expression = typecheckExpression(statement.expression).bind(),
+                body = typecheckStatement(statement.body).bind(),
+            )
+            is AST.Statement.Compound -> statement.copy(block = typecheckBlock(statement.block).bind())
+            is AST.Statement.Continue -> statement
+            is AST.Statement.Default -> statement.copy(
+                body = typecheckStatement(statement.body).bind(),
+            )
             is AST.Statement.DoWhile -> {
-                typecheckStatement(statement.body).bind()
-                typecheckExpression(statement.condition).bind()
+                statement.copy(
+                    body = typecheckStatement(statement.body).bind(),
+                    condition = typecheckExpression(statement.condition).bind(),
+                )
             }
-            is AST.Statement.Expression -> typecheckExpression(statement.expression).bind()
+            is AST.Statement.Expression -> statement.copy(
+                expression = typecheckExpression(statement.expression).bind(),
+            )
             is AST.Statement.For -> {
-                when (statement.initializer) {
-                    is AST.ForInitializer.Declaration -> {
-                        ensure(statement.initializer.declaration.storageClass == null) {
-                            SemanticAnalysisError(
-                                "can't use storage class specifier in for loop initializer",
-                                statement.initializer.declaration.location,
+                statement.copy(
+                    initializer = statement.initializer?.let { initializer ->
+                        when (initializer) {
+                            is AST.ForInitializer.Declaration -> {
+                                ensure(initializer.declaration.storageClass == null) {
+                                    SemanticAnalysisError(
+                                        "can't use storage class specifier in for loop initializer",
+                                        initializer.declaration.location,
+                                    )
+                                }
+                                initializer.copy(
+                                    declaration = typecheckVariableDeclaration(initializer.declaration).bind(),
+                                )
+                            }
+                            is AST.ForInitializer.Expression -> initializer.copy(
+                                expression = typecheckExpression(initializer.expression).bind(),
                             )
                         }
-                        typecheckVariableDeclaration(statement.initializer.declaration).bind()
-                    }
-                    is AST.ForInitializer.Expression -> typecheckExpression(statement.initializer.expression).bind()
-                    null -> {}
-                }
-                statement.condition?.let { typecheckExpression(it).bind() }
-                statement.post?.let { typecheckExpression(it).bind() }
-                typecheckStatement(statement.body).bind()
+                    },
+                    condition = statement.condition?.let { typecheckExpression(it).bind() },
+                    post = statement.post?.let { typecheckExpression(it).bind() },
+                    body = typecheckStatement(statement.body).bind(),
+                )
             }
-            is AST.Statement.Goto -> {}
+            is AST.Statement.Goto -> statement
             is AST.Statement.If -> {
-                typecheckExpression(statement.condition).bind()
-                typecheckStatement(statement.thenStatement).bind()
-                statement.elseStatement?.let { typecheckStatement(it).bind() }
+                statement.copy(
+                    condition = typecheckExpression(statement.condition).bind(),
+                    thenStatement = typecheckStatement(statement.thenStatement).bind(),
+                    elseStatement = statement.elseStatement?.let { typecheckStatement(it).bind() },
+                )
             }
-            is AST.Statement.Labeled -> typecheckStatement(statement.statement).bind()
-            is AST.Statement.Null -> {}
-            is AST.Statement.Return -> statement.expression.let { typecheckExpression(it).bind() }
+            is AST.Statement.Labeled -> statement.copy(
+                statement = typecheckStatement(statement.statement).bind(),
+            )
+            is AST.Statement.Null -> statement
+            is AST.Statement.Return -> {
+                statement.copy(
+                    expression = typecheckExpression(statement.expression).bind(),
+                )
+            }
             is AST.Statement.Switch -> {
-                typecheckExpression(statement.expression).bind()
-                typecheckStatement(statement.body).bind()
+                statement.copy(
+                    expression = typecheckExpression(statement.expression).bind(),
+                    body = typecheckStatement(statement.body).bind(),
+                )
             }
             is AST.Statement.While -> {
-                typecheckExpression(statement.condition).bind()
-                typecheckStatement(statement.body).bind()
+                statement.copy(
+                    condition = typecheckExpression(statement.condition).bind(),
+                    body = typecheckStatement(statement.body).bind(),
+                )
             }
         }
     }
 
-    private fun typecheckExpression(expression: AST.Expression): Either<SemanticAnalysisError, Unit> = either {
+    private fun typecheckExpression(expression: AST.Expression): Either<SemanticAnalysisError, AST.Expression> = either {
         when (expression) {
             is AST.Expression.Assignment -> {
-                typecheckExpression(expression.left).bind()
-                typecheckExpression(expression.right).bind()
+                expression.copy(
+                    left = typecheckExpression(expression.left).bind(),
+                    right = typecheckExpression(expression.right).bind(),
+                ).ofType(Type.Integer)
             }
             is AST.Expression.Binary -> {
-                typecheckExpression(expression.left).bind()
-                typecheckExpression(expression.right).bind()
+                expression.copy(
+                    left = typecheckExpression(expression.left).bind(),
+                    right = typecheckExpression(expression.right).bind(),
+                ).ofType(Type.Integer)
             }
             is AST.Expression.CompoundAssignment -> {
-                typecheckExpression(expression.left).bind()
-                typecheckExpression(expression.right).bind()
+                expression.copy(
+                    left = typecheckExpression(expression.left).bind(),
+                    right = typecheckExpression(expression.right).bind(),
+                ).ofType(Type.Integer)
             }
             is AST.Expression.Conditional -> {
-                typecheckExpression(expression.condition).bind()
-                typecheckExpression(expression.thenExpression).bind()
-                typecheckExpression(expression.elseExpression).bind()
+                expression.copy(
+                    condition = typecheckExpression(expression.condition).bind(),
+                    thenExpression = typecheckExpression(expression.thenExpression).bind(),
+                    elseExpression = typecheckExpression(expression.elseExpression).bind(),
+                ).ofType(Type.Integer)
             }
             is AST.Expression.FunctionCall -> {
                 val functionSymbol = symbolTable[expression.name]
@@ -341,19 +399,29 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 ensure(functionType.type.parameterCount == expression.arguments.size) {
                     SemanticAnalysisError("function '${originalIdentifierName(expression.name)}' expects ${functionSymbol.value.type.parameterCount} arguments, but ${expression.arguments.size} were provided", expression.location)
                 }
+                expression.copy(
+                    arguments = expression.arguments.map { typecheckExpression(it).bind() },
+                ).ofType(Type.Integer)
             }
-            is AST.Expression.Constant -> {}
+            is AST.Expression.Constant -> {
+                expression.ofType(Type.Integer)
+            }
             is AST.Expression.Postfix -> {
-                typecheckExpression(expression.operand).bind()
+                expression.copy(
+                    operand = typecheckExpression(expression.operand).bind(),
+                ).ofType(Type.Integer)
             }
             is AST.Expression.Unary -> {
-                typecheckExpression(expression.operand).bind()
+                expression.copy(
+                    operand = typecheckExpression(expression.operand).bind(),
+                ).ofType(Type.Integer)
             }
             is AST.Expression.Variable -> {
                 val type = symbolTable[expression.name]
                 ensure(type?.value is Symbol.Variable) {
                     SemanticAnalysisError("'${originalIdentifierName(expression.name)}' is not a variable", expression.location)
                 }
+                expression.ofType(Type.Integer)
             }
         }
     }

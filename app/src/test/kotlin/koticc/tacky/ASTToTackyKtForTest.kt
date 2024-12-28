@@ -22,7 +22,7 @@ class ASTToTackyKtForTest {
                 function("main") {
                     int("a.0") assign 1.e
                     for_(initDecl("i.1", 0.e), "i.1".e lt 10.e, "i.1".e plusAssign 1.e, loopId = 0) {
-                        plusAssign("a.0", "i.1".e)
+                        plusAssign("a.0".e, "i.1".e)
                     }
                 }
             },
@@ -71,7 +71,7 @@ class ASTToTackyKtForTest {
                 function("main") {
                     int("a.0") assign 1.e
                     for_(null, "a.0".e lt 10.e, "a.0".e plusAssign 1.e, loopId = 0) {
-                        plusAssign("a.0", 1.e)
+                        plusAssign("a.0".e, 1.e)
                     }
                 }
             },
@@ -119,7 +119,7 @@ class ASTToTackyKtForTest {
                     int("a.0") assign 1.e
                     int("i.1")
                     for_(initExpr("i.1".e assign 0.e), null, "i.1".e plusAssign 1.e, loopId = 0) {
-                        plusAssign("a.0", "i.1".e)
+                        plusAssign("a.0".e, "i.1".e)
                     }
                 }
             },
@@ -166,7 +166,7 @@ class ASTToTackyKtForTest {
                     int("a.0") assign 1.e
                     int("i.1")
                     for_(initExpr("i.1".e assign 0.e), "i.1".e lt 10.e, null, loopId = 0) {
-                        plusAssign("a.0", "i.1".e)
+                        plusAssign("a.0".e, "i.1".e)
                     }
                 }
             },
@@ -213,7 +213,7 @@ class ASTToTackyKtForTest {
                 function("main") {
                     int("a.0") assign 1.e
                     for_(initDecl("i.1", 0.e), "i.1".e lt 10.e, "i.1".e plusAssign 1.e, loopId = 0) {
-                        plusAssign("a.0", "i.1".e)
+                        plusAssign("a.0".e, "i.1".e)
                         if_("i.1".e eq 5.e) {
                             continue_(0)
                         } else_ {

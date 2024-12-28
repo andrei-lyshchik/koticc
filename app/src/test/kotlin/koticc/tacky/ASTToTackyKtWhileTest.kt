@@ -18,7 +18,7 @@ class ASTToTackyKtWhileTest {
                 function("main") {
                     int("a.0") assign 1.e
                     while_("a.0".e lt 10.e, loopId = 0) {
-                        plusAssign("a.0", 1.e)
+                        plusAssign("a.0".e, 1.e)
                     }
                 }
             },
@@ -61,7 +61,7 @@ class ASTToTackyKtWhileTest {
                 function("main") {
                     int("a.0") assign 1.e
                     while_("a.0".e lt 10.e, loopId = 0) {
-                        plusAssign("a.0", 1.e)
+                        plusAssign("a.0".e, 1.e)
                         if_("a.0".e eq 5.e) {
                             continue_(0)
                         } else_ {

@@ -6,6 +6,7 @@ import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
 import koticc.ast.c
 import koticc.ast.e
+import koticc.ast.integer
 import koticc.ast.program
 import koticc.token.Location
 import org.junit.jupiter.api.Test
@@ -22,7 +23,7 @@ class SemanticAnalysisKtSwitchTest {
                         return_(1.e)
                     }
                     case(2.e) {
-                        assign("a", 2.e)
+                        assign("a".e, 2.e)
                     }
                     return_("a".e)
                     default {
@@ -38,17 +39,17 @@ class SemanticAnalysisKtSwitchTest {
             expected = ValidASTProgram(
                 value = program {
                     function("main") {
-                        int("a.0") assign 1.e
-                        switch(1.e, switchId = 0, hasDefault = true, caseExpressions = mapOf(1.c to 0, 2.c to 1)) {
-                            case(1.e, caseId = 0, switchId = 0) {
-                                return_(1.e)
+                        int("a.0") assign 1.e.integer()
+                        switch(1.e.integer(), switchId = 0, hasDefault = true, caseExpressions = mapOf(1.c to 0, 2.c to 1)) {
+                            case(1.e.integer(), caseId = 0, switchId = 0) {
+                                return_(1.e.integer())
                             }
-                            case(2.e, caseId = 1, switchId = 0) {
-                                assign("a.0", 2.e)
+                            case(2.e.integer(), caseId = 1, switchId = 0) {
+                                assign("a.0".e.integer(), 2.e.integer(), type = Type.Integer)
                             }
-                            return_("a.0".e)
+                            return_("a.0".e.integer())
                             default(switchId = 0) {
-                                return_(3.e)
+                                return_(3.e.integer())
                             }
                         }
                     }
@@ -80,10 +81,10 @@ class SemanticAnalysisKtSwitchTest {
             expected = ValidASTProgram(
                 value = program {
                     function("main") {
-                        switch(1.e, switchId = 0, caseExpressions = emptyMap(), hasDefault = false) {
-                            return_(1.e)
+                        switch(1.e.integer(), switchId = 0, caseExpressions = emptyMap(), hasDefault = false) {
+                            return_(1.e.integer())
                         }
-                        return_(0.e)
+                        return_(0.e.integer())
                     }
                 },
                 renamedVariableCount = 0,
@@ -214,32 +215,32 @@ class SemanticAnalysisKtSwitchTest {
             expected = ValidASTProgram(
                 value = program {
                     function("main") {
-                        switch(1.e, switchId = 0, caseExpressions = mapOf(1.c to 0, 2.c to 1), hasDefault = false) {
-                            case(1.e, caseId = 0, switchId = 0) {
-                                return_(1.e)
+                        switch(1.e.integer(), switchId = 0, caseExpressions = mapOf(1.c to 0, 2.c to 1), hasDefault = false) {
+                            case(1.e.integer(), caseId = 0, switchId = 0) {
+                                return_(1.e.integer())
                             }
-                            while_(1.e, loopId = 0) {
+                            while_(1.e.integer(), loopId = 0) {
                                 breakLoop(0)
-                                switch(2.e, switchId = 1, caseExpressions = mapOf(3.c to 0, 4.c to 1), hasDefault = true) {
-                                    case(3.e, caseId = 0, switchId = 1) {
-                                        return_(1.e)
+                                switch(2.e.integer(), switchId = 1, caseExpressions = mapOf(3.c to 0, 4.c to 1), hasDefault = true) {
+                                    case(3.e.integer(), caseId = 0, switchId = 1) {
+                                        return_(1.e.integer())
                                     }
-                                    case(4.e, caseId = 1, switchId = 1) {
+                                    case(4.e.integer(), caseId = 1, switchId = 1) {
                                         breakSwitch(1)
                                     }
                                     default(switchId = 1) {
-                                        return_(10.e)
+                                        return_(10.e.integer())
                                     }
                                 }
                             }
-                            case(2.e, caseId = 1, switchId = 0) {
+                            case(2.e.integer(), caseId = 1, switchId = 0) {
                                 breakSwitch(0)
                             }
                         }
                         do_ {
                             breakLoop(1)
-                        }.while_(1.e, loopId = 1)
-                        return_(0.e)
+                        }.while_(1.e.integer(), loopId = 1)
+                        return_(0.e.integer())
                     }
                 },
                 renamedVariableCount = 0,

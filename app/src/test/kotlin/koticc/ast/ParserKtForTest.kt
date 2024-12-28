@@ -75,7 +75,7 @@ class ParserKtForTest {
                         expectedCondition,
                         expectedPost,
                     ) {
-                        plusAssign("a", 1.e)
+                        plusAssign("a".e, 1.e)
                     }
                     return_("a".e)
                 }

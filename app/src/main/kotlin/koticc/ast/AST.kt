@@ -190,12 +190,16 @@ object AST {
         // at parse time this would be null, and would be filled in during semantic analysis
         val type: Type?
 
+        fun ofType(type: Type): Expression
+
         data class Constant(
             val value: AST.Constant,
             override val type: Type?,
             override val location: Location,
         ) : Expression {
             override fun toDisplayString(): String = value.toDisplayString()
+
+            override fun ofType(type: Type): Constant = copy(type = type)
         }
 
         data class Variable(
@@ -204,6 +208,8 @@ object AST {
             override val location: Location,
         ) : Expression {
             override fun toDisplayString(): String = name
+
+            override fun ofType(type: Type): Variable = copy(type = type)
         }
 
         data class Unary(
@@ -213,6 +219,8 @@ object AST {
             override val location: Location,
         ) : Expression {
             override fun toDisplayString(): String = "${operator.toDisplayString()}${operand.toDisplayString()}"
+
+            override fun ofType(type: Type): Unary = copy(type = type)
         }
 
         data class Binary(
@@ -225,6 +233,8 @@ object AST {
                 get() = left.location
 
             override fun toDisplayString(): String = "${left.toDisplayString()} ${operator.toDisplayString()} ${right.toDisplayString()}"
+
+            override fun ofType(type: Type): Binary = copy(type = type)
         }
 
         data class Assignment(
@@ -236,6 +246,8 @@ object AST {
                 get() = left.location
 
             override fun toDisplayString(): String = "${left.toDisplayString()} = ${right.toDisplayString()}"
+
+            override fun ofType(type: Type): Assignment = copy(type = type)
         }
 
         data class CompoundAssignment(
@@ -248,6 +260,8 @@ object AST {
                 get() = left.location
 
             override fun toDisplayString(): String = "${left.toDisplayString()} ${operator.toDisplayString()} ${right.toDisplayString()}"
+
+            override fun ofType(type: Type): CompoundAssignment = copy(type = type)
         }
 
         data class Postfix(
@@ -259,6 +273,8 @@ object AST {
                 get() = operand.location
 
             override fun toDisplayString(): String = "${operand.toDisplayString()}${operator.toDisplayString()}"
+
+            override fun ofType(type: Type): Postfix = copy(type = type)
         }
 
         data class Conditional(
@@ -271,6 +287,8 @@ object AST {
                 get() = condition.location
 
             override fun toDisplayString(): String = "${condition.toDisplayString()} ? ${thenExpression.toDisplayString()} : ${elseExpression.toDisplayString()}"
+
+            override fun ofType(type: Type): Conditional = copy(type = type)
         }
 
         data class FunctionCall(
@@ -280,6 +298,8 @@ object AST {
             override val type: Type?,
         ) : Expression {
             override fun toDisplayString(): String = "$name(${arguments.joinToString(", ") { it.toDisplayString() }})"
+
+            override fun ofType(type: Type): FunctionCall = copy(type = type)
         }
     }
 

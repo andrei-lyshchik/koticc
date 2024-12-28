@@ -5,6 +5,7 @@ import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.gt
+import koticc.ast.integer
 import koticc.ast.lt
 import koticc.ast.program
 import org.junit.jupiter.api.Test
@@ -17,10 +18,10 @@ class SemanticAnalysisKtWhileTest {
             function("main") {
                 int("a") assign 1.e
                 while_("a".e lt 10.e) {
-                    plusAssign("a", 1.e)
+                    plusAssign("a".e, 1.e)
                 }
                 while_("a".e lt 40.e) {
-                    plusMultiply("a", 2.e)
+                    plusMultiply("a".e, 2.e)
                 }
                 return_("a".e)
             }
@@ -32,14 +33,14 @@ class SemanticAnalysisKtWhileTest {
             expected = ValidASTProgram(
                 value = program {
                     function("main") {
-                        int("a.0") assign 1.e
-                        while_("a.0".e lt 10.e, loopId = 0) {
-                            plusAssign("a.0", 1.e)
+                        int("a.0") assign 1.e.integer()
+                        while_(("a.0".e.integer() lt 10.e.integer()).integer(), loopId = 0) {
+                            plusAssign("a.0".e.integer(), 1.e.integer(), type = Type.Integer)
                         }
-                        while_("a.0".e lt 40.e, loopId = 1) {
-                            plusMultiply("a.0", 2.e)
+                        while_(("a.0".e.integer() lt 40.e.integer()).integer(), loopId = 1) {
+                            plusMultiply("a.0".e.integer(), 2.e.integer(), type = Type.Integer)
                         }
-                        return_("a.0".e)
+                        return_("a.0".e.integer())
                     }
                 },
                 renamedVariableCount = 1,
@@ -58,7 +59,7 @@ class SemanticAnalysisKtWhileTest {
             function("main") {
                 int("a") assign 1.e
                 while_("a".e lt 10.e) {
-                    plusAssign("a", 1.e)
+                    plusAssign("a".e, 1.e)
                     if_("a".e eq 5.e) {
                         break_()
                     }
@@ -67,7 +68,7 @@ class SemanticAnalysisKtWhileTest {
                     }
                 }
                 while_("a".e lt 40.e) {
-                    plusAssign("a", 1.e)
+                    plusAssign("a".e, 1.e)
                     if_("a".e eq 10.e) {
                         break_()
                     }
@@ -85,26 +86,26 @@ class SemanticAnalysisKtWhileTest {
             expected = ValidASTProgram(
                 value = program {
                     function("main") {
-                        int("a.0") assign 1.e
-                        while_("a.0".e lt 10.e, loopId = 0) {
-                            plusAssign("a.0", 1.e)
-                            if_("a.0".e eq 5.e) {
+                        int("a.0") assign 1.e.integer()
+                        while_(("a.0".e.integer() lt 10.e.integer()).integer(), loopId = 0) {
+                            plusAssign("a.0".e.integer(), 1.e.integer(), type = Type.Integer)
+                            if_(("a.0".e.integer() eq 5.e.integer()).integer()) {
                                 breakLoop(0)
                             }
-                            if_("a.0".e eq 3.e) {
+                            if_(("a.0".e.integer() eq 3.e.integer()).integer()) {
                                 continue_(0)
                             }
                         }
-                        while_("a.0".e lt 40.e, loopId = 1) {
-                            plusAssign("a.0", 1.e)
-                            if_("a.0".e eq 10.e) {
+                        while_(("a.0".e.integer() lt 40.e.integer()).integer(), loopId = 1) {
+                            plusAssign("a.0".e.integer(), 1.e.integer(), type = Type.Integer)
+                            if_(("a.0".e.integer() eq 10.e.integer()).integer()) {
                                 breakLoop(1)
                             }
-                            if_("a.0".e eq 8.e) {
+                            if_(("a.0".e.integer() eq 8.e.integer()).integer()) {
                                 continue_(1)
                             }
                         }
-                        return_("a.0".e)
+                        return_("a.0".e.integer())
                     }
                 },
                 renamedVariableCount = 1,
@@ -123,9 +124,9 @@ class SemanticAnalysisKtWhileTest {
             function("main") {
                 int("a") assign 1.e
                 while_(1.e) {
-                    plusAssign("a", 1.e)
+                    plusAssign("a".e, 1.e)
                     while_(1.e) {
-                        plusAssign("a", 2.e)
+                        plusAssign("a".e, 2.e)
                         if_("a".e gt 10.e) {
                             break_()
                         }
@@ -144,20 +145,20 @@ class SemanticAnalysisKtWhileTest {
             expected = ValidASTProgram(
                 value = program {
                     function("main") {
-                        int("a.0") assign 1.e
-                        while_(1.e, loopId = 0) {
-                            plusAssign("a.0", 1.e)
-                            while_(1.e, loopId = 1) {
-                                plusAssign("a.0", 2.e)
-                                if_("a.0".e gt 10.e) {
+                        int("a.0") assign 1.e.integer()
+                        while_(1.e.integer(), loopId = 0) {
+                            plusAssign("a.0".e.integer(), 1.e.integer(), type = Type.Integer)
+                            while_(1.e.integer(), loopId = 1) {
+                                plusAssign("a.0".e.integer(), 2.e.integer(), type = Type.Integer)
+                                if_(("a.0".e.integer() gt 10.e.integer()).integer()) {
                                     breakLoop(1)
                                 }
                             }
-                            if_("a.0".e gt 20.e) {
+                            if_(("a.0".e.integer() gt 20.e.integer()).integer()) {
                                 breakLoop(0)
                             }
                         }
-                        return_("a.0".e)
+                        return_("a.0".e.integer())
                     }
                 },
                 renamedVariableCount = 1,

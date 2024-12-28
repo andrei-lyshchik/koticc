@@ -96,44 +96,44 @@ class BlockBuilder {
     fun int(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
         setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass))
 
-    fun assign(left: String, right: AST.Expression) {
+    fun assign(left: AST.Expression, right: AST.Expression, type: Type? = null) {
         addBlockItem(
             AST.BlockItem.Statement(
                 AST.Statement.Expression(
                     AST.Expression.Assignment(
-                        AST.Expression.Variable(left, null, DUMMY_LOCATION),
-                        right,
-                        null,
+                        left = left,
+                        right = right,
+                        type = type,
                     ),
                 ),
             ),
         )
     }
 
-    fun plusAssign(left: String, right: AST.Expression) {
+    fun plusAssign(left: AST.Expression, right: AST.Expression, type: Type? = null) {
         addBlockItem(
             AST.BlockItem.Statement(
                 AST.Statement.Expression(
                     AST.Expression.CompoundAssignment(
-                        AST.CompoundAssignmentOperator.Add,
-                        AST.Expression.Variable(left, null, DUMMY_LOCATION),
-                        right,
-                        null,
+                        operator = AST.CompoundAssignmentOperator.Add,
+                        left = left,
+                        right = right,
+                        type = type,
                     ),
                 ),
             ),
         )
     }
 
-    fun plusMultiply(left: String, right: AST.Expression) {
+    fun plusMultiply(left: AST.Expression, right: AST.Expression, type: Type? = null) {
         addBlockItem(
             AST.BlockItem.Statement(
                 AST.Statement.Expression(
                     AST.Expression.CompoundAssignment(
-                        AST.CompoundAssignmentOperator.Multiply,
-                        AST.Expression.Variable(left, null, DUMMY_LOCATION),
-                        right,
-                        null,
+                        operator = AST.CompoundAssignmentOperator.Multiply,
+                        left = left,
+                        right = right,
+                        type = type,
                     ),
                 ),
             ),
@@ -182,7 +182,7 @@ class BlockBuilder {
         addBlockItem(AST.BlockItem.Statement(AST.Statement.Return(expression, DUMMY_LOCATION)))
     }
 
-    fun call(functionName: String, vararg arguments: AST.Expression) {
+    fun call(functionName: String, vararg arguments: AST.Expression, type: Type? = null) {
         addBlockItem(
             AST.BlockItem.Statement(
                 AST.Statement.Expression(
@@ -190,7 +190,7 @@ class BlockBuilder {
                         name = functionName,
                         arguments = arguments.toList(),
                         location = DUMMY_LOCATION,
-                        type = null,
+                        type = type,
                     ),
                 ),
             ),
@@ -490,7 +490,7 @@ infix fun AST.Expression.plusAssign(other: AST.Expression): AST.Expression {
         operator = AST.CompoundAssignmentOperator.Add,
         left = this,
         right = other,
-        type = null,
+        type = type,
     )
 }
 
@@ -627,3 +627,5 @@ fun cond(condition: AST.Expression, thenExpression: AST.Expression, elseExpressi
         elseExpression = elseExpression,
         type = null,
     )
+
+fun AST.Expression.integer() = ofType(Type.Integer)
