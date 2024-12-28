@@ -1,5 +1,6 @@
 package koticc.assembly
 
+import koticc.ast.AST
 import koticc.semantic.SymbolTable
 import koticc.semantic.VariableAttributes
 import koticc.semantic.variableSymbolOrNull
@@ -285,7 +286,11 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
 
     private fun tackyValueToOperand(tackyValue: Tacky.Value): Assembly.Operand =
         when (tackyValue) {
-            is Tacky.Value.IntConstant -> Assembly.Operand.Immediate(tackyValue.value)
+            is Tacky.Value.IntConstant -> {
+                when (tackyValue.value) {
+                    is AST.IntConstant -> Assembly.Operand.Immediate(tackyValue.value.value)
+                }
+            }
             is Tacky.Value.Variable -> {
                 val variableSymbol = symbolTable.variableSymbolOrNull(tackyValue.name)
                 if (variableSymbol == null) {

@@ -2,6 +2,7 @@
 
 package koticc.tacky
 
+import koticc.ast.AST
 import koticc.ast.LabelName
 
 fun tackyProgram(block: TackyProgramBuilder.() -> Unit): Tacky.Program = TackyProgramBuilder().apply(block).build()
@@ -27,7 +28,7 @@ class TackyProgramBuilder {
 }
 
 val Int.t
-    get() = Tacky.Value.IntConstant(this)
+    get() = Tacky.Value.IntConstant(AST.IntConstant(this))
 
 val String.t
     get() = Tacky.Value.Variable(this)

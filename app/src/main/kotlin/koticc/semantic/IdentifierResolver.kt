@@ -287,7 +287,7 @@ internal class IdentifierResolver {
     private fun resolveExpression(expression: AST.Expression, identifierMapping: MutableMap<String, DeclaredIdentifier>): Either<SemanticAnalysisError, AST.Expression> =
         either {
             when (expression) {
-                is AST.Expression.IntLiteral -> expression
+                is AST.Expression.Constant -> expression
                 is AST.Expression.Variable -> {
                     val newName = identifierMapping[expression.name]
                     ensureNotNull(newName) {

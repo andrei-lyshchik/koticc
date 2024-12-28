@@ -472,7 +472,7 @@ private class Parser(
                 when (val peekTokenValue = peekToken?.value) {
                     is Token.IntLiteral -> {
                         nextToken()
-                        AST.Expression.IntLiteral(peekTokenValue.value, peekToken.location)
+                        AST.Expression.Constant(AST.IntConstant(peekTokenValue.value), null, peekToken.location)
                     }
                     is Token.Identifier -> {
                         nextToken()
@@ -555,7 +555,7 @@ private class Parser(
             AST.Expression.CompoundAssignment(
                 operator = operator,
                 left = operand,
-                right = AST.Expression.IntLiteral(1, peekToken.location),
+                right = AST.Expression.Constant(AST.IntConstant(1), null, peekToken.location),
                 type = null,
             )
         }

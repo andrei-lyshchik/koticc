@@ -1,6 +1,7 @@
 package koticc.tacky
 
 import koticc.ast.Type
+import koticc.ast.c
 import koticc.ast.e
 import koticc.ast.plus
 import koticc.ast.program
@@ -16,7 +17,7 @@ class ASTToTackyKtSwitchTest {
             value = program {
                 function("main") {
                     int("a") assign 1.e
-                    switch("a".e + 1.e, switchId = 0, hasDefault = true, caseExpressions = mapOf(1 to 0, 2 to 1)) {
+                    switch("a".e + 1.e, switchId = 0, hasDefault = true, caseExpressions = mapOf(1.c to 0, 2.c to 1)) {
                         case(1.e, caseId = 0, switchId = 0) {
                             return_(1.e)
                         }
@@ -76,7 +77,7 @@ class ASTToTackyKtSwitchTest {
             value = program {
                 function("main") {
                     int("a") assign 1.e
-                    switch("a".e, switchId = 0, hasDefault = false, caseExpressions = mapOf(1 to 0, 2 to 1)) {
+                    switch("a".e, switchId = 0, hasDefault = false, caseExpressions = mapOf(1.c to 0, 2.c to 1)) {
                         case(1.e, caseId = 0, switchId = 0) {
                             assign("a", 3.e)
                         }

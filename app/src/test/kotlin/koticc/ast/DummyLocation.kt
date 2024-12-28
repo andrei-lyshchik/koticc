@@ -75,7 +75,7 @@ fun AST.ForInitializer.withDummyLocations(): AST.ForInitializer =
     }
 
 fun AST.Expression.withDummyLocations(): AST.Expression = when (this) {
-    is AST.Expression.IntLiteral -> copy(location = DUMMY_LOCATION)
+    is AST.Expression.Constant -> copy(location = DUMMY_LOCATION)
     is AST.Expression.Variable -> copy(location = DUMMY_LOCATION)
     is AST.Expression.Binary -> copy(left = left.withDummyLocations(), right = right.withDummyLocations())
     is AST.Expression.Unary -> copy(location = DUMMY_LOCATION)

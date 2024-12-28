@@ -1,5 +1,6 @@
 package koticc.tacky
 
+import koticc.ast.AST
 import koticc.ast.LabelName
 
 object Tacky {
@@ -74,7 +75,7 @@ object Tacky {
     }
 
     sealed interface Value {
-        data class IntConstant(val value: Int) : Value
+        data class IntConstant(val value: AST.Constant) : Value
 
         data class Variable(val name: String) : Value
     }

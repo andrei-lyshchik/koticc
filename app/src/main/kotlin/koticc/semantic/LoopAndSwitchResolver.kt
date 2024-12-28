@@ -139,7 +139,7 @@ internal class LoopAndSwitchResolver {
                     }
                     val caseId = AST.CaseId(switchContext.caseExpressions.size)
 
-                    ensure(statement.expression is AST.Expression.IntLiteral) {
+                    ensure(statement.expression is AST.Expression.Constant) {
                         SemanticAnalysisError("case expression must be an integer constant", statement.location)
                     }
 
@@ -189,7 +189,7 @@ internal class LoopAndSwitchResolver {
 
     private data class SwitchContext(
         val id: AST.SwitchId,
-        val caseExpressions: MutableMap<Int, AST.CaseId>,
+        val caseExpressions: MutableMap<AST.Constant, AST.CaseId>,
         var hasDefault: Boolean,
     )
 

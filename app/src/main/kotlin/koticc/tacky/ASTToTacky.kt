@@ -72,7 +72,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         body.blockItems.forEach { generateBlockItem(it) }
         instructions.add(
             Tacky.Instruction.Return(
-                value = Tacky.Value.IntConstant(0),
+                value = Tacky.Value.IntConstant(AST.IntConstant(0)),
             ),
         )
         val tackyFunction = Tacky.FunctionDefinition(
@@ -266,7 +266,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
 
     private fun generateExpression(expression: AST.Expression): Tacky.Value =
         when (expression) {
-            is AST.Expression.IntLiteral -> Tacky.Value.IntConstant(expression.value)
+            is AST.Expression.Constant -> Tacky.Value.IntConstant(expression.value)
             is AST.Expression.Variable -> Tacky.Value.Variable(expression.name)
             is AST.Expression.Unary -> {
                 val src = generateExpression(expression.operand)
@@ -315,7 +315,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                         val dst = nextVariable()
                         instructions.add(
                             Tacky.Instruction.Copy(
-                                src = Tacky.Value.IntConstant(1),
+                                src = Tacky.Value.IntConstant(AST.IntConstant(1)),
                                 dst = dst,
                             ),
                         )
@@ -328,7 +328,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                         )
                         instructions.add(
                             Tacky.Instruction.Copy(
-                                src = Tacky.Value.IntConstant(0),
+                                src = Tacky.Value.IntConstant(AST.IntConstant(0)),
                                 dst = dst,
                             ),
                         )
@@ -356,7 +356,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                         val dst = nextVariable()
                         instructions.add(
                             Tacky.Instruction.Copy(
-                                src = Tacky.Value.IntConstant(0),
+                                src = Tacky.Value.IntConstant(AST.IntConstant(0)),
                                 dst = dst,
                             ),
                         )
@@ -369,7 +369,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                         )
                         instructions.add(
                             Tacky.Instruction.Copy(
-                                src = Tacky.Value.IntConstant(1),
+                                src = Tacky.Value.IntConstant(AST.IntConstant(1)),
                                 dst = dst,
                             ),
                         )
@@ -425,7 +425,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                     Tacky.Instruction.Binary(
                         operator = expression.operator.toTackyOperator(),
                         left = operand,
-                        right = Tacky.Value.IntConstant(1),
+                        right = Tacky.Value.IntConstant(AST.IntConstant(1)),
                         dst = operand,
                     ),
                 )

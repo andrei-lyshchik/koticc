@@ -95,7 +95,11 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         declaration: AST.Declaration.Variable,
     ): Either<SemanticAnalysisError, Unit> = either {
         var initialValue = when (declaration.initializer) {
-            is AST.Expression.IntLiteral -> InitialValue.Constant(declaration.initializer.value)
+            is AST.Expression.Constant -> {
+                when (declaration.initializer.value) {
+                    is AST.IntConstant -> InitialValue.Constant(declaration.initializer.value.value)
+                }
+            }
             null -> {
                 when (declaration.storageClass) {
                     AST.StorageClass.Extern -> InitialValue.NoInitializer
@@ -217,7 +221,11 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             }
             AST.StorageClass.Static -> {
                 val initialValue = when (variableDeclaration.initializer) {
-                    is AST.Expression.IntLiteral -> InitialValue.Constant(variableDeclaration.initializer.value)
+                    is AST.Expression.Constant -> {
+                        when (variableDeclaration.initializer.value) {
+                            is AST.IntConstant -> InitialValue.Constant(variableDeclaration.initializer.value.value)
+                        }
+                    }
                     null -> InitialValue.Constant(0)
                     else -> raise(
                         SemanticAnalysisError(
@@ -334,7 +342,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     SemanticAnalysisError("function '${originalIdentifierName(expression.name)}' expects ${functionSymbol.value.type.parameterCount} arguments, but ${expression.arguments.size} were provided", expression.location)
                 }
             }
-            is AST.Expression.IntLiteral -> {}
+            is AST.Expression.Constant -> {}
             is AST.Expression.Postfix -> {
                 typecheckExpression(expression.operand).bind()
             }

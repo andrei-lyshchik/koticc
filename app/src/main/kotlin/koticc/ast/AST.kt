@@ -145,7 +145,7 @@ object AST {
             val body: Statement,
             override val location: Location,
             val switchId: SwitchId?,
-            val caseExpressions: Map<Int, CaseId>?,
+            val caseExpressions: Map<Constant, CaseId>?,
             val hasDefault: Boolean,
         ) : Statement
 
@@ -190,13 +190,12 @@ object AST {
         // at parse time this would be null, and would be filled in during semantic analysis
         val type: Type?
 
-        data class IntLiteral(
-            val value: Int,
+        data class Constant(
+            val value: AST.Constant,
+            override val type: Type?,
             override val location: Location,
         ) : Expression {
-            override val type: Type
-                get() = Type.Integer
-            override fun toDisplayString(): String = value.toString()
+            override fun toDisplayString(): String = value.toDisplayString()
         }
 
         data class Variable(
@@ -282,6 +281,12 @@ object AST {
         ) : Expression {
             override fun toDisplayString(): String = "$name(${arguments.joinToString(", ") { it.toDisplayString() }})"
         }
+    }
+
+    sealed interface Constant : Displayable
+
+    data class IntConstant(val value: Int) : Constant {
+        override fun toDisplayString(): String = value.toString()
     }
 
     enum class UnaryOperator : Displayable {

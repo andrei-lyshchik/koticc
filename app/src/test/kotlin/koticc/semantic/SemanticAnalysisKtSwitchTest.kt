@@ -4,6 +4,7 @@ import arrow.core.left
 import arrow.core.right
 import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
+import koticc.ast.c
 import koticc.ast.e
 import koticc.ast.program
 import koticc.token.Location
@@ -38,7 +39,7 @@ class SemanticAnalysisKtSwitchTest {
                 value = program {
                     function("main") {
                         int("a.0") assign 1.e
-                        switch(1.e, switchId = 0, hasDefault = true, caseExpressions = mapOf(1 to 0, 2 to 1)) {
+                        switch(1.e, switchId = 0, hasDefault = true, caseExpressions = mapOf(1.c to 0, 2.c to 1)) {
                             case(1.e, caseId = 0, switchId = 0) {
                                 return_(1.e)
                             }
@@ -213,13 +214,13 @@ class SemanticAnalysisKtSwitchTest {
             expected = ValidASTProgram(
                 value = program {
                     function("main") {
-                        switch(1.e, switchId = 0, caseExpressions = mapOf(1 to 0, 2 to 1), hasDefault = false) {
+                        switch(1.e, switchId = 0, caseExpressions = mapOf(1.c to 0, 2.c to 1), hasDefault = false) {
                             case(1.e, caseId = 0, switchId = 0) {
                                 return_(1.e)
                             }
                             while_(1.e, loopId = 0) {
                                 breakLoop(0)
-                                switch(2.e, switchId = 1, caseExpressions = mapOf(3 to 0, 4 to 1), hasDefault = true) {
+                                switch(2.e, switchId = 1, caseExpressions = mapOf(3.c to 0, 4.c to 1), hasDefault = true) {
                                     case(3.e, caseId = 0, switchId = 1) {
                                         return_(1.e)
                                     }

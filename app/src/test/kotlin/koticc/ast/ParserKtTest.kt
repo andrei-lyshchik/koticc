@@ -122,8 +122,9 @@ int main(void) {
                                 AST.BlockItem.Declaration(
                                     AST.Declaration.Variable(
                                         "a",
-                                        AST.Expression.IntLiteral(
-                                            value = 1,
+                                        AST.Expression.Constant(
+                                            value = AST.IntConstant(1),
+                                            type = null,
                                             location = Location(2, 13),
                                         ),
                                         null,
@@ -165,8 +166,9 @@ int main(void) {
                             listOf(
                                 AST.BlockItem.Statement(
                                     AST.Statement.Return(
-                                        AST.Expression.IntLiteral(
-                                            value = 1,
+                                        AST.Expression.Constant(
+                                            value = AST.IntConstant(1),
+                                            type = null,
                                             location = Location(2, 12),
                                         ),
                                         Location(2, 5),
@@ -224,27 +226,27 @@ int main(void) {
 
     class ExpressionTestCases :
         VarargArgumentsProvider(
-            "1" to AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
+            "1" to AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
             "a" to AST.Expression.Variable(name = "a", type = null, location = Location(2, 5)),
-            "(1)" to AST.Expression.IntLiteral(value = 1, location = Location(2, 6)),
+            "(1)" to AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 6)),
             "-1" to
                 AST.Expression.Unary(
                     operator = AST.UnaryOperator.Negate,
-                    operand = AST.Expression.IntLiteral(value = 1, location = Location(2, 6)),
+                    operand = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 6)),
                     type = null,
                     location = Location(2, 5),
                 ),
             "~1" to
                 AST.Expression.Unary(
                     operator = AST.UnaryOperator.Complement,
-                    operand = AST.Expression.IntLiteral(value = 1, location = Location(2, 6)),
+                    operand = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 6)),
                     type = null,
                     location = Location(2, 5),
                 ),
             "!1" to
                 AST.Expression.Unary(
                     operator = AST.UnaryOperator.LogicalNegate,
-                    operand = AST.Expression.IntLiteral(value = 1, location = Location(2, 6)),
+                    operand = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 6)),
                     type = null,
                     location = Location(2, 5),
                 ),
@@ -258,8 +260,9 @@ int main(void) {
                         AST.Expression.Unary(
                             operator = AST.UnaryOperator.Complement,
                             operand =
-                            AST.Expression.IntLiteral(
-                                value = 2,
+                            AST.Expression.Constant(
+                                value = AST.IntConstant(2),
+                                type = null,
                                 location = Location(2, 10),
                             ),
                             type = null,
@@ -296,10 +299,11 @@ int main(void) {
                         "1 $token 2" to
                             AST.Expression.Binary(
                                 operator = operator,
-                                left = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
+                                left = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
                                 right =
-                                AST.Expression.IntLiteral(
-                                    value = 2,
+                                AST.Expression.Constant(
+                                    value = AST.IntConstant(2),
+                                    type = null,
                                     location = Location(2, 8 + token.length),
                                 ),
                                 type = null,
@@ -311,20 +315,23 @@ int main(void) {
                                 AST.Expression.Binary(
                                     operator = operator,
                                     left =
-                                    AST.Expression.IntLiteral(
-                                        value = 1,
+                                    AST.Expression.Constant(
+                                        value = AST.IntConstant(1),
+                                        type = null,
                                         location = Location(2, 5),
                                     ),
                                     right =
-                                    AST.Expression.IntLiteral(
-                                        value = 2,
+                                    AST.Expression.Constant(
+                                        value = AST.IntConstant(2),
+                                        type = null,
                                         location = Location(2, 8 + token.length),
                                     ),
                                     type = null,
                                 ),
                                 right =
-                                AST.Expression.IntLiteral(
-                                    value = 3,
+                                AST.Expression.Constant(
+                                    value = AST.IntConstant(3),
+                                    type = null,
                                     location = Location(2, 11 + 2 * token.length),
                                 ),
                                 type = null,
@@ -338,22 +345,22 @@ int main(void) {
                     left =
                     AST.Expression.Binary(
                         operator = AST.BinaryOperator.Add,
-                        left = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
-                        right = AST.Expression.IntLiteral(value = 2, location = Location(2, 9)),
+                        left = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 9)),
                         type = null,
                     ),
-                    right = AST.Expression.IntLiteral(value = 3, location = Location(2, 13)),
+                    right = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(2, 13)),
                     type = null,
                 ),
             "1 + 2 * 3" to
                 AST.Expression.Binary(
                     operator = AST.BinaryOperator.Add,
-                    left = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
+                    left = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
                     right =
                     AST.Expression.Binary(
                         operator = AST.BinaryOperator.Multiply,
-                        left = AST.Expression.IntLiteral(value = 2, location = Location(2, 9)),
-                        right = AST.Expression.IntLiteral(value = 3, location = Location(2, 13)),
+                        left = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 9)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(2, 13)),
                         type = null,
                     ),
                     type = null,
@@ -364,11 +371,11 @@ int main(void) {
                     left =
                     AST.Expression.Binary(
                         operator = AST.BinaryOperator.Multiply,
-                        left = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
-                        right = AST.Expression.IntLiteral(value = 2, location = Location(2, 9)),
+                        left = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 9)),
                         type = null,
                     ),
-                    right = AST.Expression.IntLiteral(value = 3, location = Location(2, 13)),
+                    right = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(2, 13)),
                     type = null,
                 ),
             "a = 1 + 2" to
@@ -377,8 +384,8 @@ int main(void) {
                     right =
                     AST.Expression.Binary(
                         operator = AST.BinaryOperator.Add,
-                        left = AST.Expression.IntLiteral(value = 1, location = Location(2, 9)),
-                        right = AST.Expression.IntLiteral(value = 2, location = Location(2, 13)),
+                        left = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 9)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 13)),
                         type = null,
                     ),
                     type = null,
@@ -389,7 +396,7 @@ int main(void) {
                     right =
                     AST.Expression.Assignment(
                         left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 9)),
-                        right = AST.Expression.IntLiteral(value = 3, location = Location(2, 13)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(2, 13)),
                         type = null,
                     ),
                     type = null,
@@ -415,13 +422,15 @@ int main(void) {
                             AST.Expression.Binary(
                                 operator = AST.BinaryOperator.Add,
                                 left =
-                                AST.Expression.IntLiteral(
-                                    value = 1,
+                                AST.Expression.Constant(
+                                    value = AST.IntConstant(1),
+                                    type = null,
                                     location = Location(2, 8 + token.length),
                                 ),
                                 right =
-                                AST.Expression.IntLiteral(
-                                    value = 2,
+                                AST.Expression.Constant(
+                                    value = AST.IntConstant(2),
+                                    type = null,
                                     location = Location(2, 12 + token.length),
                                 ),
                                 type = null,
@@ -460,8 +469,9 @@ int main(void) {
                                     location = Location(2, 18),
                                 ),
                                 right =
-                                AST.Expression.IntLiteral(
-                                    value = 4,
+                                AST.Expression.Constant(
+                                    value = AST.IntConstant(4),
+                                    type = null,
                                     location = Location(2, 23),
                                 ),
                                 type = null,
@@ -476,7 +486,7 @@ int main(void) {
                 AST.Expression.CompoundAssignment(
                     operator = AST.CompoundAssignmentOperator.Add,
                     left = AST.Expression.Variable(name = "i", type = null, location = Location(2, 7)),
-                    right = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
+                    right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
                     type = null,
                 ),
             "++++i" to
@@ -486,10 +496,10 @@ int main(void) {
                     AST.Expression.CompoundAssignment(
                         operator = AST.CompoundAssignmentOperator.Add,
                         left = AST.Expression.Variable(name = "i", type = null, location = Location(2, 9)),
-                        right = AST.Expression.IntLiteral(value = 1, location = Location(2, 7)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 7)),
                         type = null,
                     ),
-                    right = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
+                    right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
                     type = null,
                 ),
             "-++i" to
@@ -499,7 +509,7 @@ int main(void) {
                     AST.Expression.CompoundAssignment(
                         operator = AST.CompoundAssignmentOperator.Add,
                         left = AST.Expression.Variable(name = "i", type = null, location = Location(2, 8)),
-                        right = AST.Expression.IntLiteral(value = 1, location = Location(2, 6)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 6)),
                         type = null,
                     ),
                     type = null,
@@ -509,7 +519,7 @@ int main(void) {
                 AST.Expression.CompoundAssignment(
                     operator = AST.CompoundAssignmentOperator.Subtract,
                     left = AST.Expression.Variable(name = "i", type = null, location = Location(2, 7)),
-                    right = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
+                    right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
                     type = null,
                 ),
             "----i" to
@@ -519,17 +529,17 @@ int main(void) {
                     AST.Expression.CompoundAssignment(
                         operator = AST.CompoundAssignmentOperator.Subtract,
                         left = AST.Expression.Variable(name = "i", type = null, location = Location(2, 9)),
-                        right = AST.Expression.IntLiteral(value = 1, location = Location(2, 7)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 7)),
                         type = null,
                     ),
-                    right = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
+                    right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
                     type = null,
                 ),
             "++3" to
                 AST.Expression.CompoundAssignment(
                     operator = AST.CompoundAssignmentOperator.Add,
-                    left = AST.Expression.IntLiteral(value = 3, location = Location(2, 7)),
-                    right = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
+                    left = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(2, 7)),
+                    right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
                     type = null,
                 ),
             "i++" to
@@ -582,7 +592,7 @@ int main(void) {
                         operand = AST.Expression.Variable(name = "i", type = null, location = Location(2, 7)),
                         type = null,
                     ),
-                    right = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
+                    right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
                     type = null,
                 ),
             "i = j++" to
@@ -609,7 +619,7 @@ int main(void) {
                     AST.Expression.CompoundAssignment(
                         operator = AST.CompoundAssignmentOperator.Add,
                         left = AST.Expression.Variable(name = "j", type = null, location = Location(2, 13)),
-                        right = AST.Expression.IntLiteral(value = 1, location = Location(2, 11)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 11)),
                         type = null,
                     ),
                     type = null,
@@ -617,8 +627,8 @@ int main(void) {
             "a ? 1 : 2" to
                 AST.Expression.Conditional(
                     condition = AST.Expression.Variable(name = "a", type = null, location = Location(2, 5)),
-                    thenExpression = AST.Expression.IntLiteral(value = 1, location = Location(2, 9)),
-                    elseExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 13)),
+                    thenExpression = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 9)),
+                    elseExpression = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 13)),
                     type = null,
                 ),
             "a ? b ? 1 : 2 : 3" to
@@ -627,22 +637,22 @@ int main(void) {
                     thenExpression =
                     AST.Expression.Conditional(
                         condition = AST.Expression.Variable(name = "b", type = null, location = Location(2, 9)),
-                        thenExpression = AST.Expression.IntLiteral(value = 1, location = Location(2, 13)),
-                        elseExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 17)),
+                        thenExpression = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 13)),
+                        elseExpression = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 17)),
                         type = null,
                     ),
-                    elseExpression = AST.Expression.IntLiteral(value = 3, location = Location(2, 21)),
+                    elseExpression = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(2, 21)),
                     type = null,
                 ),
             "a ? 1 : b ? 2 : 3" to
                 AST.Expression.Conditional(
                     condition = AST.Expression.Variable(name = "a", type = null, location = Location(2, 5)),
-                    thenExpression = AST.Expression.IntLiteral(value = 1, location = Location(2, 9)),
+                    thenExpression = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 9)),
                     elseExpression =
                     AST.Expression.Conditional(
                         condition = AST.Expression.Variable(name = "b", type = null, location = Location(2, 13)),
-                        thenExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 17)),
-                        elseExpression = AST.Expression.IntLiteral(value = 3, location = Location(2, 21)),
+                        thenExpression = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 17)),
+                        elseExpression = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(2, 21)),
                         type = null,
                     ),
                     type = null,
@@ -652,9 +662,9 @@ int main(void) {
                     left = AST.Expression.Variable(name = "a", type = null, location = Location(2, 5)),
                     right =
                     AST.Expression.Conditional(
-                        condition = AST.Expression.IntLiteral(value = 1, location = Location(2, 9)),
-                        thenExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 13)),
-                        elseExpression = AST.Expression.IntLiteral(value = 3, location = Location(2, 17)),
+                        condition = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 9)),
+                        thenExpression = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 13)),
+                        elseExpression = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(2, 17)),
                         type = null,
                     ),
                     type = null,
@@ -668,33 +678,33 @@ int main(void) {
                         right = AST.Expression.Variable(name = "b", type = null, location = Location(2, 10)),
                         type = null,
                     ),
-                    thenExpression = AST.Expression.IntLiteral(value = 1, location = Location(2, 14)),
-                    elseExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 18)),
+                    thenExpression = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 14)),
+                    elseExpression = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 18)),
                     type = null,
                 ),
             "1 ? 2 : 3 || 4" to
                 AST.Expression.Conditional(
-                    condition = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
-                    thenExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 9)),
+                    condition = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
+                    thenExpression = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 9)),
                     elseExpression =
                     AST.Expression.Binary(
                         operator = AST.BinaryOperator.LogicalOr,
-                        left = AST.Expression.IntLiteral(value = 3, location = Location(2, 13)),
-                        right = AST.Expression.IntLiteral(value = 4, location = Location(2, 18)),
+                        left = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(2, 13)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(4), type = null, location = Location(2, 18)),
                         type = null,
                     ),
                     type = null,
                 ),
             "1 ? a = 1 : 2" to
                 AST.Expression.Conditional(
-                    condition = AST.Expression.IntLiteral(value = 1, location = Location(2, 5)),
+                    condition = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
                     thenExpression =
                     AST.Expression.Assignment(
                         left = AST.Expression.Variable(name = "a", type = null, location = Location(2, 9)),
-                        right = AST.Expression.IntLiteral(value = 1, location = Location(2, 13)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 13)),
                         type = null,
                     ),
-                    elseExpression = AST.Expression.IntLiteral(value = 2, location = Location(2, 17)),
+                    elseExpression = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 17)),
                     type = null,
                 ),
         )
@@ -746,14 +756,14 @@ int main(void) {
                 AST.Expression.Binary(
                     operator = AST.BinaryOperator.Equal,
                     left = AST.Expression.Variable(name = "a", type = null, location = Location(2, 9)),
-                    right = AST.Expression.IntLiteral(value = 1, location = Location(2, 14)),
+                    right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 14)),
                     type = null,
                 ),
                 thenStatement =
                 AST.Statement.Expression(
                     AST.Expression.Assignment(
                         left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 17)),
-                        right = AST.Expression.IntLiteral(value = 2, location = Location(2, 21)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 21)),
                         type = null,
                     ),
                 ),
@@ -766,7 +776,7 @@ int main(void) {
                 AST.Statement.Expression(
                     AST.Expression.Assignment(
                         left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 12)),
-                        right = AST.Expression.IntLiteral(value = 1, location = Location(2, 16)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 16)),
                         type = null,
                     ),
                 ),
@@ -774,7 +784,7 @@ int main(void) {
                 AST.Statement.Expression(
                     AST.Expression.Assignment(
                         left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 24)),
-                        right = AST.Expression.IntLiteral(value = 2, location = Location(2, 28)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 28)),
                         type = null,
                     ),
                 ),
@@ -785,7 +795,7 @@ int main(void) {
                 AST.Expression.Binary(
                     operator = AST.BinaryOperator.Equal,
                     left = AST.Expression.Variable(name = "a", type = null, location = Location(line = 2, column = 9)),
-                    right = AST.Expression.IntLiteral(value = 1, location = Location(line = 2, column = 14)),
+                    right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(line = 2, column = 14)),
                     type = null,
                 ),
                 thenStatement =
@@ -793,7 +803,7 @@ int main(void) {
                     expression =
                     AST.Expression.Assignment(
                         left = AST.Expression.Variable(name = "b", type = null, location = Location(line = 2, column = 17)),
-                        right = AST.Expression.IntLiteral(value = 1, location = Location(line = 2, column = 21)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(line = 2, column = 21)),
                         type = null,
                     ),
                 ),
@@ -803,7 +813,7 @@ int main(void) {
                     AST.Expression.Binary(
                         operator = AST.BinaryOperator.Equal,
                         left = AST.Expression.Variable(name = "a", type = null, location = Location(line = 2, column = 33)),
-                        right = AST.Expression.IntLiteral(value = 2, location = Location(line = 2, column = 38)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(line = 2, column = 38)),
                         type = null,
                     ),
                     thenStatement =
@@ -811,7 +821,7 @@ int main(void) {
                         expression =
                         AST.Expression.Assignment(
                             left = AST.Expression.Variable(name = "b", type = null, location = Location(line = 2, column = 41)),
-                            right = AST.Expression.IntLiteral(value = 2, location = Location(line = 2, column = 45)),
+                            right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(line = 2, column = 45)),
                             type = null,
                         ),
                     ),
@@ -821,7 +831,7 @@ int main(void) {
                         AST.Expression.Binary(
                             operator = AST.BinaryOperator.Equal,
                             left = AST.Expression.Variable(name = "a", type = null, location = Location(line = 2, column = 57)),
-                            right = AST.Expression.IntLiteral(value = 3, location = Location(line = 2, column = 62)),
+                            right = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(line = 2, column = 62)),
                             type = null,
                         ),
                         thenStatement =
@@ -829,7 +839,7 @@ int main(void) {
                             expression =
                             AST.Expression.Assignment(
                                 left = AST.Expression.Variable(name = "b", type = null, location = Location(line = 2, column = 65)),
-                                right = AST.Expression.IntLiteral(value = 3, location = Location(line = 2, column = 69)),
+                                right = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(line = 2, column = 69)),
                                 type = null,
                             ),
                         ),
@@ -843,7 +853,7 @@ int main(void) {
                 AST.Expression.Binary(
                     operator = AST.BinaryOperator.Equal,
                     left = AST.Expression.Variable(name = "a", type = null, location = Location(2, 9)),
-                    right = AST.Expression.IntLiteral(value = 1, location = Location(2, 14)),
+                    right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 14)),
                     type = null,
                 ),
                 thenStatement =
@@ -856,7 +866,7 @@ int main(void) {
                                 declaration =
                                 AST.Declaration.Variable(
                                     name = "c",
-                                    initializer = AST.Expression.IntLiteral(value = 1, location = Location(2, 27)),
+                                    initializer = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 27)),
                                     storageClass = null,
                                     location = Location(2, 19),
                                 ),
@@ -869,7 +879,7 @@ int main(void) {
                                         AST.Expression.Binary(
                                             operator = AST.BinaryOperator.Add,
                                             left = AST.Expression.Variable(name = "c", type = null, location = Location(2, 34)),
-                                            right = AST.Expression.IntLiteral(value = 1, location = Location(2, 38)),
+                                            right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 38)),
                                             type = null,
                                         ),
                                         type = null,
@@ -889,7 +899,7 @@ int main(void) {
                                 AST.Statement.Expression(
                                     AST.Expression.Assignment(
                                         left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 50)),
-                                        right = AST.Expression.IntLiteral(value = 2, location = Location(2, 54)),
+                                        right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 54)),
                                         type = null,
                                     ),
                                 ),
@@ -963,8 +973,9 @@ int main(void) {
                                                     AST.Declaration.Variable(
                                                         name = "a",
                                                         initializer =
-                                                        AST.Expression.IntLiteral(
-                                                            value = 1,
+                                                        AST.Expression.Constant(
+                                                            value = AST.IntConstant(1),
+                                                            type = null,
                                                             location = Location(3, 17),
                                                         ),
                                                         storageClass = null,
@@ -975,8 +986,9 @@ int main(void) {
                                                     AST.Declaration.Variable(
                                                         name = "b",
                                                         initializer =
-                                                        AST.Expression.IntLiteral(
-                                                            value = 2,
+                                                        AST.Expression.Constant(
+                                                            value = AST.IntConstant(2),
+                                                            type = null,
                                                             location = Location(4, 17),
                                                         ),
                                                         storageClass = null,
@@ -1027,7 +1039,7 @@ int main(void) {
                                         AST.Statement.Expression(
                                             AST.Expression.Assignment(
                                                 left = AST.Expression.Variable(name = "a", type = null, location = Location(3, 5)),
-                                                right = AST.Expression.IntLiteral(value = 1, location = Location(3, 9)),
+                                                right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(3, 9)),
                                                 type = null,
                                             ),
                                         ),

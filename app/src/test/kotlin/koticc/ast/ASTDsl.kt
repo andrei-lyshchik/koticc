@@ -278,7 +278,7 @@ class BlockBuilder {
     fun switch(
         expression: AST.Expression,
         switchId: Int? = null,
-        caseExpressions: Map<Int, Int>? = null,
+        caseExpressions: Map<AST.Constant, Int>? = null,
         hasDefault: Boolean = false,
         block: BlockBuilder.() -> Unit,
     ) {
@@ -451,7 +451,10 @@ fun initExpr(expression: AST.Expression) =
     AST.ForInitializer.Expression(expression)
 
 val Int.e
-    get() = AST.Expression.IntLiteral(this, DUMMY_LOCATION)
+    get() = AST.Expression.Constant(AST.IntConstant(this), null, DUMMY_LOCATION)
+
+val Int.c
+    get() = AST.IntConstant(this)
 
 val String.e
     get() = AST.Expression.Variable(this, null, DUMMY_LOCATION)
@@ -576,7 +579,7 @@ infix fun AST.Expression.eq(other: Int): AST.Expression {
     return AST.Expression.Binary(
         operator = AST.BinaryOperator.Equal,
         left = this,
-        right = AST.Expression.IntLiteral(other, DUMMY_LOCATION),
+        right = AST.Expression.Constant(AST.IntConstant(other), null, DUMMY_LOCATION),
         type = null,
     )
 }
