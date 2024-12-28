@@ -174,13 +174,25 @@ private class Parser(
             when (peekToken()?.value) {
                 Token.Semicolon -> {
                     nextToken()
-                    AST.Declaration.Variable(nameToken.value.value, null, declarationSpecifiers.storageClass, declarationSpecifiers.location)
+                    AST.Declaration.Variable(
+                        nameToken.value.value,
+                        null,
+                        Type.Integer,
+                        declarationSpecifiers.storageClass,
+                        declarationSpecifiers.location,
+                    )
                 }
                 Token.Equal -> {
                     nextToken()
                     val initializer = parseExpression(0).bind()
                     expectToken(Token.Semicolon).bind()
-                    AST.Declaration.Variable(nameToken.value.value, initializer, declarationSpecifiers.storageClass, declarationSpecifiers.location)
+                    AST.Declaration.Variable(
+                        nameToken.value.value,
+                        initializer,
+                        Type.Integer,
+                        declarationSpecifiers.storageClass,
+                        declarationSpecifiers.location,
+                    )
                 }
                 Token.OpenParen -> {
                     nextToken()

@@ -32,6 +32,7 @@ object AST {
         data class Variable(
             val name: String,
             val initializer: Expression?,
+            val type: Type.Data,
             val storageClass: StorageClass?,
             override val location: Location,
         ) : Declaration

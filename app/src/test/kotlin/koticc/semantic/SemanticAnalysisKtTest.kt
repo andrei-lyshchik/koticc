@@ -33,6 +33,7 @@ class SemanticAnalysisKtTest {
                                         name = "a",
                                         initializer =
                                         AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
+                                        type = Type.Integer,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -43,6 +44,7 @@ class SemanticAnalysisKtTest {
                                         name = "b",
                                         initializer =
                                         AST.Expression.Constant(AST.IntConstant(2), null, Location(3, 13)),
+                                        type = Type.Integer,
                                         storageClass = null,
                                         location = Location(3, 5),
                                     ),
@@ -97,6 +99,7 @@ class SemanticAnalysisKtTest {
                                             name = "a.0",
                                             initializer =
                                             AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(2, 13)),
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -107,6 +110,7 @@ class SemanticAnalysisKtTest {
                                             name = "b.1",
                                             initializer =
                                             AST.Expression.Constant(AST.IntConstant(2), Type.Integer, Location(3, 13)),
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(3, 5),
                                         ),
@@ -209,6 +213,7 @@ class SemanticAnalysisKtTest {
                                         name = "a",
                                         initializer =
                                         AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
+                                        type = Type.Integer,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -219,6 +224,7 @@ class SemanticAnalysisKtTest {
                                         name = "a",
                                         initializer =
                                         AST.Expression.Constant(AST.IntConstant(2), null, Location(3, 13)),
+                                        type = Type.Integer,
                                         storageClass = null,
                                         location = Location(3, 5),
                                     ),
@@ -388,6 +394,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
+                                        type = Type.Integer,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -429,6 +436,7 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "a.0",
                                             initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(2, 13)),
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -479,6 +487,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
+                                        type = Type.Integer,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -488,6 +497,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "b",
                                         initializer = AST.Expression.Constant(AST.IntConstant(2), null, Location(3, 13)),
+                                        type = Type.Integer,
                                         storageClass = null,
                                         location = Location(3, 5),
                                     ),
@@ -513,6 +523,7 @@ class SemanticAnalysisKtTest {
                                             ),
                                             type = null,
                                         ),
+                                        type = Type.Integer,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -543,6 +554,7 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "a.0",
                                             initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(2, 13)),
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -552,6 +564,7 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "b.1",
                                             initializer = AST.Expression.Constant(AST.IntConstant(2), Type.Integer, Location(3, 13)),
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(3, 5),
                                         ),
@@ -577,6 +590,7 @@ class SemanticAnalysisKtTest {
                                                 ),
                                                 type = Type.Integer,
                                             ),
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -630,6 +644,7 @@ class SemanticAnalysisKtTest {
                                             ),
                                             type = null,
                                         ),
+                                        type = Type.Integer,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -672,6 +687,7 @@ class SemanticAnalysisKtTest {
                                                 ),
                                                 type = Type.Integer,
                                             ),
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -712,6 +728,7 @@ class SemanticAnalysisKtTest {
                                         name = "a",
                                         initializer =
                                         AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
+                                        type = Type.Integer,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -791,6 +808,7 @@ class SemanticAnalysisKtTest {
                                             name = "a.0",
                                             initializer =
                                             AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(2, 13)),
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -878,6 +896,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
+                                        type = Type.Integer,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -887,6 +906,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "b",
                                         initializer = null,
+                                        type = Type.Integer,
                                         storageClass = null,
                                         location = Location(3, 5),
                                     ),
@@ -945,6 +965,7 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "a.0",
                                             initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(2, 13)),
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -954,6 +975,7 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "b.1",
                                             initializer = null,
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(3, 5),
                                         ),
@@ -1022,6 +1044,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
+                                        type = Type.Integer,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -1041,6 +1064,7 @@ class SemanticAnalysisKtTest {
                                                             name = "a",
                                                             initializer =
                                                             AST.Expression.Constant(AST.IntConstant(2), Type.Integer, Location(4, 13)),
+                                                            type = Type.Integer,
                                                             storageClass = null,
                                                             location = Location(4, 5),
                                                         ),
@@ -1077,6 +1101,7 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "a.0",
                                             initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(2, 13)),
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -1096,6 +1121,7 @@ class SemanticAnalysisKtTest {
                                                                 name = "a.1",
                                                                 initializer =
                                                                 AST.Expression.Constant(AST.IntConstant(2), Type.Integer, Location(4, 13)),
+                                                                type = Type.Integer,
                                                                 storageClass = null,
                                                                 location = Location(4, 5),
                                                             ),

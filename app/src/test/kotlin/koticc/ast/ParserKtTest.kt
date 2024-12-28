@@ -84,7 +84,7 @@ int main(void) {
                             blockItems =
                             listOf(
                                 AST.BlockItem.Declaration(
-                                    AST.Declaration.Variable("a", null, null, Location(2, 5)),
+                                    AST.Declaration.Variable("a", null, Type.Integer, null, Location(2, 5)),
                                 ),
                             ),
                         ),
@@ -127,6 +127,7 @@ int main(void) {
                                             type = null,
                                             location = Location(2, 13),
                                         ),
+                                        Type.Integer,
                                         null,
                                         Location(2, 5),
                                     ),
@@ -867,6 +868,7 @@ int main(void) {
                                 AST.Declaration.Variable(
                                     name = "c",
                                     initializer = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 27)),
+                                    type = Type.Integer,
                                     storageClass = null,
                                     location = Location(2, 19),
                                 ),
@@ -978,6 +980,7 @@ int main(void) {
                                                             type = null,
                                                             location = Location(3, 17),
                                                         ),
+                                                        type = Type.Integer,
                                                         storageClass = null,
                                                         location = Location(3, 9),
                                                     ),
@@ -991,6 +994,7 @@ int main(void) {
                                                             type = null,
                                                             location = Location(4, 17),
                                                         ),
+                                                        type = Type.Integer,
                                                         storageClass = null,
                                                         location = Location(4, 9),
                                                     ),

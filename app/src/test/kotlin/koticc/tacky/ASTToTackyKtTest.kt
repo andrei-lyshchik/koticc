@@ -468,6 +468,7 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "x",
                                             initializer = AST.Expression.Constant(AST.IntConstant(1), null, Location(1, 0)),
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(1, 0),
                                         ),
@@ -561,6 +562,7 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "x",
                                             initializer = AST.Expression.Constant(AST.IntConstant(1), null, Location(1, 0)),
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(1, 0),
                                         ),
@@ -580,6 +582,7 @@ class ASTToTackyKtTest {
                                                 right = AST.Expression.Constant(AST.IntConstant(2), null, Location(1, 0)),
                                                 type = null,
                                             ),
+                                            type = Type.Integer,
                                             storageClass = null,
                                             location = Location(1, 0),
                                         ),
