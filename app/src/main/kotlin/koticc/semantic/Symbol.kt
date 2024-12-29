@@ -45,8 +45,5 @@ fun SymbolTable.functionSymbol(functionName: String): Symbol.Function =
         ?: error("Bug: function $functionName should have been added to the symbol table during semantic analysis, got $this")
 
 fun SymbolTable.variableSymbol(variableName: String): Symbol.Variable =
-    variableSymbolOrNull(variableName)
-        ?: error("Bug: variable $variableName should have been added to the symbol table during semantic analysis, got $this")
-
-fun SymbolTable.variableSymbolOrNull(variableName: String): Symbol.Variable? =
     this[variableName]?.let { it as Symbol.Variable }
+        ?: error("Bug: variable $variableName should have been added to the symbol table during semantic analysis, got $this")

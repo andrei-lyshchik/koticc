@@ -3,9 +3,11 @@ package koticc.tacky
 import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.eq
+import koticc.ast.int
 import koticc.ast.lt
 import koticc.ast.program
 import koticc.semantic.ValidASTProgram
+import koticc.semantic.tempVariablesSymbolTable
 import koticc.semantic.toSymbol
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,11 +18,11 @@ class ASTToTackyKtDoWhileTest {
         val input = ValidASTProgram(
             value = program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                    int("a") assign 1.e
+                    int("a") assign 1.e.int()
                     do_ {
-                        plusAssign("a".e, 1.e)
-                    }.while_("a".e lt 10.e, loopId = 0)
-                    return_("a".e)
+                        plusAssign("a".e, 1.e.int(), type = Type.Int)
+                    }.while_(("a".e.int() lt 10.e.int()).int(), loopId = 0)
+                    return_("a".e.int())
                 }
             },
             renamedVariableCount = 1,
@@ -34,6 +36,8 @@ class ASTToTackyKtDoWhileTest {
 
         assertEquals(
             expected = tackyProgram {
+                symbolTable = input.symbolTable + tempVariablesSymbolTable(1, 2)
+
                 function("main") {
                     assign("a", 1.t)
 
@@ -61,16 +65,16 @@ class ASTToTackyKtDoWhileTest {
         val input = ValidASTProgram(
             value = program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                    int("a.0") assign 1.e
+                    int("a.0") assign 1.e.int()
                     do_ {
-                        plusAssign("a.0".e, 1.e)
-                        if_("a.0".e eq 5.e) {
+                        plusAssign("a.0".e, 1.e.int(), type = Type.Int)
+                        if_(("a.0".e.int() eq 5.e.int()).int()) {
                             continue_(0)
                         } else_ {
                             breakLoop(0)
                         }
-                    }.while_("a.0".e lt 10.e, loopId = 0)
-                    return_("a.0".e)
+                    }.while_(("a.0".e.int() lt 10.e.int()).int(), loopId = 0)
+                    return_("a.0".e.int())
                 }
             },
             renamedVariableCount = 1,
@@ -84,6 +88,8 @@ class ASTToTackyKtDoWhileTest {
 
         assertEquals(
             expected = tackyProgram {
+                symbolTable = input.symbolTable + tempVariablesSymbolTable(1, 3)
+
                 function("main") {
                     assign("a.0", 1.t)
 

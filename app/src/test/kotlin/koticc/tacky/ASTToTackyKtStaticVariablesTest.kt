@@ -53,6 +53,8 @@ class ASTToTackyKtStaticVariablesTest {
 
         assertEquals(
             expected = tackyProgram {
+                symbolTable = program.symbolTable
+
                 staticVariable("b", global = true, initialValue = 0)
                 staticVariable("c", global = true, initialValue = 2)
                 staticVariable("d", global = false, initialValue = 3)
@@ -93,6 +95,8 @@ class ASTToTackyKtStaticVariablesTest {
 
         assertEquals(
             expected = tackyProgram {
+                symbolTable = program.symbolTable
+
                 function("main") {
                     return_("a".t)
                     return_(0.t)

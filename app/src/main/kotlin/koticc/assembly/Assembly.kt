@@ -3,6 +3,10 @@ package koticc.assembly
 import koticc.ast.LabelName
 
 object Assembly {
+    enum class Type(val byteSize: Int) {
+        LongWord(4),
+    }
+
     data class Program(
         val topLevel: List<TopLevel>,
     )

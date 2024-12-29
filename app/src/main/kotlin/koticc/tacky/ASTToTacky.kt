@@ -1,7 +1,9 @@
 package koticc.tacky
 
+import arrow.core.right
 import koticc.ast.AST
 import koticc.ast.LabelName
+import koticc.ast.Type
 import koticc.semantic.InitialValue
 import koticc.semantic.Symbol
 import koticc.semantic.SymbolTable
@@ -19,11 +21,16 @@ fun programASTToTacky(validASTProgram: ValidASTProgram): Tacky.Program {
 }
 
 private class TackyGenerator(initialVariableCount: Int, private val symbolTable: SymbolTable) {
+    private val tempVariableSymbolTable: MutableMap<String, Symbol.Variable> = mutableMapOf()
     private var variableCount = initialVariableCount
     private val instructions: MutableList<Tacky.Instruction> = mutableListOf()
     private var labelCount = 0
 
-    private fun nextVariable(): Tacky.Value.Variable = Tacky.Value.Variable("tmp.${variableCount++}")
+    private fun nextVariable(type: Type.Data): Tacky.Value.Variable {
+        val name = "tmp.${variableCount++}"
+        tempVariableSymbolTable[name] = Symbol.Variable(type, VariableAttributes.Local)
+        return Tacky.Value.Variable(name)
+    }
 
     private fun nextLabelName(prefix: String): LabelName = LabelName("$prefix.${labelCount++}")
 
@@ -31,6 +38,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         return Tacky.Program(
             topLevel =
             generateFunctionDefinitions(program) + generateStaticVariables(symbolTable),
+            symbolTable = symbolTable + tempVariableSymbolTable,
         )
     }
 
@@ -270,7 +278,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
             is AST.Expression.Variable -> Tacky.Value.Variable(expression.name)
             is AST.Expression.Unary -> {
                 val src = generateExpression(expression.operand)
-                val dst = nextVariable()
+                val dst = nextVariable(expression.resolvedType())
                 instructions.add(
                     Tacky.Instruction.Unary(
                         operator = expression.operator.toTackyOperator(),
@@ -285,7 +293,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                     is TackyBinaryOperator.NonShortCircuiting -> {
                         val left = generateExpression(expression.left)
                         val right = generateExpression(expression.right)
-                        val dst = nextVariable()
+                        val dst = nextVariable(expression.resolvedType())
                         instructions.add(
                             Tacky.Instruction.Binary(
                                 operator = tackyOperator.operator,
@@ -312,7 +320,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                                 target = falseLabel,
                             ),
                         )
-                        val dst = nextVariable()
+                        val dst = nextVariable(expression.resolvedType())
                         instructions.add(
                             Tacky.Instruction.Copy(
                                 src = Tacky.Value.Constant(AST.IntConstant(1)),
@@ -353,7 +361,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                                 target = trueLabel,
                             ),
                         )
-                        val dst = nextVariable()
+                        val dst = nextVariable(expression.resolvedType())
                         instructions.add(
                             Tacky.Instruction.Copy(
                                 src = Tacky.Value.Constant(AST.IntConstant(0)),
@@ -395,7 +403,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
             is AST.Expression.CompoundAssignment -> {
                 val right = generateExpression(expression.right)
                 val left = generateExpression(expression.left)
-                val dst = nextVariable()
+                val dst = nextVariable(expression.resolvedType())
                 instructions.add(
                     Tacky.Instruction.Binary(
                         operator = expression.operator.toTackyOperator(),
@@ -414,7 +422,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
             }
             is AST.Expression.Postfix -> {
                 val operand = generateExpression(expression.operand)
-                val tempValue = nextVariable()
+                val tempValue = nextVariable(expression.resolvedType())
                 instructions.add(
                     Tacky.Instruction.Copy(
                         src = operand,
@@ -442,7 +450,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                     ),
                 )
                 val thenValue = generateExpression(expression.thenExpression)
-                val result = nextVariable()
+                val result = nextVariable(expression.resolvedType())
                 instructions.add(
                     Tacky.Instruction.Copy(
                         src = thenValue,
@@ -470,7 +478,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
             }
             is AST.Expression.FunctionCall -> {
                 val arguments = expression.arguments.map { generateExpression(it) }
-                val dst = nextVariable()
+                val dst = nextVariable(expression.resolvedType())
                 instructions.add(
                     Tacky.Instruction.Call(
                         name = expression.name,
@@ -521,7 +529,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         switch.caseExpressions.forEach { (caseExpression, caseId) ->
             val caseLabel = caseLabel(switch.switchId, caseId)
             val caseValue = Tacky.Value.Constant(caseExpression)
-            val diff = nextVariable()
+            val diff = nextVariable(switch.expression.resolvedType())
             instructions.add(
                 Tacky.Instruction.Binary(
                     operator = Tacky.BinaryOperator.Equal,

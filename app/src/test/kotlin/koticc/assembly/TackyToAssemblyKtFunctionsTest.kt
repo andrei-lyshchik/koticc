@@ -1,5 +1,8 @@
 package koticc.assembly
 
+import koticc.ast.Type
+import koticc.semantic.tempVariablesSymbolTable
+import koticc.semantic.toSymbol
 import koticc.tacky.call
 import koticc.tacky.plus
 import koticc.tacky.t
@@ -12,6 +15,10 @@ class TackyToAssemblyKtFunctionsTest {
     @Test
     fun `should support multiple functions`() {
         val program = tackyProgram {
+            symbolTable = mapOf(
+                "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                "bar" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+            ) + tempVariablesSymbolTable(1, 8)
             function("foo") {
                 assign("tmp.1", 1.t + 2.t)
                 assign("tmp.2", "tmp.1".t + 1.t)
@@ -22,9 +29,9 @@ class TackyToAssemblyKtFunctionsTest {
                 return_("tmp.6".t)
             }
             function("bar") {
-                assign("tmp.2", 2.t + 3.t)
-                assign("tmp.3", "tmp.2".t + 1.t)
-                return_("tmp.3".t)
+                assign("tmp.7", 2.t + 3.t)
+                assign("tmp.8", "tmp.7".t + 1.t)
+                return_("tmp.8".t)
             }
         }
 
@@ -83,6 +90,10 @@ class TackyToAssemblyKtFunctionsTest {
     @Test
     fun `should support function with a parameter`() {
         val program = tackyProgram {
+            symbolTable = mapOf(
+                "foo" to Type.Function(parameters = listOf(Type.Int), returnType = Type.Int).toSymbol(),
+                "a" to Type.Int.toSymbol(),
+            ) + tempVariablesSymbolTable(1, 1)
             function("foo", "a") {
                 assign("tmp.1", "a".t + 1.t)
                 return_("tmp.1".t)
@@ -114,6 +125,17 @@ class TackyToAssemblyKtFunctionsTest {
     @Test
     fun `should support function with many parameters`() {
         val program = tackyProgram {
+            symbolTable = mapOf(
+                "foo" to Type.Function(parameters = listOf(Type.Int, Type.Int, Type.Int, Type.Int, Type.Int, Type.Int, Type.Int, Type.Int), returnType = Type.Int).toSymbol(),
+                "a" to Type.Int.toSymbol(),
+                "b" to Type.Int.toSymbol(),
+                "c" to Type.Int.toSymbol(),
+                "d" to Type.Int.toSymbol(),
+                "e" to Type.Int.toSymbol(),
+                "f" to Type.Int.toSymbol(),
+                "g" to Type.Int.toSymbol(),
+                "h" to Type.Int.toSymbol(),
+            ) + tempVariablesSymbolTable(1, 1)
             function("foo", "a", "b", "c", "d", "e", "f", "g", "h") {
                 assign("tmp.1", "a".t + "h".t)
                 return_("tmp.1".t)
@@ -155,6 +177,9 @@ class TackyToAssemblyKtFunctionsTest {
     @Test
     fun `should support function call with one argument`() {
         val program = tackyProgram {
+            symbolTable = mapOf(
+                "main" to Type.Function(parameters = listOf(Type.Int), returnType = Type.Int).toSymbol(),
+            ) + tempVariablesSymbolTable(0, 1)
             function("main") {
                 assign("tmp.0", call("foo", 1.t))
                 return_("tmp.0".t)
@@ -185,6 +210,9 @@ class TackyToAssemblyKtFunctionsTest {
     @Test
     fun `should support function call with many arguments, even number of stack arguments`() {
         val program = tackyProgram {
+            symbolTable = mapOf(
+                "foo" to Type.Function(parameters = listOf(Type.Int, Type.Int, Type.Int, Type.Int, Type.Int, Type.Int, Type.Int, Type.Int), returnType = Type.Int).toSymbol(),
+            ) + tempVariablesSymbolTable(0, 1)
             function("main") {
                 assign("tmp.0", call("foo", 1.t, 2.t, 3.t, 4.t, 5.t, 6.t, 7.t, 8.t))
                 return_("tmp.0".t)
@@ -223,6 +251,9 @@ class TackyToAssemblyKtFunctionsTest {
     @Test
     fun `should support function call with many arguments, odd number of stack arguments`() {
         val program = tackyProgram {
+            symbolTable = mapOf(
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+            ) + tempVariablesSymbolTable(0, 1)
             function("main") {
                 assign("tmp.0", call("foo", 1.t, 2.t, 3.t, 4.t, 5.t, 6.t, 7.t, 8.t, 9.t))
                 return_("tmp.0".t)
@@ -263,6 +294,9 @@ class TackyToAssemblyKtFunctionsTest {
     @Test
     fun `should copy stack arguments first to eax`() {
         val program = tackyProgram {
+            symbolTable = mapOf(
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+            ) + tempVariablesSymbolTable(0, 2)
             function("main") {
                 assign("tmp.0", 1.t + 2.t)
                 assign("tmp.1", call("foo", 1.t, 2.t, 3.t, 4.t, 5.t, 6.t, "tmp.0".t, 8.t, 9.t))

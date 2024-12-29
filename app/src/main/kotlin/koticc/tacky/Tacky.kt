@@ -2,10 +2,12 @@ package koticc.tacky
 
 import koticc.ast.AST
 import koticc.ast.LabelName
+import koticc.semantic.SymbolTable
 
 object Tacky {
     data class Program(
         val topLevel: List<TopLevel>,
+        val symbolTable: SymbolTable,
     )
 
     sealed interface TopLevel {

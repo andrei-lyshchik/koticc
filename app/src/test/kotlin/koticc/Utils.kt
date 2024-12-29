@@ -25,7 +25,7 @@ fun parseInput(input: String): Either<ParserError, AST.Program> {
 }
 
 fun tackyProgramToAssemblyString(program: Tacky.Program, symbolTable: SymbolTable = empty()): String {
-    val assembly = tackyProgramToAssembly(program, symbolTable)
+    val assembly = tackyProgramToAssembly(program)
     return assemblyToString(assembly)
 }
 

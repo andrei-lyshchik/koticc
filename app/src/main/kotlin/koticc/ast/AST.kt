@@ -196,118 +196,120 @@ object AST {
 
     sealed interface Expression : LocationAware, Displayable {
         // at parse time this would be null, and would be filled in during semantic analysis
-        val type: Type?
+        val type: Type.Data?
 
-        fun ofType(type: Type): Expression
+        fun resolvedType() = type ?: error("Bug: type not resolved during semantic analysis in $this")
+
+        fun ofType(type: Type.Data): Expression
 
         data class Constant(
             val value: AST.Constant,
-            override val type: Type?,
+            override val type: Type.Data?,
             override val location: Location,
         ) : Expression {
             override fun toDisplayString(): String = value.toDisplayString()
 
-            override fun ofType(type: Type): Constant = copy(type = type)
+            override fun ofType(type: Type.Data): Constant = copy(type = type)
         }
 
         data class Variable(
             val name: String,
-            override val type: Type?,
+            override val type: Type.Data?,
             override val location: Location,
         ) : Expression {
             override fun toDisplayString(): String = name
 
-            override fun ofType(type: Type): Variable = copy(type = type)
+            override fun ofType(type: Type.Data): Variable = copy(type = type)
         }
 
         data class Unary(
             val operator: UnaryOperator,
             val operand: Expression,
-            override val type: Type?,
+            override val type: Type.Data?,
             override val location: Location,
         ) : Expression {
             override fun toDisplayString(): String = "${operator.toDisplayString()}${operand.toDisplayString()}"
 
-            override fun ofType(type: Type): Unary = copy(type = type)
+            override fun ofType(type: Type.Data): Unary = copy(type = type)
         }
 
         data class Binary(
             val operator: BinaryOperator,
             val left: Expression,
             val right: Expression,
-            override val type: Type?,
+            override val type: Type.Data?,
         ) : Expression {
             override val location: Location
                 get() = left.location
 
             override fun toDisplayString(): String = "${left.toDisplayString()} ${operator.toDisplayString()} ${right.toDisplayString()}"
 
-            override fun ofType(type: Type): Binary = copy(type = type)
+            override fun ofType(type: Type.Data): Binary = copy(type = type)
         }
 
         data class Assignment(
             val left: Expression,
             val right: Expression,
-            override val type: Type?,
+            override val type: Type.Data?,
         ) : Expression {
             override val location: Location
                 get() = left.location
 
             override fun toDisplayString(): String = "${left.toDisplayString()} = ${right.toDisplayString()}"
 
-            override fun ofType(type: Type): Assignment = copy(type = type)
+            override fun ofType(type: Type.Data): Assignment = copy(type = type)
         }
 
         data class CompoundAssignment(
             val operator: CompoundAssignmentOperator,
             val left: Expression,
             val right: Expression,
-            override val type: Type?,
+            override val type: Type.Data?,
         ) : Expression {
             override val location: Location
                 get() = left.location
 
             override fun toDisplayString(): String = "${left.toDisplayString()} ${operator.toDisplayString()} ${right.toDisplayString()}"
 
-            override fun ofType(type: Type): CompoundAssignment = copy(type = type)
+            override fun ofType(type: Type.Data): CompoundAssignment = copy(type = type)
         }
 
         data class Postfix(
             val operator: PostfixOperator,
             val operand: Expression,
-            override val type: Type?,
+            override val type: Type.Data?,
         ) : Expression {
             override val location: Location
                 get() = operand.location
 
             override fun toDisplayString(): String = "${operand.toDisplayString()}${operator.toDisplayString()}"
 
-            override fun ofType(type: Type): Postfix = copy(type = type)
+            override fun ofType(type: Type.Data): Postfix = copy(type = type)
         }
 
         data class Conditional(
             val condition: Expression,
             val thenExpression: Expression,
             val elseExpression: Expression,
-            override val type: Type?,
+            override val type: Type.Data?,
         ) : Expression {
             override val location: Location
                 get() = condition.location
 
             override fun toDisplayString(): String = "${condition.toDisplayString()} ? ${thenExpression.toDisplayString()} : ${elseExpression.toDisplayString()}"
 
-            override fun ofType(type: Type): Conditional = copy(type = type)
+            override fun ofType(type: Type.Data): Conditional = copy(type = type)
         }
 
         data class FunctionCall(
             val name: String,
             val arguments: List<Expression>,
             override val location: Location,
-            override val type: Type?,
+            override val type: Type.Data?,
         ) : Expression {
             override fun toDisplayString(): String = "$name(${arguments.joinToString(", ") { it.toDisplayString() }})"
 
-            override fun ofType(type: Type): FunctionCall = copy(type = type)
+            override fun ofType(type: Type.Data): FunctionCall = copy(type = type)
         }
     }
 

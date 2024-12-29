@@ -3,9 +3,11 @@ package koticc.tacky
 import koticc.ast.Type
 import koticc.ast.c
 import koticc.ast.e
+import koticc.ast.int
 import koticc.ast.plus
 import koticc.ast.program
 import koticc.semantic.ValidASTProgram
+import koticc.semantic.tempVariablesSymbolTable
 import koticc.semantic.toSymbol
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,16 +18,16 @@ class ASTToTackyKtSwitchTest {
         val program = ValidASTProgram(
             value = program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                    int("a") assign 1.e
-                    switch("a".e + 1.e, switchId = 0, hasDefault = true, caseExpressions = mapOf(1.c to 0, 2.c to 1)) {
-                        case(1.e, caseId = 0, switchId = 0) {
-                            return_(1.e)
+                    int("a") assign 1.e.int()
+                    switch(("a".e.int() + 1.e.int()).int(), switchId = 0, hasDefault = true, caseExpressions = mapOf(1.c to 0, 2.c to 1)) {
+                        case(1.e.int(), caseId = 0, switchId = 0) {
+                            return_(1.e.int())
                         }
-                        case(2.e, caseId = 1, switchId = 0) {
-                            return_(2.e)
+                        case(2.e.int(), caseId = 1, switchId = 0) {
+                            return_(2.e.int())
                         }
                         default(switchId = 0) {
-                            return_(3.e)
+                            return_(3.e.int())
                         }
                     }
                 }
@@ -41,6 +43,8 @@ class ASTToTackyKtSwitchTest {
 
         assertEquals(
             expected = tackyProgram {
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(1, 3)
+
                 function("main") {
                     assign("a", 1.t)
                     assign("tmp.1", "a".t + 1.t)
@@ -76,14 +80,14 @@ class ASTToTackyKtSwitchTest {
         val program = ValidASTProgram(
             value = program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                    int("a") assign 1.e
-                    switch("a".e, switchId = 0, hasDefault = false, caseExpressions = mapOf(1.c to 0, 2.c to 1)) {
-                        case(1.e, caseId = 0, switchId = 0) {
-                            assign("a".e, 3.e)
+                    int("a") assign 1.e.int()
+                    switch("a".e.int(), switchId = 0, hasDefault = false, caseExpressions = mapOf(1.c to 0, 2.c to 1)) {
+                        case(1.e.int(), caseId = 0, switchId = 0) {
+                            assign("a".e.int(), 3.e.int(), type = Type.Int)
                         }
                         breakSwitch(0)
-                        case(2.e, caseId = 1, switchId = 0) {
-                            assign("a".e, 2.e)
+                        case(2.e.int(), caseId = 1, switchId = 0) {
+                            assign("a".e.int(), 2.e.int(), type = Type.Int)
                         }
                     }
                 }
@@ -99,6 +103,8 @@ class ASTToTackyKtSwitchTest {
 
         assertEquals(
             expected = tackyProgram {
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(1, 2)
+
                 function("main") {
                     assign("a", 1.t)
 

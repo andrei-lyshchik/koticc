@@ -3,11 +3,11 @@ package koticc.assembly
 import koticc.ast.AST
 import koticc.semantic.SymbolTable
 import koticc.semantic.VariableAttributes
-import koticc.semantic.variableSymbolOrNull
+import koticc.semantic.variableSymbol
 import koticc.tacky.Tacky
 
-fun tackyProgramToAssembly(tackyProgram: Tacky.Program, symbolTable: SymbolTable): Assembly.Program =
-    TackyAssemblyGenerator(symbolTable).tackyProgramToAssembly(tackyProgram)
+fun tackyProgramToAssembly(tackyProgram: Tacky.Program): Assembly.Program =
+    TackyAssemblyGenerator(tackyProgram.symbolTable).tackyProgramToAssembly(tackyProgram)
 
 class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
     fun tackyProgramToAssembly(tackyProgram: Tacky.Program): Assembly.Program =
@@ -27,17 +27,14 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
         }
 
     private fun tackyFunctionDefinitionToAssembly(tackyFunctionDefinition: Tacky.FunctionDefinition): Assembly.FunctionDefinition {
-        val body =
-            (
-                copyParameters(tackyFunctionDefinition.parameters) + tackyFunctionDefinition.body
-                    .flatMap(::tackyInstructionToAssembly)
-                )
-                .let(::replacePseudoIdentifiers)
-                .flatMap(::fixInstructionOperands)
+        val instructions = copyParameters(tackyFunctionDefinition.parameters) + tackyFunctionDefinition.body
+            .flatMap(::tackyInstructionToAssembly)
+        val withPseudoIdentifiersReplaced = PseudoIdentifierReplacer().replace(instructions)
+        val withFixedOperands = withPseudoIdentifiersReplaced.flatMap(::fixInstructionOperands)
         return Assembly.FunctionDefinition(
             name = tackyFunctionDefinition.name,
             global = tackyFunctionDefinition.global,
-            body = body,
+            body = withFixedOperands,
         )
     }
 
@@ -292,15 +289,10 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
                 }
             }
             is Tacky.Value.Variable -> {
-                val variableSymbol = symbolTable.variableSymbolOrNull(tackyValue.name)
-                if (variableSymbol == null) {
-                    // if the variable is not found in the symbol table, it's a temp tacky variable, so it's a local/lives on the stack
-                    Assembly.Operand.PseudoIdentifier(tackyValue.name)
-                } else {
-                    when (variableSymbol.attributes) {
-                        VariableAttributes.Local -> Assembly.Operand.PseudoIdentifier(tackyValue.name)
-                        is VariableAttributes.Static -> Assembly.Operand.Data(tackyValue.name)
-                    }
+                val variableSymbol = symbolTable.variableSymbol(tackyValue.name)
+                when (variableSymbol.attributes) {
+                    VariableAttributes.Local -> Assembly.Operand.PseudoIdentifier(tackyValue.name)
+                    is VariableAttributes.Static -> Assembly.Operand.Data(tackyValue.name)
                 }
             }
         }
@@ -483,204 +475,6 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
         val assemblyDst = tackyValueToOperand(call.dst)
         add(Assembly.Instruction.Mov(Assembly.Operand.Register(Assembly.RegisterValue.Ax), assemblyDst))
     }
-
-    private fun replacePseudoIdentifiers(instructions: List<Assembly.Instruction>): List<Assembly.Instruction> {
-        val stackOffsets = mutableMapOf<String, Int>()
-        val result = ArrayList<Assembly.Instruction>(instructions.size + 1)
-        result.add(Assembly.Instruction.AllocateStack(0))
-        for (instruction in instructions) {
-            val replacedInstruction =
-                when (instruction) {
-                    is Assembly.Instruction.Mov -> {
-                        val src = replacePseudoIdentifier(stackOffsets, instruction.src)
-                        val dst = replacePseudoIdentifier(stackOffsets, instruction.dst)
-                        Assembly.Instruction.Mov(src, dst)
-                    }
-
-                    is Assembly.Instruction.AllocateStack -> instruction
-                    is Assembly.Instruction.Binary -> {
-                        val src = replacePseudoIdentifier(stackOffsets, instruction.src)
-                        val dst = replacePseudoIdentifier(stackOffsets, instruction.dst)
-                        Assembly.Instruction.Binary(instruction.operator, src, dst)
-                    }
-
-                    Assembly.Instruction.Cdq -> instruction
-                    is Assembly.Instruction.Cmp -> {
-                        val src = replacePseudoIdentifier(stackOffsets, instruction.src)
-                        val dst = replacePseudoIdentifier(stackOffsets, instruction.dst)
-                        Assembly.Instruction.Cmp(src, dst)
-                    }
-
-                    is Assembly.Instruction.ConditionalJump -> instruction
-                    is Assembly.Instruction.Idiv -> {
-                        val operand = replacePseudoIdentifier(stackOffsets, instruction.operand)
-                        Assembly.Instruction.Idiv(operand)
-                    }
-
-                    is Assembly.Instruction.Jump -> instruction
-                    is Assembly.Instruction.Label -> instruction
-                    Assembly.Instruction.Ret -> instruction
-                    is Assembly.Instruction.Set -> {
-                        val dst = replacePseudoIdentifier(stackOffsets, instruction.dst)
-                        Assembly.Instruction.Set(instruction.operator, dst)
-                    }
-
-                    is Assembly.Instruction.Shift -> {
-                        val dst = replacePseudoIdentifier(stackOffsets, instruction.dst)
-                        Assembly.Instruction.Shift(instruction.operator, dst)
-                    }
-
-                    is Assembly.Instruction.Unary -> {
-                        val operand = replacePseudoIdentifier(stackOffsets, instruction.operand)
-                        Assembly.Instruction.Unary(instruction.operator, operand)
-                    }
-
-                    is Assembly.Instruction.Call -> instruction
-                    is Assembly.Instruction.DeallocateStack -> instruction
-                    is Assembly.Instruction.Push -> {
-                        val operand = replacePseudoIdentifier(stackOffsets, instruction.operand)
-                        Assembly.Instruction.Push(operand)
-                    }
-                }
-            result.add(replacedInstruction)
-        }
-        val stackBytes = stackOffsets.size * 4
-        val alignedStackBytes = if (stackBytes % 16 == 0) {
-            stackBytes
-        } else {
-            val padding = 16 - stackBytes % 16
-            stackBytes + padding
-        }
-        result[0] = Assembly.Instruction.AllocateStack(alignedStackBytes)
-        return result
-    }
-
-    private fun replacePseudoIdentifier(
-        stackOffsets: MutableMap<String, Int>,
-        operand: Assembly.Operand,
-    ): Assembly.Operand =
-        when (operand) {
-            is Assembly.Operand.PseudoIdentifier -> {
-                val stackOffset = stackOffsets.getOrPut(operand.name) { (stackOffsets.size + 1) * -4 }
-                Assembly.Operand.Stack(stackOffset)
-            }
-
-            is Assembly.Operand.Register -> operand
-            is Assembly.Operand.Immediate -> operand
-            is Assembly.Operand.Stack -> operand
-            is Assembly.Operand.Data -> operand
-        }
-
-    private fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Instruction> =
-        when (instruction) {
-            is Assembly.Instruction.AllocateStack -> listOf(instruction)
-            is Assembly.Instruction.Binary -> {
-                if (instruction.operator == Assembly.BinaryOperator.Mul && instruction.dst.isMemory()) {
-                    listOf(
-                        Assembly.Instruction.Mov(
-                            src = instruction.dst,
-                            dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
-                        ),
-                        Assembly.Instruction.Binary(
-                            operator = instruction.operator,
-                            src = instruction.src,
-                            dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
-                        ),
-                        Assembly.Instruction.Mov(
-                            src = Assembly.Operand.Register(Assembly.RegisterValue.R11),
-                            dst = instruction.dst,
-                        ),
-                    )
-                } else if (instruction.src.isMemory() && instruction.dst.isMemory()) {
-                    listOf(
-                        Assembly.Instruction.Mov(
-                            src = instruction.src,
-                            dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                        ),
-                        Assembly.Instruction.Binary(
-                            operator = instruction.operator,
-                            src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            dst = instruction.dst,
-                        ),
-                    )
-                } else {
-                    listOf(instruction)
-                }
-            }
-
-            Assembly.Instruction.Cdq -> listOf(instruction)
-            is Assembly.Instruction.Cmp -> {
-                if (instruction.src.isMemory() && instruction.dst.isMemory()) {
-                    listOf(
-                        Assembly.Instruction.Mov(
-                            src = instruction.src,
-                            dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                        ),
-                        Assembly.Instruction.Cmp(
-                            src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            dst = instruction.dst,
-                        ),
-                    )
-                } else if (instruction.dst is Assembly.Operand.Immediate) {
-                    listOf(
-                        Assembly.Instruction.Mov(
-                            src = instruction.dst,
-                            dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                        ),
-                        Assembly.Instruction.Cmp(
-                            src = instruction.src,
-                            dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                        ),
-                    )
-                } else {
-                    listOf(instruction)
-                }
-            }
-
-            is Assembly.Instruction.ConditionalJump -> listOf(instruction)
-            is Assembly.Instruction.Idiv -> {
-                if (instruction.operand is Assembly.Operand.Immediate) {
-                    listOf(
-                        Assembly.Instruction.Mov(
-                            src = instruction.operand,
-                            dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                        ),
-                        Assembly.Instruction.Idiv(
-                            operand = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                        ),
-                    )
-                } else {
-                    listOf(instruction)
-                }
-            }
-
-            is Assembly.Instruction.Jump -> listOf(instruction)
-            is Assembly.Instruction.Label -> listOf(instruction)
-            is Assembly.Instruction.Mov -> {
-                if (instruction.src.isMemory() && instruction.dst.isMemory()) {
-                    listOf(
-                        Assembly.Instruction.Mov(
-                            src = instruction.src,
-                            dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                        ),
-                        Assembly.Instruction.Mov(
-                            src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                            dst = instruction.dst,
-                        ),
-                    )
-                } else {
-                    listOf(instruction)
-                }
-            }
-
-            Assembly.Instruction.Ret -> listOf(instruction)
-            is Assembly.Instruction.Set -> listOf(instruction)
-            is Assembly.Instruction.Shift -> listOf(instruction)
-            is Assembly.Instruction.Unary -> listOf(instruction)
-            is Assembly.Instruction.Call -> listOf(instruction)
-            is Assembly.Instruction.DeallocateStack -> listOf(instruction)
-            is Assembly.Instruction.Push -> listOf(instruction)
-        }
 }
 
 fun Assembly.Operand.isMemory() = when (this) {

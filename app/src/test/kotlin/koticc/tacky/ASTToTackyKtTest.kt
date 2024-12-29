@@ -9,12 +9,14 @@ import koticc.ast.cond
 import koticc.ast.div
 import koticc.ast.e
 import koticc.ast.eq
+import koticc.ast.int
 import koticc.ast.ne
 import koticc.ast.or
 import koticc.ast.plus
 import koticc.ast.program
 import koticc.ast.times
 import koticc.semantic.ValidASTProgram
+import koticc.semantic.tempVariablesSymbolTable
 import koticc.semantic.toSymbol
 import koticc.token.Location
 import org.junit.jupiter.api.Test
@@ -41,6 +43,8 @@ class ASTToTackyKtTest {
 
         assertEquals(
             tackyProgram {
+                symbolTable = program.symbolTable
+
                 function("main") {
                     return_(1.t)
                     return_(0.t)
@@ -79,8 +83,8 @@ class ASTToTackyKtTest {
                                         AST.Statement.Expression(
                                             AST.Expression.Unary(
                                                 operator = astUnaryOperator,
-                                                operand = AST.Expression.Constant(AST.IntConstant(1), null, Location(1, 0)),
-                                                type = null,
+                                                operand = AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(1, 0)),
+                                                type = Type.Int,
                                                 location = Location(1, 0),
                                             ),
                                         ),
@@ -101,6 +105,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(0, 1),
                 topLevel =
                 listOf(
                     Tacky.TopLevel.FunctionDefinition(
@@ -167,9 +172,9 @@ class ASTToTackyKtTest {
                                         AST.Statement.Expression(
                                             AST.Expression.Binary(
                                                 operator = astBinaryOperator,
-                                                left = AST.Expression.Constant(AST.IntConstant(1), null, Location(1, 0)),
-                                                right = AST.Expression.Constant(AST.IntConstant(2), null, Location(1, 0)),
-                                                type = null,
+                                                left = AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(1, 0)),
+                                                right = AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(1, 0)),
+                                                type = Type.Int,
                                             ),
                                         ),
                                     ),
@@ -189,6 +194,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(0, 1),
                 topLevel =
                 listOf(
                     Tacky.TopLevel.FunctionDefinition(
@@ -220,7 +226,7 @@ class ASTToTackyKtTest {
             value =
             program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                    return_(1.e * 2.e + 3.e / 4.e)
+                    return_(((1.e.int() * 2.e.int()).int() + (3.e.int() / 4.e.int()).int()).int())
                 }
             },
             renamedVariableCount = 0,
@@ -231,6 +237,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             tackyProgram {
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(0, 3)
                 function("main") {
                     assign("tmp.0", 1.t * 2.t)
                     assign("tmp.1", 3.t / 4.t)
@@ -250,7 +257,7 @@ class ASTToTackyKtTest {
             program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     return_(
-                        (1.e eq 1.e) and (1.e ne 3.e),
+                        ((1.e.int() eq 1.e.int()).int() and ((1.e.int() ne 3.e.int()).int()).int()).int(),
                     )
                 }
             },
@@ -262,6 +269,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             tackyProgram {
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(0, 3)
                 function("main") {
                     assign("tmp.0", 1.t eq 1.t)
                     jumpIfZero("tmp.0".t, "and_false.0")
@@ -287,7 +295,7 @@ class ASTToTackyKtTest {
             program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     return_(
-                        (1.e eq 1.e) or (1.e ne 3.e),
+                        ((1.e.int() eq 1.e.int()).int() or (1.e.int() ne 3.e.int()).int()).int(),
                     )
                 }
             },
@@ -299,6 +307,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             tackyProgram {
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(0, 3)
                 function("main") {
                     assign("tmp.0", 1.t eq 1.t)
                     jumpIfNotZero("tmp.0".t, "or_true.0")
@@ -337,6 +346,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             tackyProgram {
+                symbolTable = program.symbolTable
                 function("main") {
                     assign("x", 1.t)
                     return_(0.t)
@@ -366,6 +376,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             tackyProgram {
+                symbolTable = program.symbolTable
                 function("main") {
                     return_(0.t)
                 }
@@ -380,7 +391,7 @@ class ASTToTackyKtTest {
             value =
             program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                    int("x") assign 1.e + 2.e
+                    int("x") assign (1.e.int() + 2.e.int()).int()
                 }
             },
             renamedVariableCount = 123,
@@ -394,6 +405,8 @@ class ASTToTackyKtTest {
 
         assertEquals(
             tackyProgram {
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(123, 1)
+
                 function("main") {
                     assign("tmp.123", 1.t + 2.t)
                     assign("x", "tmp.123".t)
@@ -425,6 +438,8 @@ class ASTToTackyKtTest {
 
         assertEquals(
             tackyProgram {
+                symbolTable = program.symbolTable
+
                 function("main") {
                     assign("x", 1.t)
                     return_(0.t)
@@ -469,7 +484,7 @@ class ASTToTackyKtTest {
                                     AST.BlockItem.Declaration(
                                         AST.Declaration.Variable(
                                             name = "x",
-                                            initializer = AST.Expression.Constant(AST.IntConstant(1), null, Location(1, 0)),
+                                            initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(1, 0)),
                                             type = Type.Int,
                                             storageClass = null,
                                             location = Location(1, 0),
@@ -479,9 +494,9 @@ class ASTToTackyKtTest {
                                         AST.Statement.Expression(
                                             AST.Expression.CompoundAssignment(
                                                 operator = astCompoundAssignmentOperator,
-                                                left = AST.Expression.Variable("x", null, Location(1, 0)),
-                                                right = AST.Expression.Constant(AST.IntConstant(2), null, Location(1, 0)),
-                                                type = null,
+                                                left = AST.Expression.Variable("x", Type.Int, Location(1, 0)),
+                                                right = AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(1, 0)),
+                                                type = Type.Int,
                                             ),
                                         ),
                                     ),
@@ -504,6 +519,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(1, 1),
                 topLevel =
                 listOf(
                     Tacky.TopLevel.FunctionDefinition(
@@ -564,7 +580,7 @@ class ASTToTackyKtTest {
                                     AST.BlockItem.Declaration(
                                         AST.Declaration.Variable(
                                             name = "x",
-                                            initializer = AST.Expression.Constant(AST.IntConstant(1), null, Location(1, 0)),
+                                            initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(1, 0)),
                                             type = Type.Int,
                                             storageClass = null,
                                             location = Location(1, 0),
@@ -579,11 +595,11 @@ class ASTToTackyKtTest {
                                                 left =
                                                 AST.Expression.Postfix(
                                                     operator = postfixOperator,
-                                                    operand = AST.Expression.Variable("x", null, Location(1, 0)),
-                                                    type = null,
+                                                    operand = AST.Expression.Variable("x", Type.Int, Location(1, 0)),
+                                                    type = Type.Int,
                                                 ),
-                                                right = AST.Expression.Constant(AST.IntConstant(2), null, Location(1, 0)),
-                                                type = null,
+                                                right = AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(1, 0)),
+                                                type = Type.Int,
                                             ),
                                             type = Type.Int,
                                             storageClass = null,
@@ -595,9 +611,9 @@ class ASTToTackyKtTest {
                                             expression =
                                             AST.Expression.Binary(
                                                 operator = AST.BinaryOperator.Add,
-                                                left = AST.Expression.Variable("x", null, Location(1, 0)),
-                                                right = AST.Expression.Variable("y", null, Location(1, 0)),
-                                                type = null,
+                                                left = AST.Expression.Variable("x", Type.Int, Location(1, 0)),
+                                                right = AST.Expression.Variable("y", Type.Int, Location(1, 0)),
+                                                type = Type.Int,
                                             ),
                                             location = Location(1, 0),
                                         ),
@@ -622,6 +638,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             Tacky.Program(
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(2, 3),
                 topLevel =
                 listOf(
                     Tacky.TopLevel.FunctionDefinition(
@@ -677,12 +694,12 @@ class ASTToTackyKtTest {
         val input = ValidASTProgram(
             value = program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                    int("x") assign 1.e
-                    int("y") assign 0.e
-                    if_("x".e eq 1.e) {
-                        assign("y".e, 2.e)
+                    int("x") assign 1.e.int()
+                    int("y") assign 0.e.int()
+                    if_(("x".e.int() eq 1.e.int()).int()) {
+                        assign("y".e, 2.e.int(), type = Type.Int)
                     }
-                    return_("y".e)
+                    return_("y".e.int())
                 }
             },
             renamedVariableCount = 2,
@@ -697,6 +714,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             tackyProgram {
+                symbolTable = input.symbolTable + tempVariablesSymbolTable(2, 1)
                 function("main") {
                     assign("x", 1.t)
                     assign("y", 0.t)
@@ -717,14 +735,14 @@ class ASTToTackyKtTest {
         val program = ValidASTProgram(
             value = program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                    int("x") assign 1.e
-                    int("y") assign 0.e
-                    if_("x".e eq 1.e) {
-                        assign("y".e, 2.e)
+                    int("x") assign 1.e.int()
+                    int("y") assign 0.e.int()
+                    if_(("x".e.int() eq 1.e.int()).int()) {
+                        assign("y".e, 2.e.int(), type = Type.Int)
                     } else_ {
-                        assign("y".e, 3.e)
+                        assign("y".e, 3.e.int(), type = Type.Int)
                     }
-                    return_("y".e)
+                    return_("y".e.int())
                 }
             },
             renamedVariableCount = 2,
@@ -739,6 +757,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             tackyProgram {
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(2, 1)
                 function("main") {
                     assign("x", 1.t)
                     assign("y", 0.t)
@@ -763,10 +782,18 @@ class ASTToTackyKtTest {
             value =
             program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                    int("a.0") assign 1.e
+                    int("a.0") assign 1.e.int()
                     int("b.1")
-                    assign("a.0".e, cond("a.0".e eq 1.e, "b.1".e assign 2.e, "b.1".e assign 3.e))
-                    return_("b.1".e)
+                    assign(
+                        "a.0".e.int(),
+                        cond(
+                            ("a.0".e.int() eq 1.e.int()).int(),
+                            ("b.1".e.int() assign 2.e.int()).int(),
+                            ("b.1".e.int() assign 3.e.int()).int(),
+                        ).int(),
+                        type = Type.Int,
+                    )
+                    return_("b.1".e.int())
                 }
             },
             renamedVariableCount = 2,
@@ -781,6 +808,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             tackyProgram {
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(2, 2)
                 function("main") {
                     assign("a.0", 1.t)
                     assign("tmp.2", "a.0".t eq 1.t)
@@ -825,6 +853,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             tackyProgram {
+                symbolTable = program.symbolTable
                 function("main") {
                     assign("x", 1.t)
                     label("label")
@@ -861,6 +890,7 @@ class ASTToTackyKtTest {
 
         assertEquals(
             tackyProgram {
+                symbolTable = input.symbolTable
                 function("main") {
                     assign("x", 1.t)
                     assign("x", 2.t)

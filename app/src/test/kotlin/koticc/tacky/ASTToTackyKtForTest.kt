@@ -6,10 +6,12 @@ import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.initDecl
 import koticc.ast.initExpr
+import koticc.ast.int
 import koticc.ast.lt
 import koticc.ast.plusAssign
 import koticc.ast.program
 import koticc.semantic.ValidASTProgram
+import koticc.semantic.tempVariablesSymbolTable
 import koticc.semantic.toSymbol
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,9 +22,9 @@ class ASTToTackyKtForTest {
         val input = ValidASTProgram(
             value = program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                    int("a.0") assign 1.e
-                    for_(initDecl("i.1", 0.e), "i.1".e lt 10.e, "i.1".e plusAssign 1.e, loopId = 0) {
-                        plusAssign("a.0".e, "i.1".e)
+                    int("a.0") assign 1.e.int()
+                    for_(initDecl("i.1", 0.e.int()), ("i.1".e.int() lt 10.e.int()).int(), ("i.1".e.int() plusAssign 1.e.int()).int(), loopId = 0) {
+                        plusAssign("a.0".e.int(), "i.1".e.int(), type = Type.Int)
                     }
                 }
             },
@@ -38,6 +40,8 @@ class ASTToTackyKtForTest {
 
         assertEquals(
             expected = tackyProgram {
+                symbolTable = input.symbolTable + tempVariablesSymbolTable(2, 3)
+
                 function("main") {
                     assign("a.0", 1.t)
 
@@ -70,8 +74,8 @@ class ASTToTackyKtForTest {
             value = program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     int("a.0") assign 1.e
-                    for_(null, "a.0".e lt 10.e, "a.0".e plusAssign 1.e, loopId = 0) {
-                        plusAssign("a.0".e, 1.e)
+                    for_(null, ("a.0".e.int() lt 10.e.int()).int(), ("a.0".e.int() plusAssign 1.e.int()).int(), loopId = 0) {
+                        plusAssign("a.0".e.int(), 1.e.int(), type = Type.Int)
                     }
                 }
             },
@@ -86,6 +90,8 @@ class ASTToTackyKtForTest {
 
         assertEquals(
             expected = tackyProgram {
+                symbolTable = input.symbolTable + tempVariablesSymbolTable(1, 3)
+
                 function("main") {
                     assign("a.0", 1.t)
 
@@ -116,10 +122,10 @@ class ASTToTackyKtForTest {
         val input = ValidASTProgram(
             value = program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                    int("a.0") assign 1.e
+                    int("a.0") assign 1.e.int()
                     int("i.1")
-                    for_(initExpr("i.1".e assign 0.e), null, "i.1".e plusAssign 1.e, loopId = 0) {
-                        plusAssign("a.0".e, "i.1".e)
+                    for_(initExpr(("i.1".e assign 0.e.int()).int()), null, ("i.1".e.int() plusAssign 1.e.int()).int(), loopId = 0) {
+                        plusAssign("a.0".e.int(), "i.1".e.int(), type = Type.Int)
                     }
                 }
             },
@@ -135,6 +141,8 @@ class ASTToTackyKtForTest {
 
         assertEquals(
             expected = tackyProgram {
+                symbolTable = input.symbolTable + tempVariablesSymbolTable(2, 2)
+
                 function("main") {
                     assign("a.0", 1.t)
 
@@ -165,8 +173,8 @@ class ASTToTackyKtForTest {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     int("a.0") assign 1.e
                     int("i.1")
-                    for_(initExpr("i.1".e assign 0.e), "i.1".e lt 10.e, null, loopId = 0) {
-                        plusAssign("a.0".e, "i.1".e)
+                    for_(initExpr(("i.1".e.int() assign 0.e.int()).int()), ("i.1".e.int() lt 10.e.int()).int(), null, loopId = 0) {
+                        plusAssign("a.0".e.int(), "i.1".e.int(), type = Type.Int)
                     }
                 }
             },
@@ -182,6 +190,8 @@ class ASTToTackyKtForTest {
 
         assertEquals(
             expected = tackyProgram {
+                symbolTable = input.symbolTable + tempVariablesSymbolTable(2, 2)
+
                 function("main") {
                     assign("a.0", 1.t)
 
@@ -211,10 +221,10 @@ class ASTToTackyKtForTest {
         val input = ValidASTProgram(
             value = program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                    int("a.0") assign 1.e
-                    for_(initDecl("i.1", 0.e), "i.1".e lt 10.e, "i.1".e plusAssign 1.e, loopId = 0) {
-                        plusAssign("a.0".e, "i.1".e)
-                        if_("i.1".e eq 5.e) {
+                    int("a.0") assign 1.e.int()
+                    for_(initDecl("i.1", 0.e.int()), ("i.1".e.int() lt 10.e.int()).int(), ("i.1".e.int() plusAssign 1.e.int()).int(), loopId = 0) {
+                        plusAssign("a.0".e.int(), "i.1".e.int(), type = Type.Int)
+                        if_(("i.1".e.int() eq 5.e.int()).int()) {
                             continue_(0)
                         } else_ {
                             breakLoop(0)
@@ -234,6 +244,8 @@ class ASTToTackyKtForTest {
 
         assertEquals(
             expected = tackyProgram {
+                symbolTable = input.symbolTable + tempVariablesSymbolTable(2, 4)
+
                 function("main") {
                     assign("a.0", 1.t)
 

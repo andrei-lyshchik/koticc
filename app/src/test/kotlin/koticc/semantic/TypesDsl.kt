@@ -8,3 +8,7 @@ fun Type.Function.toSymbol(defined: Boolean = true, global: Boolean = true): Sym
 fun Type.Int.toSymbol(
     attributes: VariableAttributes = VariableAttributes.Local,
 ) = Symbol.Variable(this, attributes)
+
+fun tempVariablesSymbolTable(start: Int, count: Int) = buildMap<String, Symbol> {
+    repeat(count) { i -> put("tmp.${i + start}", Type.Int.toSymbol()) }
+}

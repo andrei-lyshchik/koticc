@@ -57,7 +57,7 @@ fun runCompilerDriver(
             return@either
         }
 
-        val assemblyProgram = tackyProgramToAssembly(tackyProgram, validAST.symbolTable)
+        val assemblyProgram = tackyProgramToAssembly(tackyProgram)
         if (partialMode == PartialMode.Codegen) {
             return@either
         }

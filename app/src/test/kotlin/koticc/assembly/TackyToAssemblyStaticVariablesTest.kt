@@ -15,6 +15,10 @@ class TackyToAssemblyStaticVariablesTest {
     @Test
     fun `should generate assembly for static variables`() {
         val tacky = tackyProgram {
+            symbolTable = mapOf(
+                "a" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(0), global = true)),
+                "b" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(1), global = false)),
+            )
             staticVariable("a", global = true, initialValue = 0)
             staticVariable("b", global = false, initialValue = 1)
         }
@@ -41,6 +45,11 @@ class TackyToAssemblyStaticVariablesTest {
     @Test
     fun `should properly refer to static variables relative to rip`() {
         val tacky = tackyProgram {
+            symbolTable = mapOf(
+                "a" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(0), global = true)),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+            )
+
             staticVariable("a", global = true, initialValue = 0)
             function("main") {
                 assign("a", "a".t + 1.t)
