@@ -65,7 +65,7 @@ class ProgramBuilder {
     }
 
     fun int(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
-        setCurrentVariableBuilder(VariableDeclarationBuilder(name, storageClass, Type.Integer))
+        setCurrentVariableBuilder(VariableDeclarationBuilder(name, storageClass, Type.Int))
 
     fun build(): AST.Program {
         currentVariableBuilder?.let {
@@ -96,7 +96,7 @@ class BlockBuilder {
     }
 
     fun int(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
-        setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Integer))
+        setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Int))
 
     fun assign(left: AST.Expression, right: AST.Expression, type: Type? = null) {
         addBlockItem(
@@ -400,7 +400,7 @@ class VariableDeclarationBuilder(private val name: String, private val storageCl
     }
 
     fun buildVariableDeclaration(): AST.Declaration.Variable {
-        return AST.Declaration.Variable(name, initializer, Type.Integer, storageClass, DUMMY_LOCATION)
+        return AST.Declaration.Variable(name, initializer, Type.Int, storageClass, DUMMY_LOCATION)
     }
 
     override fun build(): AST.BlockItem = AST.BlockItem.Declaration(
@@ -457,7 +457,7 @@ class DoWhileBuilder(val body: AST.Block) : BlockItemBuilder {
 }
 
 fun initDecl(name: String, initializer: AST.Expression? = null) =
-    AST.ForInitializer.Declaration(AST.Declaration.Variable(name, initializer, Type.Integer, null, DUMMY_LOCATION))
+    AST.ForInitializer.Declaration(AST.Declaration.Variable(name, initializer, Type.Int, null, DUMMY_LOCATION))
 
 fun initExpr(expression: AST.Expression) =
     AST.ForInitializer.Expression(expression)
@@ -640,4 +640,4 @@ fun cond(condition: AST.Expression, thenExpression: AST.Expression, elseExpressi
         type = null,
     )
 
-fun AST.Expression.integer() = ofType(Type.Integer)
+fun AST.Expression.int() = ofType(Type.Int)

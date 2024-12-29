@@ -14,11 +14,11 @@ class ASTToTackyFunctionsTest {
     fun `should skip function declarations with no body`() {
         val input = ValidASTProgram(
             value = program {
-                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer))
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int))
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "foo" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(defined = false),
+                "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(defined = false),
             ),
         )
 
@@ -34,17 +34,17 @@ class ASTToTackyFunctionsTest {
     fun `should support multiple functions`() {
         val input = ValidASTProgram(
             value = program {
-                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     return_(1.e)
                 }
-                function("bar", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("bar", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     return_(2.e)
                 }
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "foo" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                "bar" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
+                "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                "bar" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
             ),
         )
 
@@ -69,13 +69,13 @@ class ASTToTackyFunctionsTest {
     fun `should produce tacky for function call without arguments`() {
         val program = ValidASTProgram(
             value = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     call("foo")
                 }
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
             ),
         )
 
@@ -96,13 +96,13 @@ class ASTToTackyFunctionsTest {
     fun `should produce tacky for function call with arguments`() {
         val program = ValidASTProgram(
             value = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     call("foo", 1.e, 2.e + 3.e)
                 }
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
             ),
         )
 
@@ -124,15 +124,15 @@ class ASTToTackyFunctionsTest {
     fun `should produce tacky for function with parameters`() {
         val program = ValidASTProgram(
             value = program {
-                function("foo", Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer), "a", "b") {
+                function("foo", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "b") {
                     return_("a".e + "b".e)
                 }
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "foo" to Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer).toSymbol(),
-                "a" to Type.Integer.toSymbol(),
-                "b" to Type.Integer.toSymbol(),
+                "foo" to Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int).toSymbol(),
+                "a" to Type.Int.toSymbol(),
+                "b" to Type.Int.toSymbol(),
             ),
         )
 
@@ -154,13 +154,13 @@ class ASTToTackyFunctionsTest {
     fun `should support non-global functions`() {
         val program = ValidASTProgram(
             value = program {
-                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     return_(1.e)
                 }
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "foo" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(global = false),
+                "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(global = false),
             ),
         )
 

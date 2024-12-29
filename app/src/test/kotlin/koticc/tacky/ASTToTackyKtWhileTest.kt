@@ -15,7 +15,7 @@ class ASTToTackyKtWhileTest {
     fun `should produce tacky for while`() {
         val input = ValidASTProgram(
             value = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     int("a.0") assign 1.e
                     while_("a.0".e lt 10.e, loopId = 0) {
                         plusAssign("a.0".e, 1.e)
@@ -24,8 +24,8 @@ class ASTToTackyKtWhileTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                "a.0" to Type.Integer.toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                "a.0" to Type.Int.toSymbol(),
             ),
         )
 
@@ -58,7 +58,7 @@ class ASTToTackyKtWhileTest {
     fun `should produce tacky for while with continue and break`() {
         val input = ValidASTProgram(
             value = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     int("a.0") assign 1.e
                     while_("a.0".e lt 10.e, loopId = 0) {
                         plusAssign("a.0".e, 1.e)
@@ -72,8 +72,8 @@ class ASTToTackyKtWhileTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                "a.0" to Type.Integer.toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                "a.0" to Type.Int.toSymbol(),
             ),
         )
 

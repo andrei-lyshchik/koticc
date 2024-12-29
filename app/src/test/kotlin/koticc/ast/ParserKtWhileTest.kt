@@ -20,7 +20,7 @@ class ParserKtWhileTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     int("a") assign 1.e
                     while_("a".e lt 10.e) {
                         plusAssign("a".e, 1.e)

@@ -8,7 +8,7 @@ import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.eq
-import koticc.ast.integer
+import koticc.ast.int
 import koticc.ast.invoke
 import koticc.ast.plus
 import koticc.ast.program
@@ -21,7 +21,7 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should resolve function params as identifiers`() {
         val program = program {
-            function("test", Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer), "a", "b") {
+            function("test", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "b") {
                 return_("a".e + "b".e)
             }
         }
@@ -31,15 +31,15 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("test", Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer), "a.0", "b.1") {
-                        return_(("a.0".e.integer() + "b.1".e.integer()).integer())
+                    function("test", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a.0", "b.1") {
+                        return_(("a.0".e.int() + "b.1".e.int()).int())
                     }
                 },
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "test" to Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
-                    "b.1" to Type.Integer.toSymbol(),
+                    "test" to Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
+                    "b.1" to Type.Int.toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -49,7 +49,7 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should return error if local variable has the same name as a function parameter`() {
         val program = program {
-            function("test", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a") {
+            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
                 int("a") assign 1.e
                 return_("a".e)
             }
@@ -65,10 +65,10 @@ class SemanticAnalysisKtFunctionsTest {
 
     class ParamsWithSameName : VarargArgumentsProvider(
         program {
-            function("test", Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer), "a", "a")
+            function("test", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "a")
         },
         program {
-            function("test", Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer), "a", "a") {
+            function("test", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "a") {
                 return_("a".e)
             }
         },
@@ -90,8 +90,8 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should return error if nested function has a body`() {
         val program = program {
-            function("test", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                function("test2", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("test", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                function("test2", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     return_(2.e)
                 }
                 return_(1.e)
@@ -109,8 +109,8 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should allow multiple non-conflicting function declarations without body`() {
         val program = program {
-            function("test1", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a")
-            function("test1", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a")
+            function("test1", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a")
+            function("test1", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a")
         }
 
         val actual = semanticAnalysis(program)
@@ -118,12 +118,12 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("test1", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a.0")
-                    function("test1", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a.1")
+                    function("test1", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a.0")
+                    function("test1", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a.1")
                 },
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "test1" to Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer).toSymbol(defined = false),
+                    "test1" to Type.Function(parameters = listOf(Type.Int), returnType = Type.Int).toSymbol(defined = false),
                 ),
             ).right(),
             actual = actual,
@@ -133,8 +133,8 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `different parameter names don't make function declarations conflicting`() {
         val program = program {
-            function("test1", Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer), "a", "c")
-            function("test1", Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer), "b", "d")
+            function("test1", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "c")
+            function("test1", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "b", "d")
         }
 
         val actual = semanticAnalysis(program)
@@ -142,12 +142,12 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("test1", Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer), "a.0", "c.1")
-                    function("test1", Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer), "b.2", "d.3")
+                    function("test1", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a.0", "c.1")
+                    function("test1", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "b.2", "d.3")
                 },
                 renamedVariableCount = 4,
                 symbolTable = mapOf(
-                    "test1" to Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer).toSymbol(defined = false),
+                    "test1" to Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int).toSymbol(defined = false),
                 ),
             ).right(),
             actual = actual,
@@ -157,9 +157,9 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should allow nesting function declarations without a body`() {
         val program = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 if_(1.e eq 1.e) {
-                    function("test1", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a")
+                    function("test1", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a")
                 }
             }
         }
@@ -169,16 +169,16 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        if_((1.e.integer() eq 1.e.integer()).integer()) {
-                            function("test1", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a.0")
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        if_((1.e.int() eq 1.e.int()).int()) {
+                            function("test1", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a.0")
                         }
                     }
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "test1" to Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer).toSymbol(defined = false),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "test1" to Type.Function(parameters = listOf(Type.Int), returnType = Type.Int).toSymbol(defined = false),
                 ),
             ).right(),
             actual = actual,
@@ -187,14 +187,14 @@ class SemanticAnalysisKtFunctionsTest {
 
     class ConflictingVariableAndFunctionDeclarations : VarargArgumentsProvider(
         program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
-                function("a", Type.Function(parameters = emptyList(), returnType = Type.Integer))
+                function("a", Type.Function(parameters = emptyList(), returnType = Type.Int))
             }
         },
         program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                function("a", Type.Function(parameters = emptyList(), returnType = Type.Integer))
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                function("a", Type.Function(parameters = emptyList(), returnType = Type.Int))
                 int("a") assign 1.e
             }
         },
@@ -216,10 +216,10 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `valid function call`() {
         val program = program {
-            function("test", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a") {
+            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
                 return_(1.e + "a".e)
             }
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 call("test", 1.e)
             }
         }
@@ -229,18 +229,18 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("test", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a.0") {
-                        return_((1.e.integer() + "a.0".e.integer()).integer())
+                    function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a.0") {
+                        return_((1.e.int() + "a.0".e.int()).int())
                     }
-                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        call("test", 1.e.integer(), type = Type.Integer)
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        call("test", 1.e.int(), type = Type.Int)
                     }
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "test" to Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "test" to Type.Function(parameters = listOf(Type.Int), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -250,7 +250,7 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should return error if function is undeclared`() {
         val program = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 call("test")
             }
         }
@@ -266,7 +266,7 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should return error if variable is called as function`() {
         val program = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 call("a")
             }
@@ -283,10 +283,10 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should return error if function is called with a different number of arguments`() {
         val program = program {
-            function("test", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a") {
+            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
                 return_("a".e)
             }
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 call("test", 1.e, 2.e)
             }
         }
@@ -302,10 +302,10 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should treat different function parameters as in different scopes`() {
         val program = program {
-            function("test1", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a") {
+            function("test1", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
                 return_("a".e)
             }
-            function("test2", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a") {
+            function("test2", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
                 return_("a".e)
             }
         }
@@ -315,19 +315,19 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("test1", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a.0") {
-                        return_("a.0".e.integer())
+                    function("test1", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a.0") {
+                        return_("a.0".e.int())
                     }
-                    function("test2", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a.1") {
-                        return_("a.1".e.integer())
+                    function("test2", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a.1") {
+                        return_("a.1".e.int())
                     }
                 },
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "test1" to Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer).toSymbol(),
-                    "test2" to Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
-                    "a.1" to Type.Integer.toSymbol(),
+                    "test1" to Type.Function(parameters = listOf(Type.Int), returnType = Type.Int).toSymbol(),
+                    "test2" to Type.Function(parameters = listOf(Type.Int), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
+                    "a.1" to Type.Int.toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -336,35 +336,35 @@ class SemanticAnalysisKtFunctionsTest {
 
     class ConflictingFunctionDeclarations : VarargArgumentsProvider(
         program {
-            function("test", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a") {
+            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
                 return_("a".e)
             }
-            function("test", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a") {
+            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
                 return_("a".e)
             }
         },
         program {
-            function("test", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a") {
+            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
                 return_("a".e)
             }
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                function("test", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a")
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a")
                 return_("test"(1.e))
             }
-            function("test", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a") {
+            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
                 return_("a".e)
             }
         },
         program {
-            function("test", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a")
-            function("test", Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer), "a", "b")
+            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a")
+            function("test", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "b")
         },
         program {
-            function("test", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "a") {
+            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
                 return_("a".e)
             }
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                function("test", Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer), "a", "b")
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                function("test", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "b")
                 return_(1.e)
             }
         },
@@ -386,8 +386,8 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `should return error if function is used as a variable`() {
         val program = program {
-            function("test", Type.Function(parameters = emptyList(), returnType = Type.Integer))
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("test", Type.Function(parameters = emptyList(), returnType = Type.Int))
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign (1.e + "test".e)
             }
         }
@@ -403,8 +403,8 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `nested function declarations can't have static storage`() {
         val program = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                function("test", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Static)
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                function("test", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static)
             }
         }
 
@@ -419,13 +419,13 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `static functions are not global`() {
         val program = program {
-            function("test", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Static)
+            function("test", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static)
 
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 return_("test"())
             }
 
-            function("test", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Static) {
+            function("test", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static) {
                 return_(1.e)
             }
         }
@@ -435,20 +435,20 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("test", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Static)
+                    function("test", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static)
 
-                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        return_("test"().integer())
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        return_("test"().int())
                     }
 
-                    function("test", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Static) {
-                        return_(1.e.integer())
+                    function("test", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static) {
+                        return_(1.e.int())
                     }
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
-                    "test" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(global = false),
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
+                    "test" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(global = false),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -458,13 +458,13 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `can't declare function both as static and non-static`() {
         val program = program {
-            function("test", Type.Function(parameters = emptyList(), returnType = Type.Integer))
+            function("test", Type.Function(parameters = emptyList(), returnType = Type.Int))
 
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 return_("test"())
             }
 
-            function("test", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Static) {
+            function("test", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static) {
                 return_(1.e)
             }
         }
@@ -482,9 +482,9 @@ class SemanticAnalysisKtFunctionsTest {
         val program = program {
             int("foo") assign 10.e
 
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 // this should conflict with the variable declaration above
-                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer))
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int))
             }
         }
 
@@ -499,18 +499,18 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `can declare static functions multiple times`() {
         val program = program {
-            function("fun", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Static)
-            function("client1", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("fun", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static)
+            function("client1", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 call("fun")
             }
-            function("client2", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("client2", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 // block-scope declarations take linkage of visible declaration
-                function("fun", Type.Function(parameters = emptyList(), returnType = Type.Integer))
+                function("fun", Type.Function(parameters = emptyList(), returnType = Type.Int))
             }
             // this should not conflict with the static declaration above due to extern
-            function("fun", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Extern)
-            function("fun", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Static)
-            function("fun", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("fun", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Extern)
+            function("fun", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static)
+            function("fun", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 return_(1.e)
             }
         }
@@ -520,24 +520,24 @@ class SemanticAnalysisKtFunctionsTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("fun", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Static)
-                    function("client1", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        call("fun", type = Type.Integer)
+                    function("fun", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static)
+                    function("client1", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        call("fun", type = Type.Int)
                     }
-                    function("client2", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        function("fun", Type.Function(parameters = emptyList(), returnType = Type.Integer))
+                    function("client2", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        function("fun", Type.Function(parameters = emptyList(), returnType = Type.Int))
                     }
-                    function("fun", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Extern)
-                    function("fun", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Static)
-                    function("fun", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        return_(1.e.integer())
+                    function("fun", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Extern)
+                    function("fun", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static)
+                    function("fun", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        return_(1.e.int())
                     }
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
-                    "fun" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(global = false),
-                    "client1" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "client2" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
+                    "fun" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(global = false),
+                    "client1" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "client2" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -547,7 +547,7 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `local variables with extern specifier can't have initializers`() {
         val program = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a", storageClass = AST.StorageClass.Extern) assign 1.e
             }
         }
@@ -563,8 +563,8 @@ class SemanticAnalysisKtFunctionsTest {
     @Test
     fun `can't declare local variable with extern if there's already function with the same name`() {
         val program = program {
-            function("a", Type.Function(parameters = emptyList(), returnType = Type.Integer))
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("a", Type.Function(parameters = emptyList(), returnType = Type.Int))
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a", storageClass = AST.StorageClass.Extern)
             }
         }

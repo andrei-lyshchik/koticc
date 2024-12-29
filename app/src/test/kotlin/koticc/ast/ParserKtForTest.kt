@@ -68,7 +68,7 @@ class ParserKtForTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     int("a") assign 1.e
                     for_(
                         expectedInit,

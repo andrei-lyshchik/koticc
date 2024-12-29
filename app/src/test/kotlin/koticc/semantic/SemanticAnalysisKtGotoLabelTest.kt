@@ -5,7 +5,7 @@ import arrow.core.right
 import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
 import koticc.ast.e
-import koticc.ast.integer
+import koticc.ast.int
 import koticc.ast.program
 import org.junit.jupiter.api.Assertions.assertEquals
 import kotlin.test.Test
@@ -14,7 +14,7 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should handle labeled statement`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 label("label") {
                     assign("a".e, 2.e)
@@ -26,17 +26,17 @@ class SemanticAnalysisKtGotoLabelTest {
             ValidASTProgram(
                 value =
                 program {
-                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        int("a.0") assign 1.e.integer()
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        int("a.0") assign 1.e.int()
                         label("main.label") {
-                            assign("a.0".e.integer(), 2.e.integer(), type = Type.Integer)
+                            assign("a.0".e.int(), 2.e.int(), type = Type.Int)
                         }
                     }
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
                 ),
             )
 
@@ -46,7 +46,7 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should return error if goto label is not declared`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 goto("label")
             }
         }
@@ -59,7 +59,7 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should return error if labels on labeled statements are not unique`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 label("label") { null_() }
                 label("label") { null_() }
             }
@@ -73,7 +73,7 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should detect non-unique labels in default`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 label("label") { null_() }
                 switch(1.e) {
                     default {
@@ -91,7 +91,7 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should consider labels inside if else`() {
         val input = program {
-            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 if_(1.e) {
                     label("label_if") { null_() }
                 } else_ {
@@ -105,8 +105,8 @@ class SemanticAnalysisKtGotoLabelTest {
         val expected =
             ValidASTProgram(
                 value = program {
-                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        if_(1.e.integer()) {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        if_(1.e.int()) {
                             label("foo.label_if") { null_() }
                         } else_ {
                             label("foo.label_else") { null_() }
@@ -117,7 +117,7 @@ class SemanticAnalysisKtGotoLabelTest {
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
-                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
+                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
                 ),
             )
 
@@ -127,7 +127,7 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should consider non top level gotos`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 if_(1.e) {
                     goto("non_existing_label")
                 } else_ {
@@ -144,7 +144,7 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `should find goto and labels in compound statements`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 nested {
                     label("label1") { null_() }
                     goto("label2")
@@ -156,7 +156,7 @@ class SemanticAnalysisKtGotoLabelTest {
 
         val expected = ValidASTProgram(
             value = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     nested {
                         label("main.label1") { null_() }
                         goto("main.label2")
@@ -167,7 +167,7 @@ class SemanticAnalysisKtGotoLabelTest {
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
             ),
         )
 
@@ -177,27 +177,27 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `labels can be non-unique if used in different functions`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 label("label") { null_() }
             }
-            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 label("label") { null_() }
             }
         }
 
         val expected = ValidASTProgram(
             value = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     label("main.label") { null_() }
                 }
-                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     label("foo.label") { null_() }
                 }
             },
             renamedVariableCount = 0,
             symbolTable = mapOf(
-                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                "foo" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
             ),
         )
 
@@ -207,10 +207,10 @@ class SemanticAnalysisKtGotoLabelTest {
     @Test
     fun `can't goto label in different function`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 goto("label")
             }
-            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 label("label") { null_() }
             }
         }

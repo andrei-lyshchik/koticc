@@ -91,7 +91,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             body = functionDeclaration.body?.let {
                 functionDeclaration.parameters.forEach { parameter ->
                     symbolTable[parameter.name] = SymbolWithLocation(
-                        value = Symbol.Variable(type = Type.Integer, attributes = VariableAttributes.Local),
+                        value = Symbol.Variable(type = Type.Int, attributes = VariableAttributes.Local),
                         location = functionDeclaration.location,
                     )
                 }
@@ -173,7 +173,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
 
         symbolTable[declaration.name] = SymbolWithLocation(
             value = Symbol.Variable(
-                type = Type.Integer,
+                type = Type.Int,
                 attributes = VariableAttributes.Static(
                     initialValue = initialValue,
                     global = global,
@@ -226,7 +226,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     null -> {
                         symbolTable[variableDeclaration.name] = SymbolWithLocation(
                             value = Symbol.Variable(
-                                type = Type.Integer,
+                                type = Type.Int,
                                 attributes = VariableAttributes.Static(
                                     initialValue = InitialValue.NoInitializer,
                                     global = true,
@@ -254,7 +254,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 }
                 symbolTable[variableDeclaration.name] = SymbolWithLocation(
                     value = Symbol.Variable(
-                        type = Type.Integer,
+                        type = Type.Int,
                         attributes = VariableAttributes.Static(
                             initialValue = initialValue,
                             global = false,
@@ -264,7 +264,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 )
             }
             null -> {
-                val variableType = Type.Integer
+                val variableType = Type.Int
                 symbolTable[variableDeclaration.name] = SymbolWithLocation(
                     value = Symbol.Variable(type = variableType, attributes = VariableAttributes.Local),
                     location = variableDeclaration.location,
@@ -363,26 +363,26 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 expression.copy(
                     left = typecheckExpression(expression.left).bind(),
                     right = typecheckExpression(expression.right).bind(),
-                ).ofType(Type.Integer)
+                ).ofType(Type.Int)
             }
             is AST.Expression.Binary -> {
                 expression.copy(
                     left = typecheckExpression(expression.left).bind(),
                     right = typecheckExpression(expression.right).bind(),
-                ).ofType(Type.Integer)
+                ).ofType(Type.Int)
             }
             is AST.Expression.CompoundAssignment -> {
                 expression.copy(
                     left = typecheckExpression(expression.left).bind(),
                     right = typecheckExpression(expression.right).bind(),
-                ).ofType(Type.Integer)
+                ).ofType(Type.Int)
             }
             is AST.Expression.Conditional -> {
                 expression.copy(
                     condition = typecheckExpression(expression.condition).bind(),
                     thenExpression = typecheckExpression(expression.thenExpression).bind(),
                     elseExpression = typecheckExpression(expression.elseExpression).bind(),
-                ).ofType(Type.Integer)
+                ).ofType(Type.Int)
             }
             is AST.Expression.FunctionCall -> {
                 val functionSymbol = symbolTable[expression.name]
@@ -400,27 +400,27 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 }
                 expression.copy(
                     arguments = expression.arguments.map { typecheckExpression(it).bind() },
-                ).ofType(Type.Integer)
+                ).ofType(Type.Int)
             }
             is AST.Expression.Constant -> {
-                expression.ofType(Type.Integer)
+                expression.ofType(Type.Int)
             }
             is AST.Expression.Postfix -> {
                 expression.copy(
                     operand = typecheckExpression(expression.operand).bind(),
-                ).ofType(Type.Integer)
+                ).ofType(Type.Int)
             }
             is AST.Expression.Unary -> {
                 expression.copy(
                     operand = typecheckExpression(expression.operand).bind(),
-                ).ofType(Type.Integer)
+                ).ofType(Type.Int)
             }
             is AST.Expression.Variable -> {
                 val type = symbolTable[expression.name]
                 ensure(type?.value is Symbol.Variable) {
                     SemanticAnalysisError("'${originalIdentifierName(expression.name)}' is not a variable", expression.location)
                 }
-                expression.ofType(Type.Integer)
+                expression.ofType(Type.Int)
             }
         }
     }

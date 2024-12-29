@@ -96,7 +96,7 @@ private class Parser(
                 name = nameToken.value.value,
                 parameters = parameters.map { it.value },
                 body = body,
-                type = Type.Function(parameters = parameters.map { it.type }, returnType = Type.Integer),
+                type = Type.Function(parameters = parameters.map { it.type }, returnType = Type.Int),
                 storageClass = declarationSpecifiers.storageClass,
                 location = declarationSpecifiers.location,
             ).right()
@@ -113,7 +113,7 @@ private class Parser(
                 val params = mutableListOf<FunctionParameterWithType>()
                 while (true) {
                     expectToken(Token.IntKeyword).bind()
-                    params.add(FunctionParameterWithType(value = expectFunctionParameter().bind(), type = Type.Integer))
+                    params.add(FunctionParameterWithType(value = expectFunctionParameter().bind(), type = Type.Int))
 
                     val peekToken = peekToken()
                     when (peekToken?.value) {
@@ -183,7 +183,7 @@ private class Parser(
                     AST.Declaration.Variable(
                         nameToken.value.value,
                         null,
-                        Type.Integer,
+                        Type.Int,
                         declarationSpecifiers.storageClass,
                         declarationSpecifiers.location,
                     )
@@ -195,7 +195,7 @@ private class Parser(
                     AST.Declaration.Variable(
                         nameToken.value.value,
                         initializer,
-                        Type.Integer,
+                        Type.Int,
                         declarationSpecifiers.storageClass,
                         declarationSpecifiers.location,
                     )
@@ -210,7 +210,7 @@ private class Parser(
                             nameToken.value.value,
                             parameters.map { it.value },
                             body,
-                            Type.Function(parameters = parameters.map { it.type }, returnType = Type.Integer),
+                            Type.Function(parameters = parameters.map { it.type }, returnType = Type.Int),
                             declarationSpecifiers.storageClass,
                             declarationSpecifiers.location,
                         )
@@ -220,7 +220,7 @@ private class Parser(
                             nameToken.value.value,
                             parameters.map { it.value },
                             null,
-                            Type.Function(parameters = parameters.map { it.type }, returnType = Type.Integer),
+                            Type.Function(parameters = parameters.map { it.type }, returnType = Type.Int),
                             declarationSpecifiers.storageClass,
                             declarationSpecifiers.location,
                         )

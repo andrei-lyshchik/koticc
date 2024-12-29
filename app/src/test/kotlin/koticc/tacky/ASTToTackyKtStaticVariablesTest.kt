@@ -22,25 +22,25 @@ class ASTToTackyKtStaticVariablesTest {
             renamedVariableCount = 3,
             symbolTable = mapOf(
                 // No initializer => defined somewhere else, so we should skip it
-                "a" to Type.Integer.toSymbol(
+                "a" to Type.Int.toSymbol(
                     attributes = VariableAttributes.Static(
                         initialValue = InitialValue.NoInitializer,
                         global = true,
                     ),
                 ),
-                "b" to Type.Integer.toSymbol(
+                "b" to Type.Int.toSymbol(
                     attributes = VariableAttributes.Static(
                         initialValue = InitialValue.Tentative,
                         global = true,
                     ),
                 ),
-                "c" to Type.Integer.toSymbol(
+                "c" to Type.Int.toSymbol(
                     attributes = VariableAttributes.Static(
                         initialValue = InitialValue.Constant(2),
                         global = true,
                     ),
                 ),
-                "d" to Type.Integer.toSymbol(
+                "d" to Type.Int.toSymbol(
                     attributes = VariableAttributes.Static(
                         initialValue = InitialValue.Constant(3),
                         global = false,
@@ -65,7 +65,7 @@ class ASTToTackyKtStaticVariablesTest {
     fun `should generate tacky for local static variables`() {
         val program = ValidASTProgram(
             value = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     int("a")
                     int("b") assign 2.e
                     return_("a".e)
@@ -73,14 +73,14 @@ class ASTToTackyKtStaticVariablesTest {
             },
             renamedVariableCount = 3,
             symbolTable = mapOf(
-                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                "a" to Type.Integer.toSymbol(
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                "a" to Type.Int.toSymbol(
                     attributes = VariableAttributes.Static(
                         initialValue = InitialValue.Tentative,
                         global = false,
                     ),
                 ),
-                "b" to Type.Integer.toSymbol(
+                "b" to Type.Int.toSymbol(
                     attributes = VariableAttributes.Static(
                         initialValue = InitialValue.Constant(2),
                         global = false,

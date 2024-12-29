@@ -6,7 +6,7 @@ import koticc.ast.AST
 import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
 import koticc.ast.e
-import koticc.ast.integer
+import koticc.ast.int
 import koticc.ast.plus
 import koticc.ast.program
 import kotlin.test.Test
@@ -16,7 +16,7 @@ class SemanticAnalysisKtStaticVariables {
     @Test
     fun `should pass static specifier`() {
         val program = program {
-            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("i", storageClass = AST.StorageClass.Static) assign 1.e
                 plusAssign("i".e, 1.e)
                 return_("i".e)
@@ -28,16 +28,16 @@ class SemanticAnalysisKtStaticVariables {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        int("i.0", storageClass = AST.StorageClass.Static) assign 1.e.integer()
-                        plusAssign("i.0".e.integer(), 1.e.integer(), type = Type.Integer)
-                        return_("i.0".e.integer())
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        int("i.0", storageClass = AST.StorageClass.Static) assign 1.e.int()
+                        plusAssign("i.0".e.int(), 1.e.int(), type = Type.Int)
+                        return_("i.0".e.int())
                     }
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "i.0" to Type.Integer.toSymbol(
+                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "i.0" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(1),
                             global = false,
@@ -67,12 +67,12 @@ class SemanticAnalysisKtStaticVariables {
                 value = program {
                     int("x", storageClass = AST.StorageClass.Static)
                     int("x", storageClass = AST.StorageClass.Extern)
-                    int("x", storageClass = AST.StorageClass.Static) assign 5.e.integer()
+                    int("x", storageClass = AST.StorageClass.Static) assign 5.e.int()
                     int("x", storageClass = AST.StorageClass.Static)
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
-                    "x" to Type.Integer.toSymbol(
+                    "x" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(5),
                             global = false,
@@ -88,10 +88,10 @@ class SemanticAnalysisKtStaticVariables {
     fun `can refer to static variables from functions with extern`() {
         val program = program {
             int("x", storageClass = AST.StorageClass.Static)
-            function("read_x", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("read_x", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 return_("x".e)
             }
-            function("update_x", Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "new_val") {
+            function("update_x", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "new_val") {
                 // this refers to x already in scope due to extern
                 int("x", storageClass = AST.StorageClass.Extern)
                 assign("x".e, "new_val".e)
@@ -109,31 +109,31 @@ class SemanticAnalysisKtStaticVariables {
             expected = ValidASTProgram(
                 value = program {
                     int("x", storageClass = AST.StorageClass.Static)
-                    function("read_x", type = Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        return_("x".e.integer())
+                    function("read_x", type = Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        return_("x".e.int())
                     }
-                    function("update_x", type = Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer), "new_val.0") {
+                    function("update_x", type = Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "new_val.0") {
                         // this refers to x already in scope due to extern
                         int("x", storageClass = AST.StorageClass.Extern)
-                        assign("x".e.integer(), "new_val.0".e.integer(), type = Type.Integer)
+                        assign("x".e.int(), "new_val.0".e.int(), type = Type.Int)
                     }
                     // x is already in scope, so this refers to that x
                     int("x", storageClass = AST.StorageClass.Extern)
-                    int("x", storageClass = AST.StorageClass.Static) assign 5.e.integer()
+                    int("x", storageClass = AST.StorageClass.Static) assign 5.e.int()
                     // tentative definition can follow a definition with an initializer
                     int("x", storageClass = AST.StorageClass.Static)
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "x" to Type.Integer.toSymbol(
+                    "x" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(5),
                             global = false,
                         ),
                     ),
-                    "read_x" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "update_x" to Type.Function(parameters = listOf(Type.Integer), returnType = Type.Integer).toSymbol(),
-                    "new_val.0" to Type.Integer.toSymbol(),
+                    "read_x" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "update_x" to Type.Function(parameters = listOf(Type.Int), returnType = Type.Int).toSymbol(),
+                    "new_val.0" to Type.Int.toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -161,7 +161,7 @@ class SemanticAnalysisKtStaticVariables {
     @Test
     fun `if local static variable doesn't have initializer it is initialized to 0`() {
         val program = program {
-            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("i", storageClass = AST.StorageClass.Static)
                 return_("i".e)
             }
@@ -172,15 +172,15 @@ class SemanticAnalysisKtStaticVariables {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                         int("i.0", storageClass = AST.StorageClass.Static)
-                        return_("i.0".e.integer())
+                        return_("i.0".e.int())
                     }
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "i.0" to Type.Integer.toSymbol(
+                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "i.0" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(0),
                             global = false,
@@ -195,7 +195,7 @@ class SemanticAnalysisKtStaticVariables {
     @Test
     fun `can't have non local initializers for local static variables`() {
         val program = program {
-            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("i", storageClass = AST.StorageClass.Static) assign (1.e + 2.e)
                 return_("i".e)
             }

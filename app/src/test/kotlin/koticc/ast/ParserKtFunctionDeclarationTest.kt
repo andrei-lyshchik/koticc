@@ -14,7 +14,7 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer))
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int))
             },
             actual = actual,
         )
@@ -31,8 +31,8 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer))
-                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer))
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int))
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int))
             },
             actual = actual,
         )
@@ -48,7 +48,7 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("function", Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer), "a", "b")
+                function("function", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "b")
             },
             actual = actual,
         )
@@ -66,8 +66,8 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer))
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int))
                 }
             },
             actual = actual,
@@ -88,8 +88,8 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                         return_(1.e)
                     }
                 }

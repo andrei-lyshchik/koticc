@@ -3,7 +3,7 @@ package koticc.ast
 sealed interface Type {
     sealed interface Data : Type
 
-    data object Integer : Data
+    data object Int : Data
 
     data class Function(
         val parameters: List<Data>,

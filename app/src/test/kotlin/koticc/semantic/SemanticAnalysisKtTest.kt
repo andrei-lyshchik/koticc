@@ -5,7 +5,7 @@ import arrow.core.right
 import koticc.ast.AST
 import koticc.ast.Type
 import koticc.ast.e
-import koticc.ast.integer
+import koticc.ast.int
 import koticc.ast.program
 import koticc.token.Location
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -33,7 +33,7 @@ class SemanticAnalysisKtTest {
                                         name = "a",
                                         initializer =
                                         AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
-                                        type = Type.Integer,
+                                        type = Type.Int,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -44,7 +44,7 @@ class SemanticAnalysisKtTest {
                                         name = "b",
                                         initializer =
                                         AST.Expression.Constant(AST.IntConstant(2), null, Location(3, 13)),
-                                        type = Type.Integer,
+                                        type = Type.Int,
                                         storageClass = null,
                                         location = Location(3, 5),
                                     ),
@@ -74,7 +74,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -99,8 +99,8 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "a.0",
                                             initializer =
-                                            AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(2, 13)),
-                                            type = Type.Integer,
+                                            AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13)),
+                                            type = Type.Int,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -110,8 +110,8 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "b.1",
                                             initializer =
-                                            AST.Expression.Constant(AST.IntConstant(2), Type.Integer, Location(3, 13)),
-                                            type = Type.Integer,
+                                            AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(3, 13)),
+                                            type = Type.Int,
                                             storageClass = null,
                                             location = Location(3, 5),
                                         ),
@@ -125,23 +125,23 @@ class SemanticAnalysisKtTest {
                                                 left =
                                                 AST.Expression.Variable(
                                                     "a.0",
-                                                    Type.Integer,
+                                                    Type.Int,
                                                     Location(4, 12),
                                                 ),
                                                 right =
                                                 AST.Expression.Variable(
                                                     "b.1",
-                                                    Type.Integer,
+                                                    Type.Int,
                                                     Location(4, 16),
                                                 ),
-                                                type = Type.Integer,
+                                                type = Type.Int,
                                             ),
                                             location = Location(4, 5),
                                         ),
                                     ),
                                 ),
                             ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -149,9 +149,9 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
-                    "b.1" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
+                    "b.1" to Type.Int.toSymbol(),
                 ),
             )
 
@@ -184,7 +184,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -216,7 +216,7 @@ class SemanticAnalysisKtTest {
                                         name = "a",
                                         initializer =
                                         AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
-                                        type = Type.Integer,
+                                        type = Type.Int,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -227,14 +227,14 @@ class SemanticAnalysisKtTest {
                                         name = "a",
                                         initializer =
                                         AST.Expression.Constant(AST.IntConstant(2), null, Location(3, 13)),
-                                        type = Type.Integer,
+                                        type = Type.Int,
                                         storageClass = null,
                                         location = Location(3, 5),
                                     ),
                                 ),
                             ),
                         ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -275,7 +275,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -323,7 +323,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -366,7 +366,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -401,7 +401,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
-                                        type = Type.Integer,
+                                        type = Type.Int,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -419,7 +419,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -443,8 +443,8 @@ class SemanticAnalysisKtTest {
                                         declaration =
                                         AST.Declaration.Variable(
                                             name = "a.0",
-                                            initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(2, 13)),
-                                            type = Type.Integer,
+                                            initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13)),
+                                            type = Type.Int,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -455,14 +455,14 @@ class SemanticAnalysisKtTest {
                                             expression =
                                             AST.Expression.Postfix(
                                                 operator = postfixOperator,
-                                                operand = AST.Expression.Variable("a.0", Type.Integer, Location(3, 5)),
-                                                type = Type.Integer,
+                                                operand = AST.Expression.Variable("a.0", Type.Int, Location(3, 5)),
+                                                type = Type.Int,
                                             ),
                                         ),
                                     ),
                                 ),
                             ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -470,8 +470,8 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
                 ),
             )
 
@@ -496,7 +496,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
-                                        type = Type.Integer,
+                                        type = Type.Int,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -506,7 +506,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "b",
                                         initializer = AST.Expression.Constant(AST.IntConstant(2), null, Location(3, 13)),
-                                        type = Type.Integer,
+                                        type = Type.Int,
                                         storageClass = null,
                                         location = Location(3, 5),
                                     ),
@@ -532,14 +532,14 @@ class SemanticAnalysisKtTest {
                                             ),
                                             type = null,
                                         ),
-                                        type = Type.Integer,
+                                        type = Type.Int,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
                             ),
                         ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -563,8 +563,8 @@ class SemanticAnalysisKtTest {
                                         declaration =
                                         AST.Declaration.Variable(
                                             name = "a.0",
-                                            initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(2, 13)),
-                                            type = Type.Integer,
+                                            initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13)),
+                                            type = Type.Int,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -573,8 +573,8 @@ class SemanticAnalysisKtTest {
                                         declaration =
                                         AST.Declaration.Variable(
                                             name = "b.1",
-                                            initializer = AST.Expression.Constant(AST.IntConstant(2), Type.Integer, Location(3, 13)),
-                                            type = Type.Integer,
+                                            initializer = AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(3, 13)),
+                                            type = Type.Int,
                                             storageClass = null,
                                             location = Location(3, 5),
                                         ),
@@ -589,25 +589,25 @@ class SemanticAnalysisKtTest {
                                                 left =
                                                 AST.Expression.Variable(
                                                     "a.0",
-                                                    Type.Integer,
+                                                    Type.Int,
                                                     Location(2, 13),
                                                 ),
                                                 right =
                                                 AST.Expression.Variable(
                                                     "b.1",
-                                                    Type.Integer,
+                                                    Type.Int,
                                                     Location(2, 17),
                                                 ),
-                                                type = Type.Integer,
+                                                type = Type.Int,
                                             ),
-                                            type = Type.Integer,
+                                            type = Type.Int,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
                                     ),
                                 ),
                             ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -615,10 +615,10 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 3,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
-                    "b.1" to Type.Integer.toSymbol(),
-                    "c.2" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
+                    "b.1" to Type.Int.toSymbol(),
+                    "c.2" to Type.Int.toSymbol(),
                 ),
             )
 
@@ -655,14 +655,14 @@ class SemanticAnalysisKtTest {
                                             ),
                                             type = null,
                                         ),
-                                        type = Type.Integer,
+                                        type = Type.Int,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
                                 ),
                             ),
                         ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -690,23 +690,23 @@ class SemanticAnalysisKtTest {
                                             AST.Expression.Binary(
                                                 operator = AST.BinaryOperator.Add,
                                                 left =
-                                                AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(2, 13)),
+                                                AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13)),
                                                 right =
                                                 AST.Expression.Variable(
                                                     "a.0",
-                                                    Type.Integer,
+                                                    Type.Int,
                                                     Location(2, 17),
                                                 ),
-                                                type = Type.Integer,
+                                                type = Type.Int,
                                             ),
-                                            type = Type.Integer,
+                                            type = Type.Int,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
                                     ),
                                 ),
                             ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -714,8 +714,8 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
                 ),
             )
 
@@ -741,7 +741,7 @@ class SemanticAnalysisKtTest {
                                         name = "a",
                                         initializer =
                                         AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
-                                        type = Type.Integer,
+                                        type = Type.Int,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -796,7 +796,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -821,8 +821,8 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "a.0",
                                             initializer =
-                                            AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(2, 13)),
-                                            type = Type.Integer,
+                                            AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13)),
+                                            type = Type.Int,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -836,12 +836,12 @@ class SemanticAnalysisKtTest {
                                                 left =
                                                 AST.Expression.Variable(
                                                     "a.0",
-                                                    Type.Integer,
+                                                    Type.Int,
                                                     Location(3, 13),
                                                 ),
                                                 right =
-                                                AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(3, 17)),
-                                                type = Type.Integer,
+                                                AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(3, 17)),
+                                                type = Type.Int,
                                             ),
                                             thenStatement =
                                             AST.Statement.Expression(
@@ -850,12 +850,12 @@ class SemanticAnalysisKtTest {
                                                     left =
                                                     AST.Expression.Variable(
                                                         "a.0",
-                                                        Type.Integer,
+                                                        Type.Int,
                                                         Location(4, 5),
                                                     ),
                                                     right =
-                                                    AST.Expression.Constant(AST.IntConstant(2), Type.Integer, Location(4, 9)),
-                                                    type = Type.Integer,
+                                                    AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(4, 9)),
+                                                    type = Type.Int,
                                                 ),
                                             ),
                                             elseStatement =
@@ -865,19 +865,19 @@ class SemanticAnalysisKtTest {
                                                     left =
                                                     AST.Expression.Variable(
                                                         "a.0",
-                                                        Type.Integer,
+                                                        Type.Int,
                                                         Location(5, 5),
                                                     ),
                                                     right =
-                                                    AST.Expression.Constant(AST.IntConstant(3), Type.Integer, Location(5, 9)),
-                                                    type = Type.Integer,
+                                                    AST.Expression.Constant(AST.IntConstant(3), Type.Int, Location(5, 9)),
+                                                    type = Type.Int,
                                                 ),
                                             ),
                                         ),
                                     ),
                                 ),
                             ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -885,8 +885,8 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
                 ),
             )
 
@@ -911,7 +911,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
-                                        type = Type.Integer,
+                                        type = Type.Int,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -921,7 +921,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "b",
                                         initializer = null,
-                                        type = Type.Integer,
+                                        type = Type.Int,
                                         storageClass = null,
                                         location = Location(3, 5),
                                     ),
@@ -956,7 +956,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -980,8 +980,8 @@ class SemanticAnalysisKtTest {
                                         declaration =
                                         AST.Declaration.Variable(
                                             name = "a.0",
-                                            initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(2, 13)),
-                                            type = Type.Integer,
+                                            initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13)),
+                                            type = Type.Int,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -991,7 +991,7 @@ class SemanticAnalysisKtTest {
                                         AST.Declaration.Variable(
                                             name = "b.1",
                                             initializer = null,
-                                            type = Type.Integer,
+                                            type = Type.Int,
                                             storageClass = null,
                                             location = Location(3, 5),
                                         ),
@@ -1004,29 +1004,29 @@ class SemanticAnalysisKtTest {
                                                 condition =
                                                 AST.Expression.Binary(
                                                     operator = AST.BinaryOperator.Equal,
-                                                    left = AST.Expression.Variable("a.0", Type.Integer, Location(3, 13)),
-                                                    right = AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(3, 17)),
-                                                    type = Type.Integer,
+                                                    left = AST.Expression.Variable("a.0", Type.Int, Location(3, 13)),
+                                                    right = AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(3, 17)),
+                                                    type = Type.Int,
                                                 ),
                                                 thenExpression =
                                                 AST.Expression.Assignment(
-                                                    left = AST.Expression.Variable("b.1", Type.Integer, Location(4, 5)),
-                                                    right = AST.Expression.Constant(AST.IntConstant(2), Type.Integer, Location(4, 9)),
-                                                    type = Type.Integer,
+                                                    left = AST.Expression.Variable("b.1", Type.Int, Location(4, 5)),
+                                                    right = AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(4, 9)),
+                                                    type = Type.Int,
                                                 ),
                                                 elseExpression =
                                                 AST.Expression.Assignment(
-                                                    left = AST.Expression.Variable("b.1", Type.Integer, Location(5, 5)),
-                                                    right = AST.Expression.Constant(AST.IntConstant(3), Type.Integer, Location(5, 9)),
-                                                    type = Type.Integer,
+                                                    left = AST.Expression.Variable("b.1", Type.Int, Location(5, 5)),
+                                                    right = AST.Expression.Constant(AST.IntConstant(3), Type.Int, Location(5, 9)),
+                                                    type = Type.Int,
                                                 ),
-                                                type = Type.Integer,
+                                                type = Type.Int,
                                             ),
                                         ),
                                     ),
                                 ),
                             ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -1034,9 +1034,9 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
-                    "b.1" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
+                    "b.1" to Type.Int.toSymbol(),
                 ),
             )
 
@@ -1061,7 +1061,7 @@ class SemanticAnalysisKtTest {
                                     AST.Declaration.Variable(
                                         name = "a",
                                         initializer = AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
-                                        type = Type.Integer,
+                                        type = Type.Int,
                                         storageClass = null,
                                         location = Location(2, 5),
                                     ),
@@ -1080,8 +1080,8 @@ class SemanticAnalysisKtTest {
                                                         AST.Declaration.Variable(
                                                             name = "a",
                                                             initializer =
-                                                            AST.Expression.Constant(AST.IntConstant(2), Type.Integer, Location(4, 13)),
-                                                            type = Type.Integer,
+                                                            AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(4, 13)),
+                                                            type = Type.Int,
                                                             storageClass = null,
                                                             location = Location(4, 5),
                                                         ),
@@ -1094,7 +1094,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -1118,8 +1118,8 @@ class SemanticAnalysisKtTest {
                                         declaration =
                                         AST.Declaration.Variable(
                                             name = "a.0",
-                                            initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(2, 13)),
-                                            type = Type.Integer,
+                                            initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13)),
+                                            type = Type.Int,
                                             storageClass = null,
                                             location = Location(2, 5),
                                         ),
@@ -1127,7 +1127,7 @@ class SemanticAnalysisKtTest {
                                     AST.BlockItem.Statement(
                                         statement =
                                         AST.Statement.If(
-                                            condition = AST.Expression.Constant(AST.IntConstant(1), Type.Integer, Location(3, 5)),
+                                            condition = AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(3, 5)),
                                             thenStatement =
                                             AST.Statement.Compound(
                                                 AST.Block(
@@ -1138,8 +1138,8 @@ class SemanticAnalysisKtTest {
                                                             AST.Declaration.Variable(
                                                                 name = "a.1",
                                                                 initializer =
-                                                                AST.Expression.Constant(AST.IntConstant(2), Type.Integer, Location(4, 13)),
-                                                                type = Type.Integer,
+                                                                AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(4, 13)),
+                                                                type = Type.Int,
                                                                 storageClass = null,
                                                                 location = Location(4, 5),
                                                             ),
@@ -1152,7 +1152,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -1160,9 +1160,9 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
-                    "a.1" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
+                    "a.1" to Type.Int.toSymbol(),
                 ),
             )
 
@@ -1172,7 +1172,7 @@ class SemanticAnalysisKtTest {
     @Test
     fun `should allow using variable from outer scope`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 if_(1.e) {
                     assign("a".e, 2.e)
@@ -1182,17 +1182,17 @@ class SemanticAnalysisKtTest {
 
         val expected = ValidASTProgram(
             value = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                    int("a.0") assign 1.e.integer()
-                    if_(1.e.integer()) {
-                        assign("a.0".e.integer(), 2.e.integer(), type = Type.Integer)
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    int("a.0") assign 1.e.int()
+                    if_(1.e.int()) {
+                        assign("a.0".e.int(), 2.e.int(), type = Type.Int)
                     }
                 }
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                "a.0" to Type.Integer.toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                "a.0" to Type.Int.toSymbol(),
             ),
         )
 
@@ -1202,7 +1202,7 @@ class SemanticAnalysisKtTest {
     @Test
     fun `should allow first using and then shadowing variable from outer scope`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 nested {
                     assign("a".e, 1.e)
@@ -1213,19 +1213,19 @@ class SemanticAnalysisKtTest {
 
         val expected = ValidASTProgram(
             value = program {
-                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                    int("a.0") assign 1.e.integer()
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    int("a.0") assign 1.e.int()
                     nested {
-                        assign("a.0".e.integer(), 1.e.integer(), type = Type.Integer)
-                        int("a.1") assign 2.e.integer()
+                        assign("a.0".e.int(), 1.e.int(), type = Type.Int)
+                        int("a.1") assign 2.e.int()
                     }
                 }
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                "a.0" to Type.Integer.toSymbol(),
-                "a.1" to Type.Integer.toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                "a.0" to Type.Int.toSymbol(),
+                "a.1" to Type.Int.toSymbol(),
             ),
         )
 
@@ -1235,7 +1235,7 @@ class SemanticAnalysisKtTest {
     @Test
     fun `should not allow declaring variable multiple times in nested scope`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 nested {
                     int("a") assign 2.e

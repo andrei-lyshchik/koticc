@@ -5,7 +5,7 @@ import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.gt
-import koticc.ast.integer
+import koticc.ast.int
 import koticc.ast.lt
 import koticc.ast.program
 import org.junit.jupiter.api.Test
@@ -15,7 +15,7 @@ class SemanticAnalysisKtWhileTest {
     @Test
     fun `should assign labels to while`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 while_("a".e lt 10.e) {
                     plusAssign("a".e, 1.e)
@@ -32,21 +32,21 @@ class SemanticAnalysisKtWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        int("a.0") assign 1.e.integer()
-                        while_(("a.0".e.integer() lt 10.e.integer()).integer(), loopId = 0) {
-                            plusAssign("a.0".e.integer(), 1.e.integer(), type = Type.Integer)
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        int("a.0") assign 1.e.int()
+                        while_(("a.0".e.int() lt 10.e.int()).int(), loopId = 0) {
+                            plusAssign("a.0".e.int(), 1.e.int(), type = Type.Int)
                         }
-                        while_(("a.0".e.integer() lt 40.e.integer()).integer(), loopId = 1) {
-                            plusMultiply("a.0".e.integer(), 2.e.integer(), type = Type.Integer)
+                        while_(("a.0".e.int() lt 40.e.int()).int(), loopId = 1) {
+                            plusMultiply("a.0".e.int(), 2.e.int(), type = Type.Int)
                         }
-                        return_("a.0".e.integer())
+                        return_("a.0".e.int())
                     }
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -56,7 +56,7 @@ class SemanticAnalysisKtWhileTest {
     @Test
     fun `should assign labels to break continue inside while`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 while_("a".e lt 10.e) {
                     plusAssign("a".e, 1.e)
@@ -85,33 +85,33 @@ class SemanticAnalysisKtWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        int("a.0") assign 1.e.integer()
-                        while_(("a.0".e.integer() lt 10.e.integer()).integer(), loopId = 0) {
-                            plusAssign("a.0".e.integer(), 1.e.integer(), type = Type.Integer)
-                            if_(("a.0".e.integer() eq 5.e.integer()).integer()) {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        int("a.0") assign 1.e.int()
+                        while_(("a.0".e.int() lt 10.e.int()).int(), loopId = 0) {
+                            plusAssign("a.0".e.int(), 1.e.int(), type = Type.Int)
+                            if_(("a.0".e.int() eq 5.e.int()).int()) {
                                 breakLoop(0)
                             }
-                            if_(("a.0".e.integer() eq 3.e.integer()).integer()) {
+                            if_(("a.0".e.int() eq 3.e.int()).int()) {
                                 continue_(0)
                             }
                         }
-                        while_(("a.0".e.integer() lt 40.e.integer()).integer(), loopId = 1) {
-                            plusAssign("a.0".e.integer(), 1.e.integer(), type = Type.Integer)
-                            if_(("a.0".e.integer() eq 10.e.integer()).integer()) {
+                        while_(("a.0".e.int() lt 40.e.int()).int(), loopId = 1) {
+                            plusAssign("a.0".e.int(), 1.e.int(), type = Type.Int)
+                            if_(("a.0".e.int() eq 10.e.int()).int()) {
                                 breakLoop(1)
                             }
-                            if_(("a.0".e.integer() eq 8.e.integer()).integer()) {
+                            if_(("a.0".e.int() eq 8.e.int()).int()) {
                                 continue_(1)
                             }
                         }
-                        return_("a.0".e.integer())
+                        return_("a.0".e.int())
                     }
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -121,7 +121,7 @@ class SemanticAnalysisKtWhileTest {
     @Test
     fun `should assign labels to break continue for nested whiles`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 while_(1.e) {
                     plusAssign("a".e, 1.e)
@@ -144,27 +144,27 @@ class SemanticAnalysisKtWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        int("a.0") assign 1.e.integer()
-                        while_(1.e.integer(), loopId = 0) {
-                            plusAssign("a.0".e.integer(), 1.e.integer(), type = Type.Integer)
-                            while_(1.e.integer(), loopId = 1) {
-                                plusAssign("a.0".e.integer(), 2.e.integer(), type = Type.Integer)
-                                if_(("a.0".e.integer() gt 10.e.integer()).integer()) {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        int("a.0") assign 1.e.int()
+                        while_(1.e.int(), loopId = 0) {
+                            plusAssign("a.0".e.int(), 1.e.int(), type = Type.Int)
+                            while_(1.e.int(), loopId = 1) {
+                                plusAssign("a.0".e.int(), 2.e.int(), type = Type.Int)
+                                if_(("a.0".e.int() gt 10.e.int()).int()) {
                                     breakLoop(1)
                                 }
                             }
-                            if_(("a.0".e.integer() gt 20.e.integer()).integer()) {
+                            if_(("a.0".e.int() gt 20.e.int()).int()) {
                                 breakLoop(0)
                             }
                         }
-                        return_("a.0".e.integer())
+                        return_("a.0".e.int())
                     }
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
                 ),
             ).right(),
             actual = actual,

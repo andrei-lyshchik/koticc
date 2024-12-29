@@ -13,7 +13,7 @@ class SemanticAnalysisKtBreakContinueTest {
     @Test
     fun `should not allow break outside of loop`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 if_(1.e eq 1.e) {
                     break_()
                 }
@@ -34,7 +34,7 @@ class SemanticAnalysisKtBreakContinueTest {
     @Test
     fun `should not allow continue outside of loop`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 if_(1.e eq 1.e) {
                     continue_()
                 }

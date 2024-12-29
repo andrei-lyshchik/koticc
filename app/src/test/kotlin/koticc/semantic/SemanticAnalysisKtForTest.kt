@@ -8,7 +8,7 @@ import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.initDecl
-import koticc.ast.integer
+import koticc.ast.int
 import koticc.ast.lt
 import koticc.ast.plusAssign
 import koticc.ast.program
@@ -21,7 +21,7 @@ class SemanticAnalysisKtForTest {
     @Test
     fun `should assign labels to for`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 for_(
                     initDecl("i", 0.e),
@@ -39,24 +39,24 @@ class SemanticAnalysisKtForTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        int("a.0") assign 1.e.integer()
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        int("a.0") assign 1.e.int()
                         for_(
-                            initDecl("i.1", 0.e.integer()),
-                            ("i.1".e.integer() lt 10.e.integer()).integer(),
-                            ("i.1".e.integer() plusAssign 1.e.integer()).integer(),
+                            initDecl("i.1", 0.e.int()),
+                            ("i.1".e.int() lt 10.e.int()).int(),
+                            ("i.1".e.int() plusAssign 1.e.int()).int(),
                             loopId = 0,
                         ) {
-                            plusAssign("a.0".e.integer(), "i.1".e.integer(), type = Type.Integer)
+                            plusAssign("a.0".e.int(), "i.1".e.int(), type = Type.Int)
                         }
-                        return_("a.0".e.integer())
+                        return_("a.0".e.int())
                     }
                 },
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
-                    "i.1" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
+                    "i.1" to Type.Int.toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -66,7 +66,7 @@ class SemanticAnalysisKtForTest {
     @Test
     fun `should assign labels for break continue inside for`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 for_(
                     initDecl("i", 0.e),
@@ -103,45 +103,45 @@ class SemanticAnalysisKtForTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        int("a.0") assign 1.e.integer()
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        int("a.0") assign 1.e.int()
                         for_(
-                            initDecl("i.1", 0.e.integer()),
-                            ("i.1".e.integer() lt 10.e.integer()).integer(),
-                            ("i.1".e.integer() plusAssign 1.e.integer()).integer(),
+                            initDecl("i.1", 0.e.int()),
+                            ("i.1".e.int() lt 10.e.int()).int(),
+                            ("i.1".e.int() plusAssign 1.e.int()).int(),
                             loopId = 0,
                         ) {
-                            plusAssign("a.0".e.integer(), "i.1".e.integer(), type = Type.Integer)
-                            if_(("a.0".e.integer() eq 5.e.integer()).integer()) {
+                            plusAssign("a.0".e.int(), "i.1".e.int(), type = Type.Int)
+                            if_(("a.0".e.int() eq 5.e.int()).int()) {
                                 breakLoop(0)
                             }
-                            if_(("a.0".e.integer() eq 3.e.integer()).integer()) {
+                            if_(("a.0".e.int() eq 3.e.int()).int()) {
                                 continue_(0)
                             }
                         }
                         for_(
-                            initDecl("i.2", 0.e.integer()),
-                            ("i.2".e.integer() lt 10.e.integer()).integer(),
-                            ("i.2".e.integer() plusAssign 1.e.integer()).integer(),
+                            initDecl("i.2", 0.e.int()),
+                            ("i.2".e.int() lt 10.e.int()).int(),
+                            ("i.2".e.int() plusAssign 1.e.int()).int(),
                             loopId = 1,
                         ) {
-                            plusAssign("a.0".e.integer(), "i.2".e.integer(), type = Type.Integer)
-                            if_(("a.0".e.integer() eq 20.e.integer()).integer()) {
+                            plusAssign("a.0".e.int(), "i.2".e.int(), type = Type.Int)
+                            if_(("a.0".e.int() eq 20.e.int()).int()) {
                                 breakLoop(1)
                             }
-                            if_(("a.0".e.integer() eq 10.e.integer()).integer()) {
+                            if_(("a.0".e.int() eq 10.e.int()).int()) {
                                 continue_(1)
                             }
                         }
-                        return_("a.0".e.integer())
+                        return_("a.0".e.int())
                     }
                 },
                 renamedVariableCount = 3,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
-                    "i.1" to Type.Integer.toSymbol(),
-                    "i.2" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
+                    "i.1" to Type.Int.toSymbol(),
+                    "i.2" to Type.Int.toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -151,7 +151,7 @@ class SemanticAnalysisKtForTest {
     @Test
     fun `should assign loop labels for nested fors`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 for_(
                     initDecl("i", 0.e),
@@ -188,45 +188,45 @@ class SemanticAnalysisKtForTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        int("a.0") assign 1.e.integer()
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        int("a.0") assign 1.e.int()
                         for_(
-                            initDecl("i.1", 0.e.integer()),
-                            ("i.1".e.integer() lt 10.e.integer()).integer(),
-                            ("i.1".e.integer() plusAssign 1.e.integer()).integer(),
+                            initDecl("i.1", 0.e.int()),
+                            ("i.1".e.int() lt 10.e.int()).int(),
+                            ("i.1".e.int() plusAssign 1.e.int()).int(),
                             loopId = 0,
                         ) {
-                            plusAssign("a.0".e.integer(), "i.1".e.integer(), type = Type.Integer)
+                            plusAssign("a.0".e.int(), "i.1".e.int(), type = Type.Int)
                             for_(
-                                initDecl("j.2", 0.e.integer()),
-                                ("j.2".e.integer() lt 10.e.integer()).integer(),
-                                ("j.2".e.integer() plusAssign 1.e.integer()).integer(),
+                                initDecl("j.2", 0.e.int()),
+                                ("j.2".e.int() lt 10.e.int()).int(),
+                                ("j.2".e.int() plusAssign 1.e.int()).int(),
                                 loopId = 1,
                             ) {
-                                plusAssign("a.0".e.integer(), "j.2".e.integer(), type = Type.Integer)
-                                if_(("a.0".e.integer() eq 5.e.integer()).integer()) {
+                                plusAssign("a.0".e.int(), "j.2".e.int(), type = Type.Int)
+                                if_(("a.0".e.int() eq 5.e.int()).int()) {
                                     breakLoop(1)
                                 }
-                                if_(("a.0".e.integer() eq 3.e.integer()).integer()) {
+                                if_(("a.0".e.int() eq 3.e.int()).int()) {
                                     continue_(1)
                                 }
                             }
-                            if_(("a.0".e.integer() eq 20.e.integer()).integer()) {
+                            if_(("a.0".e.int() eq 20.e.int()).int()) {
                                 breakLoop(0)
                             }
-                            if_(("a.0".e.integer() eq 10.e.integer()).integer()) {
+                            if_(("a.0".e.int() eq 10.e.int()).int()) {
                                 continue_(0)
                             }
                         }
-                        return_("a.0".e.integer())
+                        return_("a.0".e.int())
                     }
                 },
                 renamedVariableCount = 3,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
-                    "i.1" to Type.Integer.toSymbol(),
-                    "j.2" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
+                    "i.1" to Type.Int.toSymbol(),
+                    "j.2" to Type.Int.toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -236,7 +236,7 @@ class SemanticAnalysisKtForTest {
     @Test
     fun `should create nested scope in for header`() {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 int("i") assign 2.e
                 for_(
@@ -259,28 +259,28 @@ class SemanticAnalysisKtForTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        int("a.0") assign 1.e.integer()
-                        int("i.1") assign 2.e.integer()
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        int("a.0") assign 1.e.int()
+                        int("i.1") assign 2.e.int()
                         for_(
-                            initDecl("i.2", 3.e.integer()),
-                            ("i.2".e.integer() lt 10.e.integer()).integer(),
-                            ("i.2".e.integer() plusAssign 1.e.integer()).integer(),
+                            initDecl("i.2", 3.e.int()),
+                            ("i.2".e.int() lt 10.e.int()).int(),
+                            ("i.2".e.int() plusAssign 1.e.int()).int(),
                             loopId = 0,
                         ) {
-                            int("i.3") assign 4.e.integer()
-                            plusAssign("a.0".e.integer(), "i.3".e.integer(), type = Type.Integer)
+                            int("i.3") assign 4.e.int()
+                            plusAssign("a.0".e.int(), "i.3".e.int(), type = Type.Int)
                         }
-                        return_("a.0".e.integer())
+                        return_("a.0".e.int())
                     }
                 },
                 renamedVariableCount = 4,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "a.0" to Type.Integer.toSymbol(),
-                    "i.1" to Type.Integer.toSymbol(),
-                    "i.2" to Type.Integer.toSymbol(),
-                    "i.3" to Type.Integer.toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
+                    "i.1" to Type.Int.toSymbol(),
+                    "i.2" to Type.Int.toSymbol(),
+                    "i.3" to Type.Int.toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -291,7 +291,7 @@ class SemanticAnalysisKtForTest {
     @EnumSource(AST.StorageClass::class)
     fun `can't use static or extern in for initializer`(storageClass: AST.StorageClass) {
         val input = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 for_(
                     initDecl("i", 3.e).let {
                         it.copy(

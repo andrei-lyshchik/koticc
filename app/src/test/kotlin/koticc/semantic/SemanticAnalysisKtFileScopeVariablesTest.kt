@@ -6,7 +6,7 @@ import koticc.ast.AST
 import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
 import koticc.ast.e
-import koticc.ast.integer
+import koticc.ast.int
 import koticc.ast.plus
 import koticc.ast.program
 import org.junit.jupiter.api.Test
@@ -26,17 +26,17 @@ class SemanticAnalysisKtFileScopeVariablesTest {
             expected = ValidASTProgram(
                 value = program {
                     int("a")
-                    int("b") assign 1.e.integer()
+                    int("b") assign 1.e.int()
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
-                    "a" to Type.Integer.toSymbol(
+                    "a" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Tentative,
                             global = true,
                         ),
                     ),
-                    "b" to Type.Integer.toSymbol(
+                    "b" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(1),
                             global = true,
@@ -51,7 +51,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
     @Test
     fun `should be possible to refer to variable from outer scope with extern and do it multiple times`() {
         val program = program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("foo") assign 1.e
                 if_("foo".e) {
                     int("foo", storageClass = AST.StorageClass.Extern)
@@ -67,21 +67,21 @@ class SemanticAnalysisKtFileScopeVariablesTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
-                        int("foo.0") assign 1.e.integer()
-                        if_("foo.0".e.integer()) {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        int("foo.0") assign 1.e.int()
+                        if_("foo.0".e.int()) {
                             int("foo", storageClass = AST.StorageClass.Extern)
                             int("foo", storageClass = AST.StorageClass.Extern)
-                            return_("foo".e.integer())
+                            return_("foo".e.int())
                         }
                     }
-                    int("foo", storageClass = AST.StorageClass.Extern) assign 2.e.integer()
+                    int("foo", storageClass = AST.StorageClass.Extern) assign 2.e.int()
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
-                    "foo.0" to Type.Integer.toSymbol(attributes = VariableAttributes.Local),
-                    "foo" to Type.Integer.toSymbol(
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "foo.0" to Type.Int.toSymbol(attributes = VariableAttributes.Local),
+                    "foo" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(2),
                             global = true,
@@ -113,7 +113,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
     @Test
     fun `can't declare a file-scope variable if function with the same name is already declared`() {
         val program = program {
-            function("a", Type.Function(parameters = emptyList(), returnType = Type.Integer))
+            function("a", Type.Function(parameters = emptyList(), returnType = Type.Int))
             int("a")
         }
 
