@@ -11,27 +11,27 @@ import kotlin.test.assertEquals
 class ParserKtStorageClassSpecifiers {
     class VariableStorageClassSpecifiersTestCases : VarargArgumentsProvider(
         "int a = 1" to program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a") assign 1.e
             }
         },
         "static int a = 1" to program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a", storageClass = AST.StorageClass.Static) assign 1.e
             }
         },
         "int static a = 1" to program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a", storageClass = AST.StorageClass.Static) assign 1.e
             }
         },
         "int extern a = 1" to program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a", storageClass = AST.StorageClass.Extern) assign 1.e
             }
         },
         "extern int a = 1" to program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a", storageClass = AST.StorageClass.Extern) assign 1.e
             }
         },
@@ -59,19 +59,19 @@ class ParserKtStorageClassSpecifiers {
 
     class FunctionDeclarationStorageClassSpecifiersTestCases : VarargArgumentsProvider(
         "int foo(void)" to program {
-            function("foo")
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer))
         },
         "static int foo(void)" to program {
-            function("foo", storageClass = AST.StorageClass.Static)
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Static)
         },
         "int static foo(void)" to program {
-            function("foo", storageClass = AST.StorageClass.Static)
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Static)
         },
         "int extern foo(void)" to program {
-            function("foo", storageClass = AST.StorageClass.Extern)
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Extern)
         },
         "extern int foo(void)" to program {
-            function("foo", storageClass = AST.StorageClass.Extern)
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer), storageClass = AST.StorageClass.Extern)
         },
     )
 

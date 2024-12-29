@@ -74,6 +74,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -140,6 +141,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -147,7 +149,7 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                     "b.1" to Type.Integer.toSymbol(),
                 ),
@@ -182,6 +184,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -231,6 +234,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -271,6 +275,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -318,6 +323,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -360,6 +366,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -412,6 +419,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -454,6 +462,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -461,7 +470,7 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                 ),
             )
@@ -530,6 +539,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -597,6 +607,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -604,7 +615,7 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 3,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                     "b.1" to Type.Integer.toSymbol(),
                     "c.2" to Type.Integer.toSymbol(),
@@ -651,6 +662,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -694,6 +706,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -701,7 +714,7 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                 ),
             )
@@ -783,6 +796,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -863,6 +877,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -870,7 +885,7 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                 ),
             )
@@ -941,6 +956,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -1010,6 +1026,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -1017,7 +1034,7 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                     "b.1" to Type.Integer.toSymbol(),
                 ),
@@ -1077,6 +1094,7 @@ class SemanticAnalysisKtTest {
                                 ),
                             ),
                         ),
+                        type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                         storageClass = null,
                         location = Location(1, 1),
                     ),
@@ -1134,6 +1152,7 @@ class SemanticAnalysisKtTest {
                                     ),
                                 ),
                             ),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                             storageClass = null,
                             location = Location(1, 1),
                         ),
@@ -1141,7 +1160,7 @@ class SemanticAnalysisKtTest {
                 ),
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                     "a.1" to Type.Integer.toSymbol(),
                 ),
@@ -1153,7 +1172,7 @@ class SemanticAnalysisKtTest {
     @Test
     fun `should allow using variable from outer scope`() {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a") assign 1.e
                 if_(1.e) {
                     assign("a".e, 2.e)
@@ -1163,7 +1182,7 @@ class SemanticAnalysisKtTest {
 
         val expected = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("a.0") assign 1.e.integer()
                     if_(1.e.integer()) {
                         assign("a.0".e.integer(), 2.e.integer(), type = Type.Integer)
@@ -1172,7 +1191,7 @@ class SemanticAnalysisKtTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "a.0" to Type.Integer.toSymbol(),
             ),
         )
@@ -1183,7 +1202,7 @@ class SemanticAnalysisKtTest {
     @Test
     fun `should allow first using and then shadowing variable from outer scope`() {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a") assign 1.e
                 nested {
                     assign("a".e, 1.e)
@@ -1194,7 +1213,7 @@ class SemanticAnalysisKtTest {
 
         val expected = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("a.0") assign 1.e.integer()
                     nested {
                         assign("a.0".e.integer(), 1.e.integer(), type = Type.Integer)
@@ -1204,7 +1223,7 @@ class SemanticAnalysisKtTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "a.0" to Type.Integer.toSymbol(),
                 "a.1" to Type.Integer.toSymbol(),
             ),
@@ -1216,7 +1235,7 @@ class SemanticAnalysisKtTest {
     @Test
     fun `should not allow declaring variable multiple times in nested scope`() {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a") assign 1.e
                 nested {
                     int("a") assign 2.e

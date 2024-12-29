@@ -41,9 +41,16 @@ object AST {
             val name: String,
             val parameters: List<FunctionParameter>,
             val body: Block?,
+            val type: Type.Function,
             val storageClass: StorageClass?,
             override val location: Location,
-        ) : Declaration
+        ) : Declaration {
+            init {
+                require(parameters.size == type.parameters.size) {
+                    "Bug: function $name has ${parameters.size} parameters, but its type has ${type.parameters.size} parameters"
+                }
+            }
+        }
     }
 
     enum class StorageClass {

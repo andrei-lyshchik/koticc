@@ -43,13 +43,12 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     private fun typecheckFunctionDeclaration(
         functionDeclaration: AST.Declaration.Function,
     ): Either<SemanticAnalysisError, AST.Declaration.Function> = either {
-        val functionType = Type.Function(parameterCount = functionDeclaration.parameters.size)
         val global = functionDeclaration.storageClass != AST.StorageClass.Static
         val existingSymbol = symbolTable[functionDeclaration.name]
         val (previouslyDefined, previouslyGlobal) = when (existingSymbol?.value) {
             is Symbol.Function -> {
                 val bothDefined = existingSymbol.value.defined && functionDeclaration.body != null
-                val conflictingTypes = existingSymbol.value.type != functionType
+                val conflictingTypes = existingSymbol.value.type != functionDeclaration.type
                 if (bothDefined || conflictingTypes) {
                     raise(
                         SemanticAnalysisError(
@@ -82,7 +81,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         }
         symbolTable[functionDeclaration.name] = SymbolWithLocation(
             value = Symbol.Function(
-                type = functionType,
+                type = functionDeclaration.type,
                 defined = functionDeclaration.body != null || previouslyDefined,
                 global = previouslyGlobal ?: global,
             ),
@@ -396,8 +395,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                         ),
                     )
                 }
-                ensure(functionType.type.parameterCount == expression.arguments.size) {
-                    SemanticAnalysisError("function '${originalIdentifierName(expression.name)}' expects ${functionSymbol.value.type.parameterCount} arguments, but ${expression.arguments.size} were provided", expression.location)
+                ensure(functionType.type.parameters.size == expression.arguments.size) {
+                    SemanticAnalysisError("function '${originalIdentifierName(expression.name)}' expects ${functionSymbol.value.type.parameters.size} arguments, but ${expression.arguments.size} were provided", expression.location)
                 }
                 expression.copy(
                     arguments = expression.arguments.map { typecheckExpression(it).bind() },

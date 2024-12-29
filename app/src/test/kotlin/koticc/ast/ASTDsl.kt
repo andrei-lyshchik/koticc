@@ -28,7 +28,7 @@ class ProgramBuilder {
         return variableBuilder
     }
 
-    fun function(name: String, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
+    fun function(name: String, type: Type.Function, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
         val body = if (block != null) {
             BlockBuilder().apply(block).build()
         } else {
@@ -39,13 +39,14 @@ class ProgramBuilder {
                 name,
                 parameters.map { AST.FunctionParameter(it, DUMMY_LOCATION) },
                 body,
+                type,
                 null,
                 DUMMY_LOCATION,
             ),
         )
     }
 
-    fun function(name: String, storageClass: AST.StorageClass, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
+    fun function(name: String, type: Type.Function, storageClass: AST.StorageClass, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
         val body = if (block != null) {
             BlockBuilder().apply(block).build()
         } else {
@@ -56,6 +57,7 @@ class ProgramBuilder {
                 name,
                 parameters.map { AST.FunctionParameter(it, DUMMY_LOCATION) },
                 body,
+                type,
                 storageClass,
                 DUMMY_LOCATION,
             ),
@@ -140,7 +142,7 @@ class BlockBuilder {
         )
     }
 
-    fun function(name: String, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
+    fun function(name: String, type: Type.Function, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
         val body = if (block != null) {
             BlockBuilder().apply(block).build()
         } else {
@@ -152,6 +154,7 @@ class BlockBuilder {
                     name,
                     parameters.map { AST.FunctionParameter(it, DUMMY_LOCATION) },
                     body,
+                    type,
                     null,
                     DUMMY_LOCATION,
                 ),
@@ -159,7 +162,7 @@ class BlockBuilder {
         )
     }
 
-    fun function(name: String, storageClass: AST.StorageClass, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
+    fun function(name: String, type: Type.Function, storageClass: AST.StorageClass, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
         val body = if (block != null) {
             BlockBuilder().apply(block).build()
         } else {
@@ -171,6 +174,7 @@ class BlockBuilder {
                     name,
                     parameters.map { AST.FunctionParameter(it, DUMMY_LOCATION) },
                     body,
+                    type,
                     storageClass,
                     DUMMY_LOCATION,
                 ),

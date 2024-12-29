@@ -16,7 +16,7 @@ class ParserKtBreakContinueTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     break_()
                 }
             },
@@ -36,7 +36,7 @@ class ParserKtBreakContinueTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     continue_()
                 }
             },

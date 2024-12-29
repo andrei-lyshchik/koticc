@@ -2,6 +2,7 @@ package koticc.semantic
 
 import arrow.core.left
 import koticc.ast.DUMMY_LOCATION
+import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.program
@@ -12,7 +13,7 @@ class SemanticAnalysisKtBreakContinueTest {
     @Test
     fun `should not allow break outside of loop`() {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 if_(1.e eq 1.e) {
                     break_()
                 }
@@ -33,7 +34,7 @@ class SemanticAnalysisKtBreakContinueTest {
     @Test
     fun `should not allow continue outside of loop`() {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 if_(1.e eq 1.e) {
                     continue_()
                 }

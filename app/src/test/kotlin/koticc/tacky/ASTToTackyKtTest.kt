@@ -29,12 +29,12 @@ class ASTToTackyKtTest {
             ValidASTProgram(
                 value =
                 program {
-                    function("main") {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                         return_(1.e)
                     }
                 },
                 renamedVariableCount = 0,
-                symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toSymbol()),
+                symbolTable = mapOf("main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol()),
             )
 
         val tacky = programASTToTacky(program)
@@ -87,13 +87,14 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                             storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
                 ),
                 renamedVariableCount = 0,
-                symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toSymbol()),
+                symbolTable = mapOf("main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol()),
             )
 
         val tacky = programASTToTacky(program)
@@ -174,13 +175,14 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                             storageClass = null,
                             location = Location(0, 0),
                         ),
                     ),
                 ),
                 renamedVariableCount = 0,
-                symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toSymbol()),
+                symbolTable = mapOf("main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol()),
             )
 
         val tacky = programASTToTacky(program)
@@ -217,12 +219,12 @@ class ASTToTackyKtTest {
         val program = ValidASTProgram(
             value =
             program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     return_(1.e * 2.e + 3.e / 4.e)
                 }
             },
             renamedVariableCount = 0,
-            symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toSymbol()),
+            symbolTable = mapOf("main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol()),
         )
 
         val tacky = programASTToTacky(program)
@@ -246,14 +248,14 @@ class ASTToTackyKtTest {
         val program = ValidASTProgram(
             value =
             program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     return_(
                         (1.e eq 1.e) and (1.e ne 3.e),
                     )
                 }
             },
             renamedVariableCount = 0,
-            symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toSymbol()),
+            symbolTable = mapOf("main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol()),
         )
 
         val tacky = programASTToTacky(program)
@@ -283,14 +285,14 @@ class ASTToTackyKtTest {
         val program = ValidASTProgram(
             value =
             program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     return_(
                         (1.e eq 1.e) or (1.e ne 3.e),
                     )
                 }
             },
             renamedVariableCount = 0,
-            symbolTable = mapOf("main" to Type.Function(parameterCount = 0).toSymbol()),
+            symbolTable = mapOf("main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol()),
         )
 
         val tacky = programASTToTacky(program)
@@ -320,13 +322,13 @@ class ASTToTackyKtTest {
         val program = ValidASTProgram(
             value =
             program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("x") assign 1.e
                 }
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "x" to Type.Integer.toSymbol(),
             ),
         )
@@ -349,13 +351,13 @@ class ASTToTackyKtTest {
         val program = ValidASTProgram(
             value =
             program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("x")
                 }
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "x" to Type.Integer.toSymbol(),
             ),
         )
@@ -377,13 +379,13 @@ class ASTToTackyKtTest {
         val program = ValidASTProgram(
             value =
             program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("x") assign 1.e + 2.e
                 }
             },
             renamedVariableCount = 123,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "x" to Type.Integer.toSymbol(),
             ),
         )
@@ -407,14 +409,14 @@ class ASTToTackyKtTest {
         val program = ValidASTProgram(
             value =
             program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("x")
                     assign("x".e, 1.e)
                 }
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "x" to Type.Integer.toSymbol(),
             ),
         )
@@ -485,6 +487,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                             storageClass = null,
                             location = Location(0, 0),
                         ),
@@ -492,7 +495,7 @@ class ASTToTackyKtTest {
                 ),
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "x" to Type.Integer.toSymbol(),
                 ),
             )
@@ -601,6 +604,7 @@ class ASTToTackyKtTest {
                                     ),
                                 ),
                             ),
+                            type = Type.Function(parameters = emptyList(), returnType = Type.Integer),
                             storageClass = null,
                             location = Location(0, 0),
                         ),
@@ -608,7 +612,7 @@ class ASTToTackyKtTest {
                 ),
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "x" to Type.Integer.toSymbol(),
                     "y" to Type.Integer.toSymbol(),
                 ),
@@ -672,7 +676,7 @@ class ASTToTackyKtTest {
     fun `should produce tacky for if statement without else`() {
         val input = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("x") assign 1.e
                     int("y") assign 0.e
                     if_("x".e eq 1.e) {
@@ -683,7 +687,7 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "x" to Type.Integer.toSymbol(),
                 "y" to Type.Integer.toSymbol(),
             ),
@@ -712,7 +716,7 @@ class ASTToTackyKtTest {
     fun `should produce tacky for if statement with else`() {
         val program = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("x") assign 1.e
                     int("y") assign 0.e
                     if_("x".e eq 1.e) {
@@ -725,7 +729,7 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "x" to Type.Integer.toSymbol(),
                 "y" to Type.Integer.toSymbol(),
             ),
@@ -758,7 +762,7 @@ class ASTToTackyKtTest {
         val program = ValidASTProgram(
             value =
             program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("a.0") assign 1.e
                     int("b.1")
                     assign("a.0".e, cond("a.0".e eq 1.e, "b.1".e assign 2.e, "b.1".e assign 3.e))
@@ -767,7 +771,7 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "a.0" to Type.Integer.toSymbol(),
                 "b.1" to Type.Integer.toSymbol(),
             ),
@@ -801,7 +805,7 @@ class ASTToTackyKtTest {
     fun `should produce tacky for labeled statements and goto`() {
         val program = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("x") assign 1.e
                     label("label") {
                         assign("x".e, 2.e)
@@ -812,7 +816,7 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "x" to Type.Integer.toSymbol(),
             ),
         )
@@ -838,7 +842,7 @@ class ASTToTackyKtTest {
     fun `should produce tacky for compound statements`() {
         val input = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     nested {
                         int("x") assign 1.e
                         assign("x".e, 2.e)
@@ -848,7 +852,7 @@ class ASTToTackyKtTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "x" to Type.Integer.toSymbol(),
             ),
         )

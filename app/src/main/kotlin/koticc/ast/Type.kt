@@ -6,6 +6,7 @@ sealed interface Type {
     data object Integer : Data
 
     data class Function(
-        val parameterCount: Int,
+        val parameters: List<Data>,
+        val returnType: Data,
     ) : Type
 }

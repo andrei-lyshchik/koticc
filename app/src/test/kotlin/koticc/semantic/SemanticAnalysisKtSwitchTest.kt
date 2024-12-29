@@ -16,7 +16,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should resolve switch and case ids`() {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a") assign 1.e
                 switch(1.e) {
                     case(1.e) {
@@ -38,7 +38,7 @@ class SemanticAnalysisKtSwitchTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main") {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                         int("a.0") assign 1.e.integer()
                         switch(1.e.integer(), switchId = 0, hasDefault = true, caseExpressions = mapOf(1.c to 0, 2.c to 1)) {
                             case(1.e.integer(), caseId = 0, switchId = 0) {
@@ -56,7 +56,7 @@ class SemanticAnalysisKtSwitchTest {
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                 ),
             ).right(),
@@ -67,7 +67,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `switch without any cases`() {
         val program = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 switch(1.e) {
                     return_(1.e)
                 }
@@ -80,7 +80,7 @@ class SemanticAnalysisKtSwitchTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main") {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                         switch(1.e.integer(), switchId = 0, caseExpressions = emptyMap(), hasDefault = false) {
                             return_(1.e.integer())
                         }
@@ -89,7 +89,7 @@ class SemanticAnalysisKtSwitchTest {
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -99,7 +99,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should return error for case outside of switch`() {
         val program = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 case(1.e) {
                     return_(1.e)
                 }
@@ -117,7 +117,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should return error for duplicate case expressions`() {
         val program = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 switch(1.e) {
                     case(1.e.copy(location = Location(0, 0))) {
                         return_(1.e)
@@ -140,7 +140,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should return error for non constant integer expressions`() {
         val program = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a") assign 1.e
                 switch(1.e) {
                     case("a".e) {
@@ -161,7 +161,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should return error for default outside of switch`() {
         val program = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 default {
                     return_(1.e)
                 }
@@ -179,7 +179,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should correctly assign breaks between loops and switches`() {
         val program = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 switch(1.e) {
                     case(1.e) {
                         return_(1.e)
@@ -214,7 +214,7 @@ class SemanticAnalysisKtSwitchTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main") {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                         switch(1.e.integer(), switchId = 0, caseExpressions = mapOf(1.c to 0, 2.c to 1), hasDefault = false) {
                             case(1.e.integer(), caseId = 0, switchId = 0) {
                                 return_(1.e.integer())
@@ -245,7 +245,7 @@ class SemanticAnalysisKtSwitchTest {
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 ),
             ).right(),
             actual = actual,
@@ -255,7 +255,7 @@ class SemanticAnalysisKtSwitchTest {
     @Test
     fun `should return error for duplicate default`() {
         val program = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 switch(1.e) {
                     default {
                         return_(1.e)

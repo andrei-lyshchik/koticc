@@ -14,7 +14,7 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main")
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer))
             },
             actual = actual,
         )
@@ -31,8 +31,8 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main")
-                function("foo")
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer))
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer))
             },
             actual = actual,
         )
@@ -48,7 +48,7 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("function", "a", "b")
+                function("function", Type.Function(parameters = listOf(Type.Integer, Type.Integer), returnType = Type.Integer), "a", "b")
             },
             actual = actual,
         )
@@ -66,8 +66,8 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main") {
-                    function("foo")
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer))
                 }
             },
             actual = actual,
@@ -88,8 +88,8 @@ class ParserKtFunctionDeclarationTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main") {
-                    function("foo") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                         return_(1.e)
                     }
                 }

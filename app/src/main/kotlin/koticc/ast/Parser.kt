@@ -94,8 +94,9 @@ private class Parser(
 
             return AST.Declaration.Function(
                 name = nameToken.value.value,
-                parameters = parameters,
+                parameters = parameters.map { it.value },
                 body = body,
+                type = Type.Function(parameters = parameters.map { it.type }, returnType = Type.Integer),
                 storageClass = declarationSpecifiers.storageClass,
                 location = declarationSpecifiers.location,
             ).right()
@@ -109,10 +110,10 @@ private class Parser(
                 emptyList()
             }
             Token.IntKeyword -> {
-                val params = mutableListOf<AST.FunctionParameter>()
+                val params = mutableListOf<FunctionParameterWithType>()
                 while (true) {
                     expectToken(Token.IntKeyword).bind()
-                    params.add(expectFunctionParameter().bind())
+                    params.add(FunctionParameterWithType(value = expectFunctionParameter().bind(), type = Type.Integer))
 
                     val peekToken = peekToken()
                     when (peekToken?.value) {
@@ -132,6 +133,11 @@ private class Parser(
             else -> raise(ParserError("expected 'void' or 'int', got ${paramOrVoidToken?.value.toDisplayString()}", paramOrVoidToken?.location))
         }
     }
+
+    private data class FunctionParameterWithType(
+        val value: AST.FunctionParameter,
+        val type: Type.Data,
+    )
 
     private fun parseBlock(): Either<ParserError, AST.Block> =
         either {
@@ -200,10 +206,24 @@ private class Parser(
                     expectToken(Token.CloseParen).bind()
                     if (peekToken()?.value == Token.OpenBrace) {
                         val body = parseBlock().bind()
-                        AST.Declaration.Function(nameToken.value.value, parameters, body, declarationSpecifiers.storageClass, declarationSpecifiers.location)
+                        AST.Declaration.Function(
+                            nameToken.value.value,
+                            parameters.map { it.value },
+                            body,
+                            Type.Function(parameters = parameters.map { it.type }, returnType = Type.Integer),
+                            declarationSpecifiers.storageClass,
+                            declarationSpecifiers.location,
+                        )
                     } else {
                         expectToken(Token.Semicolon).bind()
-                        AST.Declaration.Function(nameToken.value.value, parameters, null, declarationSpecifiers.storageClass, declarationSpecifiers.location)
+                        AST.Declaration.Function(
+                            nameToken.value.value,
+                            parameters.map { it.value },
+                            null,
+                            Type.Function(parameters = parameters.map { it.type }, returnType = Type.Integer),
+                            declarationSpecifiers.storageClass,
+                            declarationSpecifiers.location,
+                        )
                     }
                 }
                 else -> {

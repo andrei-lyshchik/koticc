@@ -27,7 +27,7 @@ class ParserKtSwitchTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     switch(1.e) {
                         case(1.e) {
                             return_(1.e)

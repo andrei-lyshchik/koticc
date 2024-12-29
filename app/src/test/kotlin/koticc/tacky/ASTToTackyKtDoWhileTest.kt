@@ -15,7 +15,7 @@ class ASTToTackyKtDoWhileTest {
     fun `should produce tacky for do while`() {
         val input = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("a") assign 1.e
                     do_ {
                         plusAssign("a".e, 1.e)
@@ -25,7 +25,7 @@ class ASTToTackyKtDoWhileTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "a" to Type.Integer.toSymbol(),
             ),
         )
@@ -60,7 +60,7 @@ class ASTToTackyKtDoWhileTest {
     fun `should produce tacky for do while with break or continue`() {
         val input = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("a.0") assign 1.e
                     do_ {
                         plusAssign("a.0".e, 1.e)
@@ -75,7 +75,7 @@ class ASTToTackyKtDoWhileTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "a.0" to Type.Integer.toSymbol(),
             ),
         )

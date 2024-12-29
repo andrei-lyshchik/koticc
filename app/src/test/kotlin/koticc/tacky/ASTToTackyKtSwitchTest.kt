@@ -15,7 +15,7 @@ class ASTToTackyKtSwitchTest {
     fun `should generate tacky for switch with cases and defaults`() {
         val program = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("a") assign 1.e
                     switch("a".e + 1.e, switchId = 0, hasDefault = true, caseExpressions = mapOf(1.c to 0, 2.c to 1)) {
                         case(1.e, caseId = 0, switchId = 0) {
@@ -32,7 +32,7 @@ class ASTToTackyKtSwitchTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "a" to Type.Integer.toSymbol(),
             ),
         )
@@ -75,7 +75,7 @@ class ASTToTackyKtSwitchTest {
     fun `should generate tacky for switch with breaks and without default`() {
         val program = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("a") assign 1.e
                     switch("a".e, switchId = 0, hasDefault = false, caseExpressions = mapOf(1.c to 0, 2.c to 1)) {
                         case(1.e, caseId = 0, switchId = 0) {
@@ -90,7 +90,7 @@ class ASTToTackyKtSwitchTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "a" to Type.Integer.toSymbol(),
             ),
         )

@@ -51,7 +51,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
     @Test
     fun `should be possible to refer to variable from outer scope with extern and do it multiple times`() {
         val program = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("foo") assign 1.e
                 if_("foo".e) {
                     int("foo", storageClass = AST.StorageClass.Extern)
@@ -67,7 +67,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main") {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                         int("foo.0") assign 1.e.integer()
                         if_("foo.0".e.integer()) {
                             int("foo", storageClass = AST.StorageClass.Extern)
@@ -79,7 +79,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "foo.0" to Type.Integer.toSymbol(attributes = VariableAttributes.Local),
                     "foo" to Type.Integer.toSymbol(
                         attributes = VariableAttributes.Static(
@@ -113,7 +113,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
     @Test
     fun `can't declare a file-scope variable if function with the same name is already declared`() {
         val program = program {
-            function("a")
+            function("a", Type.Function(parameters = emptyList(), returnType = Type.Integer))
             int("a")
         }
 

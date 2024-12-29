@@ -33,7 +33,7 @@ class ParserKtFunctionCallTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     call("foo", *expectedArguments.toTypedArray())
                 }
             },

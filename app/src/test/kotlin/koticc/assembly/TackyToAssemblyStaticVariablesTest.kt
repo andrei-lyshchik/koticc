@@ -52,7 +52,7 @@ class TackyToAssemblyStaticVariablesTest {
             tacky,
             symbolTable = mapOf(
                 "a" to Type.Integer.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(0), global = true)),
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
             ),
         )
 

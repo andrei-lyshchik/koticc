@@ -19,7 +19,7 @@ class ASTToTackyKtForTest {
     fun `should produce tacky for for`() {
         val input = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("a.0") assign 1.e
                     for_(initDecl("i.1", 0.e), "i.1".e lt 10.e, "i.1".e plusAssign 1.e, loopId = 0) {
                         plusAssign("a.0".e, "i.1".e)
@@ -28,7 +28,7 @@ class ASTToTackyKtForTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "a.0" to Type.Integer.toSymbol(),
                 "i.1" to Type.Integer.toSymbol(),
             ),
@@ -68,7 +68,7 @@ class ASTToTackyKtForTest {
     fun `should produce tacky for for without initializer`() {
         val input = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("a.0") assign 1.e
                     for_(null, "a.0".e lt 10.e, "a.0".e plusAssign 1.e, loopId = 0) {
                         plusAssign("a.0".e, 1.e)
@@ -77,7 +77,7 @@ class ASTToTackyKtForTest {
             },
             renamedVariableCount = 1,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "a.0" to Type.Integer.toSymbol(),
             ),
         )
@@ -115,7 +115,7 @@ class ASTToTackyKtForTest {
     fun `should produce tacky for for without condition`() {
         val input = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("a.0") assign 1.e
                     int("i.1")
                     for_(initExpr("i.1".e assign 0.e), null, "i.1".e plusAssign 1.e, loopId = 0) {
@@ -125,7 +125,7 @@ class ASTToTackyKtForTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "a.0" to Type.Integer.toSymbol(),
                 "i.1" to Type.Integer.toSymbol(),
             ),
@@ -162,7 +162,7 @@ class ASTToTackyKtForTest {
     fun `should produce tacky for for without post`() {
         val input = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("a.0") assign 1.e
                     int("i.1")
                     for_(initExpr("i.1".e assign 0.e), "i.1".e lt 10.e, null, loopId = 0) {
@@ -172,7 +172,7 @@ class ASTToTackyKtForTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "a.0" to Type.Integer.toSymbol(),
                 "i.1" to Type.Integer.toSymbol(),
             ),
@@ -210,7 +210,7 @@ class ASTToTackyKtForTest {
     fun `should produce tacky for for with break or continue`() {
         val input = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("a.0") assign 1.e
                     for_(initDecl("i.1", 0.e), "i.1".e lt 10.e, "i.1".e plusAssign 1.e, loopId = 0) {
                         plusAssign("a.0".e, "i.1".e)
@@ -224,7 +224,7 @@ class ASTToTackyKtForTest {
             },
             renamedVariableCount = 2,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "a.0" to Type.Integer.toSymbol(),
                 "i.1" to Type.Integer.toSymbol(),
             ),

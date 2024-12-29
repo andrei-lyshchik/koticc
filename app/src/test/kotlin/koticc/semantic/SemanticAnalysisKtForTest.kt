@@ -21,7 +21,7 @@ class SemanticAnalysisKtForTest {
     @Test
     fun `should assign labels to for`() {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a") assign 1.e
                 for_(
                     initDecl("i", 0.e),
@@ -39,7 +39,7 @@ class SemanticAnalysisKtForTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main") {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                         int("a.0") assign 1.e.integer()
                         for_(
                             initDecl("i.1", 0.e.integer()),
@@ -54,7 +54,7 @@ class SemanticAnalysisKtForTest {
                 },
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                     "i.1" to Type.Integer.toSymbol(),
                 ),
@@ -66,7 +66,7 @@ class SemanticAnalysisKtForTest {
     @Test
     fun `should assign labels for break continue inside for`() {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a") assign 1.e
                 for_(
                     initDecl("i", 0.e),
@@ -103,7 +103,7 @@ class SemanticAnalysisKtForTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main") {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                         int("a.0") assign 1.e.integer()
                         for_(
                             initDecl("i.1", 0.e.integer()),
@@ -138,7 +138,7 @@ class SemanticAnalysisKtForTest {
                 },
                 renamedVariableCount = 3,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                     "i.1" to Type.Integer.toSymbol(),
                     "i.2" to Type.Integer.toSymbol(),
@@ -151,7 +151,7 @@ class SemanticAnalysisKtForTest {
     @Test
     fun `should assign loop labels for nested fors`() {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a") assign 1.e
                 for_(
                     initDecl("i", 0.e),
@@ -188,7 +188,7 @@ class SemanticAnalysisKtForTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main") {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                         int("a.0") assign 1.e.integer()
                         for_(
                             initDecl("i.1", 0.e.integer()),
@@ -223,7 +223,7 @@ class SemanticAnalysisKtForTest {
                 },
                 renamedVariableCount = 3,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                     "i.1" to Type.Integer.toSymbol(),
                     "j.2" to Type.Integer.toSymbol(),
@@ -236,7 +236,7 @@ class SemanticAnalysisKtForTest {
     @Test
     fun `should create nested scope in for header`() {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a") assign 1.e
                 int("i") assign 2.e
                 for_(
@@ -259,7 +259,7 @@ class SemanticAnalysisKtForTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main") {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                         int("a.0") assign 1.e.integer()
                         int("i.1") assign 2.e.integer()
                         for_(
@@ -276,7 +276,7 @@ class SemanticAnalysisKtForTest {
                 },
                 renamedVariableCount = 4,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                     "i.1" to Type.Integer.toSymbol(),
                     "i.2" to Type.Integer.toSymbol(),
@@ -291,7 +291,7 @@ class SemanticAnalysisKtForTest {
     @EnumSource(AST.StorageClass::class)
     fun `can't use static or extern in for initializer`(storageClass: AST.StorageClass) {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 for_(
                     initDecl("i", 3.e).let {
                         it.copy(

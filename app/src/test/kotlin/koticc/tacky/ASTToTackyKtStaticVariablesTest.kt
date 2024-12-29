@@ -65,7 +65,7 @@ class ASTToTackyKtStaticVariablesTest {
     fun `should generate tacky for local static variables`() {
         val program = ValidASTProgram(
             value = program {
-                function("main") {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                     int("a")
                     int("b") assign 2.e
                     return_("a".e)
@@ -73,7 +73,7 @@ class ASTToTackyKtStaticVariablesTest {
             },
             renamedVariableCount = 3,
             symbolTable = mapOf(
-                "main" to Type.Function(parameterCount = 0).toSymbol(),
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                 "a" to Type.Integer.toSymbol(
                     attributes = VariableAttributes.Static(
                         initialValue = InitialValue.Tentative,

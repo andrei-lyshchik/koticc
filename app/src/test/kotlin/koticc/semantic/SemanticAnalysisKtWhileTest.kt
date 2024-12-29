@@ -15,7 +15,7 @@ class SemanticAnalysisKtWhileTest {
     @Test
     fun `should assign labels to while`() {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a") assign 1.e
                 while_("a".e lt 10.e) {
                     plusAssign("a".e, 1.e)
@@ -32,7 +32,7 @@ class SemanticAnalysisKtWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main") {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                         int("a.0") assign 1.e.integer()
                         while_(("a.0".e.integer() lt 10.e.integer()).integer(), loopId = 0) {
                             plusAssign("a.0".e.integer(), 1.e.integer(), type = Type.Integer)
@@ -45,7 +45,7 @@ class SemanticAnalysisKtWhileTest {
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                 ),
             ).right(),
@@ -56,7 +56,7 @@ class SemanticAnalysisKtWhileTest {
     @Test
     fun `should assign labels to break continue inside while`() {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a") assign 1.e
                 while_("a".e lt 10.e) {
                     plusAssign("a".e, 1.e)
@@ -85,7 +85,7 @@ class SemanticAnalysisKtWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main") {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                         int("a.0") assign 1.e.integer()
                         while_(("a.0".e.integer() lt 10.e.integer()).integer(), loopId = 0) {
                             plusAssign("a.0".e.integer(), 1.e.integer(), type = Type.Integer)
@@ -110,7 +110,7 @@ class SemanticAnalysisKtWhileTest {
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                 ),
             ).right(),
@@ -121,7 +121,7 @@ class SemanticAnalysisKtWhileTest {
     @Test
     fun `should assign labels to break continue for nested whiles`() {
         val input = program {
-            function("main") {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                 int("a") assign 1.e
                 while_(1.e) {
                     plusAssign("a".e, 1.e)
@@ -144,7 +144,7 @@ class SemanticAnalysisKtWhileTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    function("main") {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Integer)) {
                         int("a.0") assign 1.e.integer()
                         while_(1.e.integer(), loopId = 0) {
                             plusAssign("a.0".e.integer(), 1.e.integer(), type = Type.Integer)
@@ -163,7 +163,7 @@ class SemanticAnalysisKtWhileTest {
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
-                    "main" to Type.Function(parameterCount = 0).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Integer).toSymbol(),
                     "a.0" to Type.Integer.toSymbol(),
                 ),
             ).right(),
