@@ -30,17 +30,20 @@ object Assembly {
 
     sealed interface Instruction {
         data class Mov(
+            val type: Type,
             val src: Operand,
             val dst: Operand,
         ) : Instruction
 
         data class Unary(
+            val type: Assembly.Type,
             val operator: UnaryOperator,
             val operand: Operand,
         ) : Instruction
 
         data class Binary(
             val operator: BinaryOperator,
+            val type: Type,
             val src: Operand,
             val dst: Operand,
         ) : Instruction
@@ -61,19 +64,22 @@ object Assembly {
             val name: String,
         ) : Instruction
 
-        data object Cdq : Instruction
+        data class Cdq(val type: Type) : Instruction
 
         data class Idiv(
+            val type: Type,
             val operand: Operand,
         ) : Instruction
 
         // always uses %cl as count
         data class Shift(
+            val type: Type,
             val operator: ShiftOperator,
             val dst: Operand,
         ) : Instruction
 
         data class Cmp(
+            val type: Type,
             val src: Operand,
             val dst: Operand,
         ) : Instruction

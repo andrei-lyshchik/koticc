@@ -7,15 +7,18 @@ fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Ins
             if (instruction.operator == Assembly.BinaryOperator.Mul && instruction.dst.isMemory()) {
                 listOf(
                     Assembly.Instruction.Mov(
+                        type = instruction.type,
                         src = instruction.dst,
                         dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
                     ),
                     Assembly.Instruction.Binary(
                         operator = instruction.operator,
+                        type = instruction.type,
                         src = instruction.src,
                         dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
                     ),
                     Assembly.Instruction.Mov(
+                        type = instruction.type,
                         src = Assembly.Operand.Register(Assembly.RegisterValue.R11),
                         dst = instruction.dst,
                     ),
@@ -23,11 +26,13 @@ fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Ins
             } else if (instruction.src.isMemory() && instruction.dst.isMemory()) {
                 listOf(
                     Assembly.Instruction.Mov(
+                        type = instruction.type,
                         src = instruction.src,
                         dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
                     ),
                     Assembly.Instruction.Binary(
                         operator = instruction.operator,
+                        type = instruction.type,
                         src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
                         dst = instruction.dst,
                     ),
@@ -37,15 +42,17 @@ fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Ins
             }
         }
 
-        Assembly.Instruction.Cdq -> listOf(instruction)
+        is Assembly.Instruction.Cdq -> listOf(instruction)
         is Assembly.Instruction.Cmp -> {
             if (instruction.src.isMemory() && instruction.dst.isMemory()) {
                 listOf(
                     Assembly.Instruction.Mov(
+                        type = instruction.type,
                         src = instruction.src,
                         dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
                     ),
                     Assembly.Instruction.Cmp(
+                        type = instruction.type,
                         src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
                         dst = instruction.dst,
                     ),
@@ -53,10 +60,12 @@ fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Ins
             } else if (instruction.dst is Assembly.Operand.Immediate) {
                 listOf(
                     Assembly.Instruction.Mov(
+                        type = instruction.type,
                         src = instruction.dst,
                         dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
                     ),
                     Assembly.Instruction.Cmp(
+                        type = instruction.type,
                         src = instruction.src,
                         dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
                     ),
@@ -71,10 +80,12 @@ fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Ins
             if (instruction.operand is Assembly.Operand.Immediate) {
                 listOf(
                     Assembly.Instruction.Mov(
+                        type = instruction.type,
                         src = instruction.operand,
                         dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
                     ),
                     Assembly.Instruction.Idiv(
+                        type = instruction.type,
                         operand = Assembly.Operand.Register(Assembly.RegisterValue.R10),
                     ),
                 )
@@ -89,10 +100,12 @@ fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Ins
             if (instruction.src.isMemory() && instruction.dst.isMemory()) {
                 listOf(
                     Assembly.Instruction.Mov(
+                        type = instruction.type,
                         src = instruction.src,
                         dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
                     ),
                     Assembly.Instruction.Mov(
+                        type = instruction.type,
                         src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
                         dst = instruction.dst,
                     ),

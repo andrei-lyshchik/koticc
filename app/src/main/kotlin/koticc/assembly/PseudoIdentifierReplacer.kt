@@ -1,84 +1,94 @@
 package koticc.assembly
 
-class PseudoIdentifierReplacer {
+class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
+    private var currentStackBytes: Int = 0
+    private val stackOffsets = mutableMapOf<String, Int>()
+
     fun replace(instructions: List<Assembly.Instruction>): List<Assembly.Instruction> {
-        val stackOffsets = mutableMapOf<String, Int>()
         val result = ArrayList<Assembly.Instruction>(instructions.size + 1)
         result.add(Assembly.Instruction.AllocateStack(0))
         for (instruction in instructions) {
             val replacedInstruction =
                 when (instruction) {
                     is Assembly.Instruction.Mov -> {
-                        val src = replace(stackOffsets, instruction.src)
-                        val dst = replace(stackOffsets, instruction.dst)
-                        Assembly.Instruction.Mov(src, dst)
+                        val src = replace(instruction.src)
+                        val dst = replace(instruction.dst)
+                        Assembly.Instruction.Mov(instruction.type, src, dst)
                     }
 
                     is Assembly.Instruction.AllocateStack -> instruction
                     is Assembly.Instruction.Binary -> {
-                        val src = replace(stackOffsets, instruction.src)
-                        val dst = replace(stackOffsets, instruction.dst)
-                        Assembly.Instruction.Binary(instruction.operator, src, dst)
+                        val src = replace(instruction.src)
+                        val dst = replace(instruction.dst)
+                        Assembly.Instruction.Binary(instruction.operator, instruction.type, src, dst)
                     }
 
-                    Assembly.Instruction.Cdq -> instruction
+                    is Assembly.Instruction.Cdq -> instruction
                     is Assembly.Instruction.Cmp -> {
-                        val src = replace(stackOffsets, instruction.src)
-                        val dst = replace(stackOffsets, instruction.dst)
-                        Assembly.Instruction.Cmp(src, dst)
+                        val src = replace(instruction.src)
+                        val dst = replace(instruction.dst)
+                        Assembly.Instruction.Cmp(instruction.type, src, dst)
                     }
 
                     is Assembly.Instruction.ConditionalJump -> instruction
                     is Assembly.Instruction.Idiv -> {
-                        val operand = replace(stackOffsets, instruction.operand)
-                        Assembly.Instruction.Idiv(operand)
+                        val operand = replace(instruction.operand)
+                        Assembly.Instruction.Idiv(instruction.type, operand)
                     }
 
                     is Assembly.Instruction.Jump -> instruction
                     is Assembly.Instruction.Label -> instruction
                     Assembly.Instruction.Ret -> instruction
                     is Assembly.Instruction.Set -> {
-                        val dst = replace(stackOffsets, instruction.dst)
+                        val dst = replace(instruction.dst)
                         Assembly.Instruction.Set(instruction.operator, dst)
                     }
 
                     is Assembly.Instruction.Shift -> {
-                        val dst = replace(stackOffsets, instruction.dst)
-                        Assembly.Instruction.Shift(instruction.operator, dst)
+                        val dst = replace(instruction.dst)
+                        Assembly.Instruction.Shift(instruction.type, instruction.operator, dst)
                     }
 
                     is Assembly.Instruction.Unary -> {
-                        val operand = replace(stackOffsets, instruction.operand)
-                        Assembly.Instruction.Unary(instruction.operator, operand)
+                        val operand = replace(instruction.operand)
+                        Assembly.Instruction.Unary(instruction.type, instruction.operator, operand)
                     }
 
                     is Assembly.Instruction.Call -> instruction
                     is Assembly.Instruction.DeallocateStack -> instruction
                     is Assembly.Instruction.Push -> {
-                        val operand = replace(stackOffsets, instruction.operand)
+                        val operand = replace(instruction.operand)
                         Assembly.Instruction.Push(operand)
                     }
                 }
             result.add(replacedInstruction)
         }
-        val stackBytes = stackOffsets.size * 4
-        val alignedStackBytes = if (stackBytes % 16 == 0) {
-            stackBytes
+        // %rsp must be aligned to 16 bytes, so that System V ABI is followed
+        val alignedStackBytes = if (currentStackBytes % 16 == 0) {
+            currentStackBytes
         } else {
-            val padding = 16 - stackBytes % 16
-            stackBytes + padding
+            val padding = 16 - currentStackBytes % 16
+            currentStackBytes + padding
         }
         result[0] = Assembly.Instruction.AllocateStack(alignedStackBytes)
         return result
     }
 
     private fun replace(
-        stackOffsets: MutableMap<String, Int>,
         operand: Assembly.Operand,
     ): Assembly.Operand =
         when (operand) {
             is Assembly.Operand.PseudoIdentifier -> {
-                val stackOffset = stackOffsets.getOrPut(operand.name) { (stackOffsets.size + 1) * -4 }
+                val size = symbolTable.objectSymbol(operand.name).type.byteSize
+                val stackOffset = stackOffsets.getOrPut(operand.name) {
+                    currentStackBytes += size
+                    if (currentStackBytes % size != 0) {
+                        // f.ex. in case of quadwords - 8 bytes - we need to align their offset
+                        // so that the offset is divisible by 8
+                        currentStackBytes += size - currentStackBytes % size
+                    }
+                    -currentStackBytes
+                }
                 Assembly.Operand.Stack(stackOffset)
             }
 

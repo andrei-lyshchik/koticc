@@ -46,7 +46,7 @@ private fun writeAssemblyFunctionDefinition(
                         is Assembly.Instruction.Label -> ""
                         else -> "    "
                     }
-                write("$indent${instruction.toOutputString()}")
+                write("$indent${instruction.toOperatorString()}")
                 if (index != functionDefinition.body.size - 1) {
                     write("\n")
                 }
@@ -78,39 +78,51 @@ private fun writeAssemblyStaticVariable(
         }
     }
 
-private fun Assembly.Instruction.toOutputString(): String =
+private fun Assembly.Type.instructionSuffix() = when (this) {
+    Assembly.Type.LongWord -> "l"
+}
+
+private fun Assembly.Type.toSize() = when (this) {
+    Assembly.Type.LongWord -> Size.FourByte
+}
+
+private fun Assembly.Instruction.toOperatorString(): String =
     when (this) {
         is Assembly.Instruction.AllocateStack -> "subq \$$size, %rsp"
         is Assembly.Instruction.Binary -> {
-            "${operator.toOutputString()} ${src.toOutputString()}, ${dst.toOutputString()}"
+            "${toOperatorString()} ${src.toOperatorString(size = type.toSize())}, ${dst.toOperatorString(size = type.toSize())}"
         }
-        Assembly.Instruction.Cdq -> "cdq"
-        is Assembly.Instruction.Cmp -> "cmpl ${src.toOutputString()}, ${dst.toOutputString()}"
-        is Assembly.Instruction.ConditionalJump -> "j${operator.toOutputString()} ${target.toLocalOutputString()}"
-        is Assembly.Instruction.Idiv -> "idivl ${operand.toOutputString()}"
+        is Assembly.Instruction.Cdq -> when (type) {
+            Assembly.Type.LongWord -> "cdq"
+        }
+        is Assembly.Instruction.Cmp -> "cmp${type.instructionSuffix()} ${src.toOperatorString(size = type.toSize())}, ${dst.toOperatorString(size = type.toSize())}"
+        is Assembly.Instruction.ConditionalJump -> "j${operator.toOperatorString()} ${target.toLocalOutputString()}"
+        is Assembly.Instruction.Idiv -> "idiv${type.instructionSuffix()} ${operand.toOperatorString(size = type.toSize())}"
         is Assembly.Instruction.Jump -> "jmp ${target.toLocalOutputString()}"
         is Assembly.Instruction.Label -> "${label.toLocalOutputString()}:"
-        is Assembly.Instruction.Mov -> "movl ${src.toOutputString()}, ${dst.toOutputString()}"
+        is Assembly.Instruction.Mov -> "mov${type.instructionSuffix()} ${src.toOperatorString(size = type.toSize())}, ${dst.toOperatorString(size = type.toSize())}"
         Assembly.Instruction.Ret -> "movq %rbp, %rsp\n    popq %rbp\n    ret"
-        is Assembly.Instruction.Set -> "set${operator.toOutputString()} ${dst.toOutputString(Size.OneByte)}"
-        is Assembly.Instruction.Shift -> "${operator.toOutputString()} %cl, ${dst.toOutputString()}"
-        is Assembly.Instruction.Unary -> "${operator.toOutputString()} ${operand.toOutputString()}"
+        is Assembly.Instruction.Set -> "set${operator.toOperatorString()} ${dst.toOperatorString(Size.OneByte)}"
+        is Assembly.Instruction.Shift -> "${toOperatorString()} %cl, ${dst.toOperatorString(size = type.toSize())}"
+        is Assembly.Instruction.Unary -> "${toOperatorString()} ${operand.toOperatorString(size = type.toSize())}"
         is Assembly.Instruction.Call -> "call _$name"
         is Assembly.Instruction.DeallocateStack -> "addq \$$size, %rsp"
-        is Assembly.Instruction.Push -> "pushq ${operand.toOutputString(size = Size.EightByte)}"
+        is Assembly.Instruction.Push -> "pushq ${operand.toOperatorString(size = Size.EightByte)}"
     }
 
-private fun Assembly.BinaryOperator.toOutputString(): String =
-    when (this) {
-        Assembly.BinaryOperator.Add -> "addl"
-        Assembly.BinaryOperator.Sub -> "subl"
-        Assembly.BinaryOperator.Mul -> "imull"
-        Assembly.BinaryOperator.And -> "andl"
-        Assembly.BinaryOperator.Or -> "orl"
-        Assembly.BinaryOperator.Xor -> "xorl"
+private fun Assembly.Instruction.Binary.toOperatorString(): String {
+    val operatorString = when (operator) {
+        Assembly.BinaryOperator.Add -> "add"
+        Assembly.BinaryOperator.Sub -> "sub"
+        Assembly.BinaryOperator.Mul -> "imul"
+        Assembly.BinaryOperator.And -> "and"
+        Assembly.BinaryOperator.Or -> "or"
+        Assembly.BinaryOperator.Xor -> "xor"
     }
+    return "$operatorString${type.instructionSuffix()}"
+}
 
-private fun Assembly.ConditionalOperator.toOutputString(): String =
+private fun Assembly.ConditionalOperator.toOperatorString(): String =
     when (this) {
         Assembly.ConditionalOperator.LessThan -> "l"
         Assembly.ConditionalOperator.LessThanOrEqual -> "le"
@@ -120,7 +132,7 @@ private fun Assembly.ConditionalOperator.toOutputString(): String =
         Assembly.ConditionalOperator.NotEqual -> "ne"
     }
 
-private fun Assembly.Operand.toOutputString(size: Size = Size.FourByte): String =
+private fun Assembly.Operand.toOperatorString(size: Size): String =
     when (this) {
         is Assembly.Operand.Register -> value.toOutputString(size)
         is Assembly.Operand.Stack -> "$offset(%rbp)"
@@ -133,17 +145,21 @@ private fun Assembly.Operand.toOutputString(size: Size = Size.FourByte): String 
             )
     }
 
-private fun Assembly.ShiftOperator.toOutputString(): String =
-    when (this) {
-        Assembly.ShiftOperator.Left -> "sall"
-        Assembly.ShiftOperator.Right -> "sarl"
+private fun Assembly.Instruction.Shift.toOperatorString(): String {
+    val operatorString = when (operator) {
+        Assembly.ShiftOperator.Left -> "sal"
+        Assembly.ShiftOperator.Right -> "sar"
     }
+    return "$operatorString${type.instructionSuffix()}"
+}
 
-private fun Assembly.UnaryOperator.toOutputString(): String =
-    when (this) {
-        Assembly.UnaryOperator.Neg -> "negl"
-        Assembly.UnaryOperator.Not -> "notl"
+private fun Assembly.Instruction.Unary.toOperatorString(): String {
+    val operatorString = when (operator) {
+        Assembly.UnaryOperator.Neg -> "neg"
+        Assembly.UnaryOperator.Not -> "not"
     }
+    return "$operatorString${type.instructionSuffix()}"
+}
 
 private enum class Size {
     OneByte,

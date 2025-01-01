@@ -1,15 +1,12 @@
 package koticc.assembly
 
 import koticc.ast.AST
-import koticc.semantic.SymbolTable
-import koticc.semantic.VariableAttributes
-import koticc.semantic.variableSymbol
 import koticc.tacky.Tacky
 
 fun tackyProgramToAssembly(tackyProgram: Tacky.Program): Assembly.Program =
-    TackyAssemblyGenerator(tackyProgram.symbolTable).tackyProgramToAssembly(tackyProgram)
+    TackyAssemblyGenerator(tackyProgram.symbolTable.toBackendSymbolTable()).tackyProgramToAssembly(tackyProgram)
 
-class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
+class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
     fun tackyProgramToAssembly(tackyProgram: Tacky.Program): Assembly.Program =
         Assembly.Program(
             topLevel = tackyProgram.topLevel.map { tackyTopLevelToAssembly(it) },
@@ -29,7 +26,7 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
     private fun tackyFunctionDefinitionToAssembly(tackyFunctionDefinition: Tacky.FunctionDefinition): Assembly.FunctionDefinition {
         val instructions = copyParameters(tackyFunctionDefinition.parameters) + tackyFunctionDefinition.body
             .flatMap(::tackyInstructionToAssembly)
-        val withPseudoIdentifiersReplaced = PseudoIdentifierReplacer().replace(instructions)
+        val withPseudoIdentifiersReplaced = PseudoIdentifierReplacer(symbolTable).replace(instructions)
         val withFixedOperands = withPseudoIdentifiersReplaced.flatMap(::fixInstructionOperands)
         return Assembly.FunctionDefinition(
             name = tackyFunctionDefinition.name,
@@ -51,6 +48,7 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
                     }
                 }
                 Assembly.Instruction.Mov(
+                    type = symbolTable.objectSymbol(parameter).type,
                     src = src,
                     dst = Assembly.Operand.PseudoIdentifier(parameter),
                 )
@@ -228,6 +226,7 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
             is Tacky.Instruction.Copy ->
                 listOf(
                     Assembly.Instruction.Mov(
+                        type = tackyInstruction.src.assemblyType(),
                         src = tackyValueToOperand(tackyInstruction.src),
                         dst = tackyValueToOperand(tackyInstruction.dst),
                     ),
@@ -236,6 +235,7 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
             is Tacky.Instruction.JumpIfZero ->
                 listOf(
                     Assembly.Instruction.Cmp(
+                        type = tackyInstruction.src.assemblyType(),
                         src = tackyValueToOperand(tackyInstruction.src),
                         dst = Assembly.Operand.Immediate(0),
                     ),
@@ -248,6 +248,7 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
             is Tacky.Instruction.JumpIfNotZero ->
                 listOf(
                     Assembly.Instruction.Cmp(
+                        type = tackyInstruction.src.assemblyType(),
                         src = tackyValueToOperand(tackyInstruction.src),
                         dst = Assembly.Operand.Immediate(0),
                     ),
@@ -272,6 +273,7 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
             is Tacky.Instruction.Return ->
                 listOf(
                     Assembly.Instruction.Mov(
+                        type = tackyInstruction.value.assemblyType(),
                         src = tackyValueToOperand(tackyInstruction.value),
                         dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
                     ),
@@ -289,10 +291,11 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
                 }
             }
             is Tacky.Value.Variable -> {
-                val variableSymbol = symbolTable.variableSymbol(tackyValue.name)
-                when (variableSymbol.attributes) {
-                    VariableAttributes.Local -> Assembly.Operand.PseudoIdentifier(tackyValue.name)
-                    is VariableAttributes.Static -> Assembly.Operand.Data(tackyValue.name)
+                val objectSymbol = symbolTable.objectSymbol(tackyValue.name)
+                if (objectSymbol.static) {
+                    Assembly.Operand.Data(tackyValue.name)
+                } else {
+                    Assembly.Operand.PseudoIdentifier(tackyValue.name)
                 }
             }
         }
@@ -305,11 +308,13 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
         val dstAssembly = tackyValueToOperand(dst)
         return listOf(
             Assembly.Instruction.Mov(
+                type = src.assemblyType(),
                 src = tackyValueToOperand(src),
                 dst = dstAssembly,
             ),
             Assembly.Instruction.Unary(
                 operator = operator,
+                type = src.assemblyType(),
                 operand = dstAssembly,
             ),
         )
@@ -322,10 +327,12 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
         val dstAssembly = tackyValueToOperand(dst)
         return listOf(
             Assembly.Instruction.Mov(
+                type = src.assemblyType(),
                 src = Assembly.Operand.Immediate(0),
                 dst = dstAssembly,
             ),
             Assembly.Instruction.Cmp(
+                type = src.assemblyType(),
                 src = tackyValueToOperand(src),
                 dst = dstAssembly,
             ),
@@ -347,11 +354,13 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
         val dstAssembly = tackyValueToOperand(dst)
         return listOf(
             Assembly.Instruction.Mov(
+                type = left.assemblyType(),
                 src = leftAssembly,
                 dst = dstAssembly,
             ),
             Assembly.Instruction.Binary(
                 operator = operator,
+                type = left.assemblyType(),
                 src = rightAssembly,
                 dst = dstAssembly,
             ),
@@ -366,14 +375,17 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
     ): List<Assembly.Instruction> =
         listOf(
             Assembly.Instruction.Mov(
+                type = left.assemblyType(),
                 src = tackyValueToOperand(left),
                 dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
             ),
-            Assembly.Instruction.Cdq,
+            Assembly.Instruction.Cdq(type = left.assemblyType()),
             Assembly.Instruction.Idiv(
+                type = right.assemblyType(),
                 operand = tackyValueToOperand(right),
             ),
             Assembly.Instruction.Mov(
+                type = dst.assemblyType(),
                 src = Assembly.Operand.Register(registerValue),
                 dst = tackyValueToOperand(dst),
             ),
@@ -388,10 +400,12 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
         val dstAssembly = tackyValueToOperand(dst)
         return listOf(
             Assembly.Instruction.Mov(
+                type = left.assemblyType(),
                 src = Assembly.Operand.Immediate(0),
                 dst = dstAssembly,
             ),
             Assembly.Instruction.Cmp(
+                type = left.assemblyType(),
                 src = tackyValueToOperand(right),
                 dst = tackyValueToOperand(left),
             ),
@@ -411,14 +425,17 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
         val dstAssembly = tackyValueToOperand(dst)
         return listOf(
             Assembly.Instruction.Mov(
+                type = left.assemblyType(),
                 src = tackyValueToOperand(left),
                 dst = dstAssembly,
             ),
             Assembly.Instruction.Mov(
+                type = right.assemblyType(),
                 src = tackyValueToOperand(right),
                 dst = Assembly.Operand.Register(Assembly.RegisterValue.Cx),
             ),
             Assembly.Instruction.Shift(
+                type = left.assemblyType(),
                 operator = operator,
                 dst = dstAssembly,
             ),
@@ -443,13 +460,14 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
         registerArguments.forEachIndexed { index, arg ->
             add(
                 Assembly.Instruction.Mov(
+                    type = arg.assemblyType(),
                     src = tackyValueToOperand(arg),
                     dst = Assembly.Operand.Register(argumentRegisters[index]),
                 ),
             )
         }
         stackArguments.reversed().forEach { arg ->
-            // even though our values are 4-bytes, pushq accepts 8-bytes operands,
+            // even though our values can be 4-bytes, pushq accepts 8-bytes operands,
             // in case of immediate or register values there's no problem
             // but if the operand is the value somewhere in the memory, higher 4-bytes may lie in the inaccessible memory
             // to prevent that, we move the 4-bytes value to the register first and then push the register
@@ -459,7 +477,13 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
                 }
 
                 else -> {
-                    add(Assembly.Instruction.Mov(assemblyArgument, Assembly.Operand.Register(Assembly.RegisterValue.Ax)))
+                    add(
+                        Assembly.Instruction.Mov(
+                            type = arg.assemblyType(),
+                            src = assemblyArgument,
+                            dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                        ),
+                    )
                     add(Assembly.Instruction.Push(Assembly.Operand.Register(Assembly.RegisterValue.Ax)))
                 }
             }
@@ -473,7 +497,20 @@ class TackyAssemblyGenerator(private val symbolTable: SymbolTable) {
         }
 
         val assemblyDst = tackyValueToOperand(call.dst)
-        add(Assembly.Instruction.Mov(Assembly.Operand.Register(Assembly.RegisterValue.Ax), assemblyDst))
+        add(
+            Assembly.Instruction.Mov(
+                type = call.dst.assemblyType(),
+                src = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                dst = assemblyDst,
+            ),
+        )
+    }
+
+    private fun Tacky.Value.assemblyType() = when (this) {
+        is Tacky.Value.Constant -> when (this.value) {
+            is AST.IntConstant -> Assembly.Type.LongWord
+        }
+        is Tacky.Value.Variable -> symbolTable.objectSymbol(name).type
     }
 }
 
