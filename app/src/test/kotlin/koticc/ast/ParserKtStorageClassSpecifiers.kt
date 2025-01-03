@@ -94,11 +94,11 @@ class ParserKtStorageClassSpecifiers {
     }
 
     class InvalidDeclarationTestCases : VarargArgumentsProvider(
-        "static a = 1" to "invalid type specifier",
-        "extern a = 1" to "invalid type specifier",
+        "static a = 1" to "invalid type specifier: ''",
+        "extern a = 1" to "invalid type specifier: ''",
         "extern static int a" to "invalid storage class specifier",
-        "static a(void)" to "invalid type specifier",
-        "extern a(void)" to "invalid type specifier",
+        "static a(void)" to "invalid type specifier: ''",
+        "extern a(void)" to "invalid type specifier: ''",
     )
 
     @ParameterizedTest

@@ -43,7 +43,7 @@ int main(void) {
         VarargArgumentsProvider(
             "main" to
                 ParserError(
-                    "invalid type specifier",
+                    "invalid type specifier: ''",
                     Location(1, 1),
                 ),
             "int {" to ParserError("expected identifier, got '{'", Location(1, 5)),
@@ -51,7 +51,7 @@ int main(void) {
                 ParserError("expected '=' or '(', got '{'", Location(1, 10)),
             "int test() {" to ParserError("expected 'void' or 'int', got ')'", Location(1, 10)),
             "int main(void) {}abc" to
-                ParserError("invalid type specifier", Location(1, 18)),
+                ParserError("invalid type specifier: ''", Location(1, 18)),
         )
 
     @ParameterizedTest

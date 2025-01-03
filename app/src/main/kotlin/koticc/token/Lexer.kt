@@ -194,7 +194,8 @@ fun lexer(input: String): Either<LexerError, List<TokenWithLocation>> =
                             result.add(TokenWithLocation(keywordToken, Location(line, start + 1)))
                         } else {
                             result.add(
-                                TokenWithLocation(Token.Identifier(lineContent.substring(start, current + 1)),
+                                TokenWithLocation(
+                                    Token.Identifier(lineContent.substring(start, current + 1)),
                                     Location(line, start + 1),
                                 ),
                             )
@@ -220,6 +221,7 @@ data class ParsedToken(
 
 private val KEYWORD_TOKENS = mapOf(
     "int" to Token.IntKeyword,
+    "long" to Token.LongKeyword,
     "void" to Token.Void,
     "return" to Token.Return,
     "if" to Token.If,
@@ -234,7 +236,7 @@ private val KEYWORD_TOKENS = mapOf(
     "default" to Token.Default,
     "switch" to Token.Switch,
     "extern" to Token.Extern,
-    "static" to Token.Static
+    "static" to Token.Static,
 )
 
 private val NUMBER_TOKENS = listOf(

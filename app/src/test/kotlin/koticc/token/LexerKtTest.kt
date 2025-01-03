@@ -40,7 +40,7 @@ int main(void) {
             """
             abc cde_fgh 123 void return int (){};=-+~*/%^&| << >> < > <= >= != && || ! += -=
             *= /= %= &= ^= |= <<= >>= ++ -- if else ifnot elsenot ? : goto _id
-            do while for break continue case default switch , extern static
+            do while for break continue case default switch , extern static long
             """.trimIndent()
 
         assertEquals(
@@ -107,6 +107,7 @@ int main(void) {
                 Token.Comma,
                 Token.Extern,
                 Token.Static,
+                Token.LongKeyword,
             ).right(),
             lexer(input).map { tokens -> tokens.map { it.value } },
         )

@@ -82,6 +82,10 @@ sealed interface Token : Displayable {
         override fun toDisplayString(): String = "int"
     }
 
+    data object LongKeyword : Token {
+        override fun toDisplayString(): String = "long"
+    }
+
     // punctuation
     data object OpenParen : Token {
         override fun toDisplayString(): String = "("

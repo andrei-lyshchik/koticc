@@ -168,6 +168,7 @@ private class Parser(
     private fun toDeclarationSpecifierOrNull(token: Token): DeclarationSpecifier? =
         when (token) {
             Token.IntKeyword -> DeclarationSpecifier.Type.Int
+            Token.LongKeyword -> DeclarationSpecifier.Type.Long
             Token.Extern -> DeclarationSpecifier.StorageClass.Extern
             Token.Static -> DeclarationSpecifier.StorageClass.Static
             else -> null
@@ -183,7 +184,7 @@ private class Parser(
                     AST.Declaration.Variable(
                         nameToken.value.value,
                         null,
-                        Type.Int,
+                        declarationSpecifiers.type,
                         declarationSpecifiers.storageClass,
                         declarationSpecifiers.location,
                     )
@@ -195,7 +196,7 @@ private class Parser(
                     AST.Declaration.Variable(
                         nameToken.value.value,
                         initializer,
-                        Type.Int,
+                        declarationSpecifiers.type,
                         declarationSpecifiers.storageClass,
                         declarationSpecifiers.location,
                     )
@@ -245,10 +246,8 @@ private class Parser(
             specifiers.add(specifier)
             nextToken()
         }
-        val types = specifiers.filterIsInstance<DeclarationSpecifier.Type>()
-        ensure(types.size == 1) {
-            ParserError("invalid type specifier", startLocation)
-        }
+        val typeSpecifiers = specifiers.filterIsInstance<DeclarationSpecifier.Type>()
+        val type = parseType(typeSpecifiers, startLocation).bind()
 
         val storageClasses = specifiers.filterIsInstance<DeclarationSpecifier.StorageClass>()
         ensure(storageClasses.size <= 1) {
@@ -256,8 +255,25 @@ private class Parser(
         }
 
         DeclarationSpecifiers(
+            type = type,
             storageClass = storageClasses.firstOrNull()?.toASTStorageClass(),
             location = startLocation,
+        )
+    }
+
+    private fun parseType(typeSpecifiers: List<DeclarationSpecifier.Type>, startLocation: Location): Either<ParserError, Type.Data> = either {
+        if (typeSpecifiers == listOf(DeclarationSpecifier.Type.Int)) {
+            return@either Type.Int
+        }
+        if (typeSpecifiers == listOf(DeclarationSpecifier.Type.Long) ||
+            typeSpecifiers == listOf(DeclarationSpecifier.Type.Long, DeclarationSpecifier.Type.Int) ||
+            typeSpecifiers == listOf(DeclarationSpecifier.Type.Int, DeclarationSpecifier.Type.Long)
+        ) {
+            return@either Type.Long
+        }
+        val typeSpecifierString = typeSpecifiers.joinToString(separator = " ")
+        raise(
+            ParserError("invalid type specifier: '$typeSpecifierString'", startLocation),
         )
     }
 
@@ -770,6 +786,7 @@ private sealed interface BinaryOperatorLike {
 private sealed interface DeclarationSpecifier {
     sealed interface Type : DeclarationSpecifier {
         data object Int : Type
+        data object Long : Type
     }
     sealed interface StorageClass : DeclarationSpecifier {
         data object Extern : StorageClass
@@ -779,6 +796,7 @@ private sealed interface DeclarationSpecifier {
 
 // type is only int for now
 private data class DeclarationSpecifiers(
+    val type: Type.Data,
     val storageClass: AST.StorageClass?,
     val location: Location,
 )

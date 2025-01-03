@@ -98,6 +98,9 @@ class BlockBuilder {
     fun int(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
         setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Int))
 
+    fun long(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
+        setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Long))
+
     fun assign(left: AST.Expression, right: AST.Expression, type: Type.Data? = null) {
         addBlockItem(
             AST.BlockItem.Statement(
@@ -400,7 +403,7 @@ class VariableDeclarationBuilder(private val name: String, private val storageCl
     }
 
     fun buildVariableDeclaration(): AST.Declaration.Variable {
-        return AST.Declaration.Variable(name, initializer, Type.Int, storageClass, DUMMY_LOCATION)
+        return AST.Declaration.Variable(name, initializer, type, storageClass, DUMMY_LOCATION)
     }
 
     override fun build(): AST.BlockItem = AST.BlockItem.Declaration(
