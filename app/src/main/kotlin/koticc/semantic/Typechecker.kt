@@ -107,6 +107,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             is AST.Expression.Constant -> {
                 when (declaration.initializer.value) {
                     is AST.IntConstant -> InitialValue.Constant(declaration.initializer.value.value)
+                    is AST.LongConstant -> TODO()
                 }
             }
             null -> {
@@ -242,6 +243,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     is AST.Expression.Constant -> {
                         when (variableDeclaration.initializer.value) {
                             is AST.IntConstant -> InitialValue.Constant(variableDeclaration.initializer.value.value)
+                            is AST.LongConstant -> TODO()
                         }
                     }
                     null -> InitialValue.Constant(0)

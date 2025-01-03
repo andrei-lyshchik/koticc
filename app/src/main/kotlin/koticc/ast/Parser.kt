@@ -522,6 +522,10 @@ private class Parser(
                         nextToken()
                         AST.Expression.Constant(AST.IntConstant(peekTokenValue.value), null, peekToken.location)
                     }
+                    is Token.LongLiteral -> {
+                        nextToken()
+                        AST.Expression.Constant(AST.LongConstant(peekTokenValue.value), null, peekToken.location)
+                    }
                     is Token.Identifier -> {
                         nextToken()
                         if (peekToken()?.value == Token.OpenParen) {

@@ -319,6 +319,10 @@ object AST {
         override fun toDisplayString(): String = value.toString()
     }
 
+    data class LongConstant(val value: Long) : Constant {
+        override fun toDisplayString(): String = value.toString()
+    }
+
     enum class UnaryOperator : Displayable {
         Negate,
         Complement,

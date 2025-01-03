@@ -288,6 +288,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
             is Tacky.Value.Constant -> {
                 when (tackyValue.value) {
                     is AST.IntConstant -> Assembly.Operand.Immediate(tackyValue.value.value)
+                    is AST.LongConstant -> TODO()
                 }
             }
             is Tacky.Value.Variable -> {
@@ -509,6 +510,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
     private fun Tacky.Value.assemblyType() = when (this) {
         is Tacky.Value.Constant -> when (this.value) {
             is AST.IntConstant -> Assembly.Type.LongWord
+            is AST.LongConstant -> TODO()
         }
         is Tacky.Value.Variable -> symbolTable.objectSymbol(name).type
     }

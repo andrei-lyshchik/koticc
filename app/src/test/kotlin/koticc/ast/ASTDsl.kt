@@ -471,6 +471,12 @@ val Int.e
 val Int.c
     get() = AST.IntConstant(this)
 
+val Long.e
+    get() = AST.Expression.Constant(AST.LongConstant(this), null, DUMMY_LOCATION)
+
+val Long.c
+    get() = AST.LongConstant(this)
+
 val String.e
     get() = AST.Expression.Variable(this, null, DUMMY_LOCATION)
 
