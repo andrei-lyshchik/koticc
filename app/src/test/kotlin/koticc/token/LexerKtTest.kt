@@ -113,6 +113,49 @@ int main(void) {
     }
 
     @Test
+    fun `int literals`() {
+        val input = "123 0 2147483647 ${Int.MAX_VALUE.toLong() + 1} ${Long.MAX_VALUE} 100l 200L"
+
+        assertEquals(
+            listOf(
+                Token.IntLiteral(123),
+                Token.IntLiteral(0),
+                Token.IntLiteral(2147483647),
+                Token.LongLiteral(Int.MAX_VALUE.toLong() + 1),
+                Token.LongLiteral(Long.MAX_VALUE),
+                Token.LongLiteral(100),
+                Token.LongLiteral(200),
+            )
+                .right(),
+            lexer(input).map { tokens -> tokens.map { it.value } },
+        )
+    }
+
+    @Test
+    fun `should return error if long literal is followed by a digit`() {
+        val input = "100l0"
+
+        assertEquals(
+            LexerError("invalid number literal: '100l0'", Location(1, 1)).left(),
+            lexer(input),
+        )
+    }
+
+    @Test
+    fun `should correctly handle non-word chars after numbers`() {
+        val input = "123+"
+
+        assertEquals(
+            listOf(
+                Token.IntLiteral(123),
+                Token.Plus,
+            )
+                .right(),
+            lexer(input).map { tokens -> tokens.map { it.value } },
+        )
+    }
+
+    @Test
     fun `should return error for unexpected char`() {
         val input = "$"
 
@@ -127,17 +170,39 @@ int main(void) {
         val input = "123a"
 
         assertEquals(
-            LexerError("unexpected character 'a' after int literal", Location(1, 4)).left(),
+            LexerError("invalid number literal: '123a'", Location(1, 1)).left(),
             lexer(input),
         )
     }
 
     @Test
-    fun `should return error if int literal is too big to fit in an int`() {
+    fun `should return long if int literal is too big to fit in an int`() {
         val input = "2147483648"
 
         assertEquals(
-            LexerError("invalid integer literal: '2147483648'", Location(1, 1)).left(),
+            listOf(
+                Token.LongLiteral(2147483648),
+            ).right(),
+            lexer(input).map { tokens -> tokens.map { it.value } },
+        )
+    }
+
+    @Test
+    fun `should return error if long literal is followed by a char`() {
+        val input = "123Lx"
+
+        assertEquals(
+            LexerError("invalid number literal: '123Lx'", Location(1, 1)).left(),
+            lexer(input),
+        )
+    }
+
+    @Test
+    fun `should return error if long literal is too big to fit into long`() {
+        val input = "9223372036854775808"
+
+        assertEquals(
+            LexerError("invalid number literal: '9223372036854775808'", Location(1, 1)).left(),
             lexer(input),
         )
     }

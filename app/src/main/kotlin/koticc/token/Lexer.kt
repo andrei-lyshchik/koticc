@@ -3,8 +3,9 @@
 package koticc.token
 
 import arrow.core.Either
+import arrow.core.left
 import arrow.core.raise.either
-import arrow.core.raise.ensure
+import arrow.core.raise.ensureNotNull
 import koticc.CompilerError
 
 data class LexerError(val message: String, val location: Location) : CompilerError {
@@ -21,30 +22,9 @@ fun lexer(input: String): Either<LexerError, List<TokenWithLocation>> =
                 val char = lineContent[current]
                 when {
                     char.isDigit() -> {
-                        val start = current
-                        while (current + 1 < lineContent.length && lineContent[current + 1].isDigit()) {
-                            current++
-                        }
-                        ensure(lineContent.getOrNull(current + 1)?.isLetter() != true) {
-                            LexerError(
-                                "unexpected character '${lineContent.getOrNull(current + 1)}' after int literal",
-                                Location(line, current + 2),
-                            )
-                        }
-                        val intLiteralString = lineContent.substring(start, current + 1)
-                        val intLiteralValue =
-                            intLiteralString
-                                .parseInt()
-                                .mapLeft {
-                                    LexerError(
-                                        "invalid integer literal: '$intLiteralString'",
-                                        Location(line, start + 1),
-                                    )
-                                }
-                                .bind()
-                        result.add(
-                            TokenWithLocation(Token.IntLiteral(intLiteralValue), Location(line, start + 1)),
-                        )
+                        val parsedToken = parseNumberToken(lineContent, current, line).bind()
+                        result.add(parsedToken.value)
+                        current = parsedToken.newCurrent
                     }
                     char == '(' -> result.add(TokenWithLocation(Token.OpenParen, Location(line, current + 1)))
                     char == ')' -> result.add(TokenWithLocation(Token.CloseParen, Location(line, current + 1)))
@@ -209,27 +189,15 @@ fun lexer(input: String): Either<LexerError, List<TokenWithLocation>> =
                         ) {
                             current++
                         }
-                        when (val identifier = lineContent.substring(start, current + 1)) {
-                            "int" -> result.add(TokenWithLocation(Token.IntKeyword, Location(line, start + 1)))
-                            "void" -> result.add(TokenWithLocation(Token.Void, Location(line, start + 1)))
-                            "return" -> result.add(TokenWithLocation(Token.Return, Location(line, start + 1)))
-                            "if" -> result.add(TokenWithLocation(Token.If, Location(line, start + 1)))
-                            "else" -> result.add(TokenWithLocation(Token.Else, Location(line, start + 1)))
-                            "goto" -> result.add(TokenWithLocation(Token.Goto, Location(line, start + 1)))
-                            "do" -> result.add(TokenWithLocation(Token.Do, Location(line, start + 1)))
-                            "while" -> result.add(TokenWithLocation(Token.While, Location(line, start + 1)))
-                            "for" -> result.add(TokenWithLocation(Token.For, Location(line, start + 1)))
-                            "break" -> result.add(TokenWithLocation(Token.Break, Location(line, start + 1)))
-                            "continue" -> result.add(TokenWithLocation(Token.Continue, Location(line, start + 1)))
-                            "case" -> result.add(TokenWithLocation(Token.Case, Location(line, start + 1)))
-                            "default" -> result.add(TokenWithLocation(Token.Default, Location(line, start + 1)))
-                            "switch" -> result.add(TokenWithLocation(Token.Switch, Location(line, start + 1)))
-                            "extern" -> result.add(TokenWithLocation(Token.Extern, Location(line, start + 1)))
-                            "static" -> result.add(TokenWithLocation(Token.Static, Location(line, start + 1)))
-                            else ->
-                                result.add(
-                                    TokenWithLocation(Token.Identifier(identifier), Location(line, start + 1)),
-                                )
+                        val keywordToken = KEYWORD_TOKENS[lineContent.substring(start, current + 1)]
+                        if (keywordToken != null) {
+                            result.add(TokenWithLocation(keywordToken, Location(line, start + 1)))
+                        } else {
+                            result.add(
+                                TokenWithLocation(Token.Identifier(lineContent.substring(start, current + 1)),
+                                    Location(line, start + 1),
+                                ),
+                            )
                         }
                     }
                     else -> raise(LexerError("unexpected character: '$char'", Location(line, current + 1)))
@@ -245,4 +213,67 @@ private fun Char.isIdentifierStart() = isLetter() || this == '_'
 
 private fun Char.isIdentifierPart() = isLetterOrDigit() || this == '_'
 
-private fun String.parseInt() = Either.catchOrThrow<NumberFormatException, Int> { toInt() }
+data class ParsedToken(
+    val value: TokenWithLocation,
+    val newCurrent: Int,
+)
+
+private val KEYWORD_TOKENS = mapOf(
+    "int" to Token.IntKeyword,
+    "void" to Token.Void,
+    "return" to Token.Return,
+    "if" to Token.If,
+    "else" to Token.Else,
+    "goto" to Token.Goto,
+    "do" to Token.Do,
+    "while" to Token.While,
+    "for" to Token.For,
+    "break" to Token.Break,
+    "continue" to Token.Continue,
+    "case" to Token.Case,
+    "default" to Token.Default,
+    "switch" to Token.Switch,
+    "extern" to Token.Extern,
+    "static" to Token.Static
+)
+
+private val NUMBER_TOKENS = listOf(
+    """(\d+)[lL]\b""".toRegex() to { match: MatchResult, line: Int, current: Int ->
+        either {
+            val longValue = match.groupValues[1].toLongOrNull()
+            ensureNotNull(longValue) {
+                LexerError("invalid long literal: '${match.value}'", Location(line, current + 1))
+            }
+            TokenWithLocation(Token.LongLiteral(longValue), Location(line, current + 1))
+        }
+    },
+    """\d+\b""".toRegex() to { match: MatchResult, line: Int, current: Int ->
+        either {
+            val intValue = match.value.toIntOrNull()
+            if (intValue != null) {
+                return@either TokenWithLocation(Token.IntLiteral(intValue), Location(line, current + 1))
+            }
+            val longValue = match.value.toLongOrNull()
+            ensureNotNull(longValue) {
+                LexerError("invalid number literal: '${match.value}'", Location(line, current + 1))
+            }
+            TokenWithLocation(Token.LongLiteral(longValue), Location(line, current + 1))
+        }
+    },
+)
+
+private fun parseNumberToken(lineContent: String, current: Int, line: Int): Either<LexerError, ParsedToken> {
+    for ((regex, parser) in NUMBER_TOKENS) {
+        val match = regex.matchAt(lineContent, current)
+        if (match != null) {
+            return parser(match, line, current)
+                .map { token ->
+                    ParsedToken(token, current + match.value.length - 1)
+                }
+        }
+    }
+
+    val numberLiteral = lineContent.substring(current).takeWhile { it.isLetterOrDigit() }
+    return LexerError("invalid number literal: '$numberLiteral'", Location(line, current + 1))
+        .left()
+}

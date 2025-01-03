@@ -12,6 +12,10 @@ sealed interface Token : Displayable {
         override fun toDisplayString(): String = value.toString()
     }
 
+    data class LongLiteral(val value: Long) : Token {
+        override fun toDisplayString(): String = value.toString()
+    }
+
     // keywords
     data object Void : Token {
         override fun toDisplayString(): String = "void"
