@@ -424,6 +424,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 }
                 expression.ofType(Type.Int)
             }
+
+            is AST.Expression.Cast -> TODO()
         }
     }
 

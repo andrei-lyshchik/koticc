@@ -345,6 +345,8 @@ internal class IdentifierResolver {
                         arguments = expression.arguments.map { resolveExpression(it, identifierMapping).bind() },
                     )
                 }
+
+                is AST.Expression.Cast -> TODO()
             }
         }
 

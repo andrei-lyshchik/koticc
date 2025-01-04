@@ -53,9 +53,12 @@ object AST {
         }
     }
 
-    enum class StorageClass {
+    enum class StorageClass : Displayable {
         Extern,
         Static,
+        ;
+
+        override fun toDisplayString(): String = name.lowercase()
     }
 
     data class FunctionParameter(
@@ -310,6 +313,17 @@ object AST {
             override fun toDisplayString(): String = "$name(${arguments.joinToString(", ") { it.toDisplayString() }})"
 
             override fun ofType(type: Type.Data): FunctionCall = copy(type = type)
+        }
+
+        data class Cast(
+            val expression: Expression,
+            val targetType: Type.Data,
+            override val type: Type.Data?,
+            override val location: Location,
+        ) : Expression {
+            override fun toDisplayString(): String = "(${targetType.toDisplayString()}) ${expression.toDisplayString()}"
+
+            override fun ofType(type: Type.Data): Expression = copy(type = type)
         }
     }
 

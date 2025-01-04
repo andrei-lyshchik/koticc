@@ -1,14 +1,22 @@
 package koticc.ast
 
-sealed interface Type {
+import koticc.common.Displayable
+
+sealed interface Type : Displayable {
     sealed interface Data : Type
 
-    data object Int : Data
+    data object Int : Data {
+        override fun toDisplayString(): String = "int"
+    }
 
-    data object Long : Data
+    data object Long : Data {
+        override fun toDisplayString(): String = "long"
+    }
 
     data class Function(
         val parameters: List<Data>,
         val returnType: Data,
-    ) : Type
+    ) : Type {
+        override fun toDisplayString(): String = "function(${parameters.joinToString { it.toDisplayString() }}): ${returnType.toDisplayString()}"
+    }
 }

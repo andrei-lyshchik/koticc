@@ -480,6 +480,9 @@ val Long.c
 val String.e
     get() = AST.Expression.Variable(this, null, DUMMY_LOCATION)
 
+fun cast(type: Type.Data, expression: AST.Expression) =
+    AST.Expression.Cast(expression, type, null, DUMMY_LOCATION)
+
 operator fun String.invoke(vararg args: AST.Expression): AST.Expression {
     return AST.Expression.FunctionCall(
         name = this,

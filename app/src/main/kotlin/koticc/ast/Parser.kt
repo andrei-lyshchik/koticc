@@ -74,34 +74,6 @@ private class Parser(
             AST.FunctionParameter(nameToken.value.value, nameToken.location)
         }
 
-    private fun parseFunctionDeclaration(): Either<ParserError, AST.Declaration.Function> =
-        either {
-            val declarationSpecifiers = parseDeclarationSpecifiers().bind()
-            val nameToken = expectIdentifier().bind()
-            expectToken(Token.OpenParen).bind()
-            val parameters = parseFunctionDeclarationParameters().bind()
-            expectToken(Token.CloseParen).bind()
-
-            val peekToken = peekToken()
-            val body = when (peekToken?.value) {
-                Token.OpenBrace -> parseBlock().bind()
-                Token.Semicolon -> {
-                    nextToken()
-                    null
-                }
-                else -> raise(ParserError("expected block or semicolon, got ${peekToken?.value.toDisplayString()}", peekToken?.location))
-            }
-
-            return AST.Declaration.Function(
-                name = nameToken.value.value,
-                parameters = parameters.map { it.value },
-                body = body,
-                type = Type.Function(parameters = parameters.map { it.type }, returnType = Type.Int),
-                storageClass = declarationSpecifiers.storageClass,
-                location = declarationSpecifiers.location,
-            ).right()
-        }
-
     private fun parseFunctionDeclarationParameters() = either {
         val paramOrVoidToken = peekToken()
         when (paramOrVoidToken?.value) {
@@ -247,7 +219,7 @@ private class Parser(
             nextToken()
         }
         val typeSpecifiers = specifiers.filterIsInstance<DeclarationSpecifier.Type>()
-        val type = parseType(typeSpecifiers, startLocation).bind()
+        val type = getType(typeSpecifiers, startLocation).bind()
 
         val storageClasses = specifiers.filterIsInstance<DeclarationSpecifier.StorageClass>()
         ensure(storageClasses.size <= 1) {
@@ -261,7 +233,15 @@ private class Parser(
         )
     }
 
-    private fun parseType(typeSpecifiers: List<DeclarationSpecifier.Type>, startLocation: Location): Either<ParserError, Type.Data> = either {
+    private fun parseType(): Either<ParserError, Type.Data> = either {
+        val declarationSpecifiers = parseDeclarationSpecifiers().bind()
+        ensure(declarationSpecifiers.storageClass == null) {
+            ParserError("storage class specifier: ${declarationSpecifiers.storageClass?.toDisplayString()} not allowed in type", declarationSpecifiers.location)
+        }
+        declarationSpecifiers.type
+    }
+
+    private fun getType(typeSpecifiers: List<DeclarationSpecifier.Type>, startLocation: Location): Either<ParserError, Type.Data> = either {
         if (typeSpecifiers == listOf(DeclarationSpecifier.Type.Int)) {
             return@either Type.Int
         }
@@ -543,10 +523,23 @@ private class Parser(
                         }
                     }
                     is Token.OpenParen -> {
-                        nextToken()
-                        val expression = parseExpression(0).bind()
-                        expectToken(Token.CloseParen).bind()
-                        expression
+                        val closeParen = expectToken(Token.OpenParen).bind()
+                        val possibleTypeSpecifier = peekToken()
+                        if (isDeclarationSpecifier(possibleTypeSpecifier?.value)) {
+                            val targetType = parseType().bind()
+                            expectToken(Token.CloseParen).bind()
+                            val expression = parseExpression(0).bind()
+                            AST.Expression.Cast(
+                                targetType = targetType,
+                                expression = expression,
+                                type = null,
+                                location = closeParen.location,
+                            )
+                        } else {
+                            val expression = parseExpression(0).bind()
+                            expectToken(Token.CloseParen).bind()
+                            expression
+                        }
                     }
                     is Token.Minus,
                     Token.Tilde,
