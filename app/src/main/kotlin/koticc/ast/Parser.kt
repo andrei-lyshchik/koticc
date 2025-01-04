@@ -76,16 +76,16 @@ private class Parser(
 
     private fun parseFunctionDeclarationParameters() = either {
         val paramOrVoidToken = peekToken()
-        when (paramOrVoidToken?.value) {
-            Token.Void -> {
+        when {
+            paramOrVoidToken?.value == Token.Void -> {
                 nextToken()
                 emptyList()
             }
-            Token.IntKeyword -> {
+            isDeclarationSpecifier(paramOrVoidToken?.value) -> {
                 val params = mutableListOf<FunctionParameterWithType>()
                 while (true) {
-                    expectToken(Token.IntKeyword).bind()
-                    params.add(FunctionParameterWithType(value = expectFunctionParameter().bind(), type = Type.Int))
+                    val type = parseType().bind()
+                    params.add(FunctionParameterWithType(value = expectFunctionParameter().bind(), type = type))
 
                     val peekToken = peekToken()
                     when (peekToken?.value) {
@@ -183,7 +183,7 @@ private class Parser(
                             nameToken.value.value,
                             parameters.map { it.value },
                             body,
-                            Type.Function(parameters = parameters.map { it.type }, returnType = Type.Int),
+                            Type.Function(parameters = parameters.map { it.type }, returnType = declarationSpecifiers.type),
                             declarationSpecifiers.storageClass,
                             declarationSpecifiers.location,
                         )
@@ -193,7 +193,7 @@ private class Parser(
                             nameToken.value.value,
                             parameters.map { it.value },
                             null,
-                            Type.Function(parameters = parameters.map { it.type }, returnType = Type.Int),
+                            Type.Function(parameters = parameters.map { it.type }, returnType = declarationSpecifiers.type),
                             declarationSpecifiers.storageClass,
                             declarationSpecifiers.location,
                         )

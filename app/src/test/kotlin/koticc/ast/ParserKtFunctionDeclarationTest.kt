@@ -97,4 +97,56 @@ class ParserKtFunctionDeclarationTest {
             actual = actual,
         )
     }
+
+    @Test
+    fun `should parse non-int function parameters`() {
+        val input = """
+            int foo(long a, int b);
+        """.trimIndent()
+
+        val actual = parseInput(input)
+
+        assertEqualsIgnoringLocations(
+            expected = program {
+                function("foo", Type.Function(parameters = listOf(Type.Long, Type.Int), returnType = Type.Int), "a", "b")
+            },
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should parse function declaration returning non-int type`() {
+        val input = """
+            long foo(void);
+        """.trimIndent()
+
+        val actual = parseInput(input)
+
+        assertEqualsIgnoringLocations(
+            expected = program {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Long))
+            },
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should parse function definition returning non-int type`() {
+        val input = """
+            long foo(void) {
+                return 1;
+            }
+        """.trimIndent()
+
+        val actual = parseInput(input)
+
+        assertEqualsIgnoringLocations(
+            expected = program {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Long)) {
+                    return_(1.e)
+                }
+            },
+            actual = actual,
+        )
+    }
 }
