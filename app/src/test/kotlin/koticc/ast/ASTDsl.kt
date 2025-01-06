@@ -509,6 +509,33 @@ operator fun AST.Expression.plus(other: AST.Expression): AST.Expression {
     )
 }
 
+operator fun AST.Expression.unaryMinus(): AST.Expression {
+    return AST.Expression.Unary(
+        operator = AST.UnaryOperator.Negate,
+        operand = this,
+        type = null,
+        location = DUMMY_LOCATION,
+    )
+}
+
+operator fun AST.Expression.not(): AST.Expression {
+    return AST.Expression.Unary(
+        operator = AST.UnaryOperator.LogicalNegate,
+        operand = this,
+        type = null,
+        location = DUMMY_LOCATION,
+    )
+}
+
+fun AST.Expression.complement(): AST.Expression {
+    return AST.Expression.Unary(
+        operator = AST.UnaryOperator.Complement,
+        operand = this,
+        type = null,
+        location = DUMMY_LOCATION,
+    )
+}
+
 infix fun AST.Expression.plusAssign(other: AST.Expression): AST.Expression {
     return AST.Expression.CompoundAssignment(
         operator = AST.CompoundAssignmentOperator.Add,
@@ -653,3 +680,5 @@ fun cond(condition: AST.Expression, thenExpression: AST.Expression, elseExpressi
     )
 
 fun AST.Expression.int() = ofType(Type.Int)
+
+fun AST.Expression.long() = ofType(Type.Long)

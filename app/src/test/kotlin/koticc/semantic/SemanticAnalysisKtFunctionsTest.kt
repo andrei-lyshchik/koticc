@@ -6,10 +6,12 @@ import koticc.VarargArgumentsProvider
 import koticc.ast.AST
 import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
+import koticc.ast.cast
 import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.int
 import koticc.ast.invoke
+import koticc.ast.long
 import koticc.ast.plus
 import koticc.ast.program
 import org.junit.jupiter.params.ParameterizedTest
@@ -573,6 +575,101 @@ class SemanticAnalysisKtFunctionsTest {
 
         assertEquals(
             expected = SemanticAnalysisError("function 'a' redeclared as a variable", DUMMY_LOCATION).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should resolve function call with casts needed`() {
+        val program = program {
+            function("foo", Type.Function(parameters = listOf(Type.Long, Type.Int), returnType = Type.Int), "a", "b")
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                call("foo", 1.e, 2L.e)
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("foo", Type.Function(parameters = listOf(Type.Long, Type.Int), returnType = Type.Int), "a.0", "b.1")
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        call("foo", cast(Type.Long, 1.e.int()).long(), cast(Type.Int, 2L.e.long()).int(), type = Type.Int)
+                    }
+                },
+                renamedVariableCount = 2,
+                symbolTable = mapOf(
+                    "foo" to Type.Function(parameters = listOf(Type.Long, Type.Int), returnType = Type.Int).toSymbol(defined = false),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should resolve function calls with non-int return type`() {
+        val program = program {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Long)) {
+                return_(1L.e)
+            }
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                call("foo")
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Long)) {
+                        return_(1L.e.long())
+                    }
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        call("foo", type = Type.Long)
+                    }
+                },
+                renamedVariableCount = 0,
+                symbolTable = mapOf(
+                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Long).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should resolve return statement with cast needed`() {
+        val program = program {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Long)) {
+                return_(1.e)
+            }
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                return_("foo"())
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Long)) {
+                        return_(cast(Type.Long, 1.e.int()).long())
+                    }
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        return_(cast(Type.Int, "foo"().long()).int())
+                    }
+                },
+                renamedVariableCount = 0,
+                symbolTable = mapOf(
+                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Long).toSymbol(),
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                ),
+            ).right(),
             actual = actual,
         )
     }

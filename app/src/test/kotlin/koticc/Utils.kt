@@ -7,8 +7,6 @@ import koticc.assembly.writeAssemblyProgram
 import koticc.ast.AST
 import koticc.ast.ParserError
 import koticc.ast.parse
-import koticc.semantic.SymbolTable
-import koticc.semantic.empty
 import koticc.tacky.Tacky
 import koticc.token.lexer
 import java.io.StringWriter
@@ -24,7 +22,7 @@ fun parseInput(input: String): Either<ParserError, AST.Program> {
     return parse(tokens)
 }
 
-fun tackyProgramToAssemblyString(program: Tacky.Program, symbolTable: SymbolTable = empty()): String {
+fun tackyProgramToAssemblyString(program: Tacky.Program): String {
     val assembly = tackyProgramToAssembly(program)
     return assemblyToString(assembly)
 }

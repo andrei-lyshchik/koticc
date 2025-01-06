@@ -5,13 +5,12 @@ package koticc.tacky
 import koticc.ast.AST
 import koticc.ast.LabelName
 import koticc.semantic.SymbolTable
-import koticc.semantic.empty
 
 fun tackyProgram(block: TackyProgramBuilder.() -> Unit): Tacky.Program = TackyProgramBuilder().apply(block).build()
 
 class TackyProgramBuilder {
     private val topLevel = mutableListOf<Tacky.TopLevel>()
-    var symbolTable: SymbolTable = empty()
+    var symbolTable: SymbolTable = emptyMap()
 
     fun function(name: String, vararg parameters: String, block: FunctionBuilder.() -> Unit) {
         topLevel += Tacky.TopLevel.FunctionDefinition(FunctionBuilder(name, parameters, global = true).apply(block).build())

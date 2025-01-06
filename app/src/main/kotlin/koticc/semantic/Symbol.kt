@@ -38,8 +38,6 @@ sealed interface InitialValue {
 
 typealias SymbolTable = Map<String, Symbol>
 
-fun empty(): SymbolTable = emptyMap()
-
 fun SymbolTable.functionSymbol(functionName: String): Symbol.Function =
     this[functionName] as? Symbol.Function
         ?: error("Bug: function $functionName should have been added to the symbol table during semantic analysis, got $this")

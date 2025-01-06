@@ -3,6 +3,7 @@ package koticc.semantic
 import arrow.core.Either
 import arrow.core.raise.either
 import arrow.core.raise.ensure
+import arrow.core.raise.ensureNotNull
 import koticc.ast.AST
 import koticc.ast.Type
 import koticc.token.Location
@@ -45,39 +46,40 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     ): Either<SemanticAnalysisError, AST.Declaration.Function> = either {
         val global = functionDeclaration.storageClass != AST.StorageClass.Static
         val existingSymbol = symbolTable[functionDeclaration.name]
-        val (previouslyDefined, previouslyGlobal) = when (existingSymbol?.value) {
-            is Symbol.Function -> {
-                val bothDefined = existingSymbol.value.defined && functionDeclaration.body != null
-                val conflictingTypes = existingSymbol.value.type != functionDeclaration.type
-                if (bothDefined || conflictingTypes) {
-                    raise(
-                        SemanticAnalysisError(
-                            "conflicting declaration of '${originalIdentifierName(functionDeclaration.name)}' " +
-                                "at ${existingSymbol.location.toDisplayString()}",
-                            functionDeclaration.location,
-                        ),
-                    )
+        val (previouslyDefined, previouslyGlobal) = if (existingSymbol != null) {
+            when (val symbolValue = existingSymbol.value) {
+                is Symbol.Function -> {
+                    val bothDefined = symbolValue.defined && functionDeclaration.body != null
+                    val conflictingTypes = symbolValue.type != functionDeclaration.type
+                    if (bothDefined || conflictingTypes) {
+                        raise(
+                            SemanticAnalysisError(
+                                "conflicting declaration of '${originalIdentifierName(functionDeclaration.name)}' " +
+                                    "at ${existingSymbol.location.toDisplayString()}",
+                                functionDeclaration.location,
+                            ),
+                        )
+                    }
+                    if (symbolValue.global && functionDeclaration.storageClass == AST.StorageClass.Static) {
+                        raise(
+                            SemanticAnalysisError(
+                                "static function '${originalIdentifierName(functionDeclaration.name)}' declaration " +
+                                    "follows non-static at ${existingSymbol.location.toDisplayString()}",
+                                functionDeclaration.location,
+                            ),
+                        )
+                    }
+                    symbolValue.defined to symbolValue.global
                 }
-                if (existingSymbol.value.global && functionDeclaration.storageClass == AST.StorageClass.Static) {
-                    raise(
-                        SemanticAnalysisError(
-                            "static function '${originalIdentifierName(functionDeclaration.name)}' declaration " +
-                                "follows non-static at ${existingSymbol.location.toDisplayString()}",
-                            functionDeclaration.location,
-                        ),
-                    )
-                }
-                existingSymbol.value.defined to existingSymbol.value.global
+                is Symbol.Variable -> raise(
+                    SemanticAnalysisError(
+                        "variable '${originalIdentifierName(functionDeclaration.name)}' redeclared as a function",
+                        functionDeclaration.location,
+                    ),
+                )
             }
-            is Symbol.Variable -> raise(
-                SemanticAnalysisError(
-                    "variable '${originalIdentifierName(functionDeclaration.name)}' redeclared as a function",
-                    functionDeclaration.location,
-                ),
-            )
-            null -> {
-                false to null
-            }
+        } else {
+            false to null
         }
         symbolTable[functionDeclaration.name] = SymbolWithLocation(
             value = Symbol.Function(
@@ -95,7 +97,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                         location = functionDeclaration.location,
                     )
                 }
-                typecheckBlock(it).bind()
+                typecheckBlock(it, functionDeclaration.type).bind()
             },
         )
     }
@@ -149,8 +151,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 )
             }
 
-            val existingInitialValue = existingVariable.attributes.initialValue
-            when (existingInitialValue) {
+            when (val existingInitialValue = existingVariable.attributes.initialValue) {
                 is InitialValue.Constant -> {
                     if (initialValue is InitialValue.Constant) {
                         raise(
@@ -187,7 +188,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         )
     }
 
-    private fun typecheckBlock(block: AST.Block): Either<SemanticAnalysisError, AST.Block> = either {
+    private fun typecheckBlock(block: AST.Block, currentFunctionType: Type.Function): Either<SemanticAnalysisError, AST.Block> = either {
         block.copy(
             blockItems = block.blockItems.map { blockItem ->
                 when (blockItem) {
@@ -195,7 +196,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                         declaration = typecheckDeclaration(blockItem.declaration).bind(),
                     )
                     is AST.BlockItem.Statement -> blockItem.copy(
-                        statement = typecheckStatement(blockItem.statement).bind(),
+                        statement = typecheckStatement(blockItem.statement, currentFunctionType).bind(),
                     )
                 }
             },
@@ -266,9 +267,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 )
             }
             null -> {
-                val variableType = Type.Int
                 symbolTable[variableDeclaration.name] = SymbolWithLocation(
-                    value = Symbol.Variable(type = variableType, attributes = VariableAttributes.Local),
+                    value = Symbol.Variable(type = variableDeclaration.type, attributes = VariableAttributes.Local),
                     location = variableDeclaration.location,
                 )
                 variableDeclaration.initializer?.let { typecheckExpression(it).bind() }
@@ -279,23 +279,23 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         )
     }
 
-    private fun typecheckStatement(statement: AST.Statement): Either<SemanticAnalysisError, AST.Statement> = either {
+    private fun typecheckStatement(statement: AST.Statement, currentFunctionType: Type.Function): Either<SemanticAnalysisError, AST.Statement> = either {
         when (statement) {
             is AST.Statement.Break -> statement
             is AST.Statement.BreakLoop -> statement
             is AST.Statement.BreakSwitch -> statement
             is AST.Statement.Case -> statement.copy(
                 expression = typecheckExpression(statement.expression).bind(),
-                body = typecheckStatement(statement.body).bind(),
+                body = typecheckStatement(statement.body, currentFunctionType).bind(),
             )
-            is AST.Statement.Compound -> statement.copy(block = typecheckBlock(statement.block).bind())
+            is AST.Statement.Compound -> statement.copy(block = typecheckBlock(statement.block, currentFunctionType).bind())
             is AST.Statement.Continue -> statement
             is AST.Statement.Default -> statement.copy(
-                body = typecheckStatement(statement.body).bind(),
+                body = typecheckStatement(statement.body, currentFunctionType).bind(),
             )
             is AST.Statement.DoWhile -> {
                 statement.copy(
-                    body = typecheckStatement(statement.body).bind(),
+                    body = typecheckStatement(statement.body, currentFunctionType).bind(),
                     condition = typecheckExpression(statement.condition).bind(),
                 )
             }
@@ -324,36 +324,36 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     },
                     condition = statement.condition?.let { typecheckExpression(it).bind() },
                     post = statement.post?.let { typecheckExpression(it).bind() },
-                    body = typecheckStatement(statement.body).bind(),
+                    body = typecheckStatement(statement.body, currentFunctionType).bind(),
                 )
             }
             is AST.Statement.Goto -> statement
             is AST.Statement.If -> {
                 statement.copy(
                     condition = typecheckExpression(statement.condition).bind(),
-                    thenStatement = typecheckStatement(statement.thenStatement).bind(),
-                    elseStatement = statement.elseStatement?.let { typecheckStatement(it).bind() },
+                    thenStatement = typecheckStatement(statement.thenStatement, currentFunctionType).bind(),
+                    elseStatement = statement.elseStatement?.let { typecheckStatement(it, currentFunctionType).bind() },
                 )
             }
             is AST.Statement.Labeled -> statement.copy(
-                statement = typecheckStatement(statement.statement).bind(),
+                statement = typecheckStatement(statement.statement, currentFunctionType).bind(),
             )
             is AST.Statement.Null -> statement
             is AST.Statement.Return -> {
                 statement.copy(
-                    expression = typecheckExpression(statement.expression).bind(),
+                    expression = typecheckExpression(statement.expression).bind().convertTo(currentFunctionType.returnType),
                 )
             }
             is AST.Statement.Switch -> {
                 statement.copy(
                     expression = typecheckExpression(statement.expression).bind(),
-                    body = typecheckStatement(statement.body).bind(),
+                    body = typecheckStatement(statement.body, currentFunctionType).bind(),
                 )
             }
             is AST.Statement.While -> {
                 statement.copy(
                     condition = typecheckExpression(statement.condition).bind(),
-                    body = typecheckStatement(statement.body).bind(),
+                    body = typecheckStatement(statement.body, currentFunctionType).bind(),
                 )
             }
         }
@@ -362,34 +362,73 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     private fun typecheckExpression(expression: AST.Expression): Either<SemanticAnalysisError, AST.Expression> = either {
         when (expression) {
             is AST.Expression.Assignment -> {
+                val left = typecheckExpression(expression.left).bind()
+                val right = typecheckExpression(expression.right).bind().convertTo(left.resolvedType())
                 expression.copy(
-                    left = typecheckExpression(expression.left).bind(),
-                    right = typecheckExpression(expression.right).bind(),
-                ).ofType(Type.Int)
+                    left = left,
+                    right = right,
+                ).ofType(left.resolvedType())
             }
             is AST.Expression.Binary -> {
+                val left = typecheckExpression(expression.left).bind()
+                val right = typecheckExpression(expression.right).bind()
+                if (expression.operator == AST.BinaryOperator.LogicalAnd || expression.operator == AST.BinaryOperator.LogicalOr) {
+                    return@either expression.copy(
+                        left = left,
+                        right = right,
+                    ).ofType(Type.Int)
+                }
+
+                val commonType = getCommonType(left.resolvedType(), right.resolvedType())
+                val resultType = when (expression.operator) {
+                    AST.BinaryOperator.Add,
+                    AST.BinaryOperator.Subtract,
+                    AST.BinaryOperator.Multiply,
+                    AST.BinaryOperator.Divide,
+                    AST.BinaryOperator.Modulo,
+                    AST.BinaryOperator.BitwiseAnd,
+                    AST.BinaryOperator.BitwiseOr,
+                    AST.BinaryOperator.BitwiseXor,
+                    AST.BinaryOperator.ShiftLeft,
+                    AST.BinaryOperator.ShiftRight,
+                    -> commonType
+                    AST.BinaryOperator.Equal,
+                    AST.BinaryOperator.NotEqual,
+                    AST.BinaryOperator.LessThan,
+                    AST.BinaryOperator.LessThanOrEqual,
+                    AST.BinaryOperator.GreaterThan,
+                    AST.BinaryOperator.GreaterThanOrEqual,
+                    -> Type.Int
+                    AST.BinaryOperator.LogicalAnd,
+                    AST.BinaryOperator.LogicalOr,
+                    -> error("unreachable")
+                }
                 expression.copy(
-                    left = typecheckExpression(expression.left).bind(),
-                    right = typecheckExpression(expression.right).bind(),
-                ).ofType(Type.Int)
+                    left = left.convertTo(commonType),
+                    right = right.convertTo(commonType),
+                ).ofType(resultType)
             }
             is AST.Expression.CompoundAssignment -> {
+                val left = typecheckExpression(expression.left).bind()
+                val right = typecheckExpression(expression.right).bind().convertTo(left.resolvedType())
                 expression.copy(
-                    left = typecheckExpression(expression.left).bind(),
-                    right = typecheckExpression(expression.right).bind(),
-                ).ofType(Type.Int)
+                    left = left,
+                    right = right,
+                ).ofType(left.resolvedType())
             }
             is AST.Expression.Conditional -> {
+                val thenExpression = typecheckExpression(expression.thenExpression).bind()
+                val elseExpression = typecheckExpression(expression.elseExpression).bind()
+                val commonType = getCommonType(thenExpression.resolvedType(), elseExpression.resolvedType())
                 expression.copy(
                     condition = typecheckExpression(expression.condition).bind(),
-                    thenExpression = typecheckExpression(expression.thenExpression).bind(),
-                    elseExpression = typecheckExpression(expression.elseExpression).bind(),
-                ).ofType(Type.Int)
+                    thenExpression = thenExpression.convertTo(commonType),
+                    elseExpression = elseExpression.convertTo(commonType),
+                ).ofType(commonType)
             }
             is AST.Expression.FunctionCall -> {
-                val functionSymbol = symbolTable[expression.name]
-                val functionType = when (functionSymbol?.value) {
-                    is Symbol.Function -> functionSymbol.value
+                val functionType = when (val symbol = symbolTable[expression.name]?.value) {
+                    is Symbol.Function -> symbol.type
                     else -> raise(
                         SemanticAnalysisError(
                             "'${originalIdentifierName(expression.name)}' is not a function",
@@ -397,36 +436,80 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                         ),
                     )
                 }
-                ensure(functionType.type.parameters.size == expression.arguments.size) {
-                    SemanticAnalysisError("function '${originalIdentifierName(expression.name)}' expects ${functionSymbol.value.type.parameters.size} arguments, but ${expression.arguments.size} were provided", expression.location)
+                ensure(functionType.parameters.size == expression.arguments.size) {
+                    SemanticAnalysisError(
+                        "function '${originalIdentifierName(expression.name)}' expects " +
+                            "${functionType.parameters.size} arguments, but ${expression.arguments.size} were provided",
+                        expression.location,
+                    )
                 }
+                val typecheckedArguments = expression.arguments.zip(functionType.parameters)
+                    .map { (argument, parameterType) ->
+                        typecheckExpression(argument).bind().convertTo(parameterType)
+                    }
                 expression.copy(
-                    arguments = expression.arguments.map { typecheckExpression(it).bind() },
-                ).ofType(Type.Int)
+                    arguments = typecheckedArguments,
+                ).ofType(functionType.returnType)
             }
             is AST.Expression.Constant -> {
-                expression.ofType(Type.Int)
+                val constantType = when (expression.value) {
+                    is AST.IntConstant -> Type.Int
+                    is AST.LongConstant -> Type.Long
+                }
+                expression.ofType(constantType)
             }
             is AST.Expression.Postfix -> {
+                val operand = typecheckExpression(expression.operand).bind()
                 expression.copy(
-                    operand = typecheckExpression(expression.operand).bind(),
-                ).ofType(Type.Int)
+                    operand = operand,
+                ).ofType(operand.resolvedType())
             }
             is AST.Expression.Unary -> {
+                val operand = typecheckExpression(expression.operand).bind()
+                val type = when (expression.operator) {
+                    AST.UnaryOperator.Negate -> operand.resolvedType()
+                    AST.UnaryOperator.Complement -> operand.resolvedType()
+                    AST.UnaryOperator.LogicalNegate -> Type.Int
+                }
                 expression.copy(
-                    operand = typecheckExpression(expression.operand).bind(),
-                ).ofType(Type.Int)
+                    operand = operand,
+                ).ofType(type)
             }
             is AST.Expression.Variable -> {
-                val type = symbolTable[expression.name]
-                ensure(type?.value is Symbol.Variable) {
+                val symbol = symbolTable[expression.name]
+                ensureNotNull(symbol) {
+                    SemanticAnalysisError("undeclared variable '${originalIdentifierName(expression.name)}'", expression.location)
+                }
+                ensure(symbol.value is Symbol.Variable) {
                     SemanticAnalysisError("'${originalIdentifierName(expression.name)}' is not a variable", expression.location)
                 }
-                expression.ofType(Type.Int)
+                expression.ofType(symbol.value.type)
             }
 
-            is AST.Expression.Cast -> TODO()
+            is AST.Expression.Cast -> expression.copy(
+                expression = typecheckExpression(expression.expression).bind(),
+            ).ofType(expression.targetType)
         }
+    }
+
+    private fun getCommonType(type1: Type.Data, type2: Type.Data): Type.Data {
+        return when {
+            type1 == type2 -> type1
+            else -> Type.Long
+        }
+    }
+
+    private fun AST.Expression.convertTo(targetType: Type.Data): AST.Expression {
+        if (resolvedType() == targetType) {
+            return this
+        }
+
+        return AST.Expression.Cast(
+            expression = this,
+            targetType = targetType,
+            type = targetType,
+            location = location,
+        )
     }
 
     private data class SymbolWithLocation(

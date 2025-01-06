@@ -346,7 +346,11 @@ internal class IdentifierResolver {
                     )
                 }
 
-                is AST.Expression.Cast -> TODO()
+                is AST.Expression.Cast -> {
+                    expression.copy(
+                        expression = resolveExpression(expression.expression, identifierMapping).bind(),
+                    )
+                }
             }
         }
 

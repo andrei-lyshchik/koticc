@@ -59,10 +59,6 @@ class TackyToAssemblyStaticVariablesTest {
 
         val assembly = tackyProgramToAssemblyString(
             tacky,
-            symbolTable = mapOf(
-                "a" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(0), global = true)),
-                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
-            ),
         )
 
         // since .data/.bss section are memory, we also need to copy the value to a register first in mov instructions, etc
