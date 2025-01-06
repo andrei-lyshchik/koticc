@@ -1,6 +1,7 @@
 package koticc.assembly
 
 import koticc.ast.Type
+import koticc.semantic.InitialConstantValue
 import koticc.semantic.InitialValue
 import koticc.semantic.VariableAttributes
 import koticc.semantic.toSymbol
@@ -16,11 +17,15 @@ class TackyToAssemblyStaticVariablesTest {
     fun `should generate assembly for static variables`() {
         val tacky = tackyProgram {
             symbolTable = mapOf(
-                "a" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(0), global = true)),
-                "b" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(1), global = false)),
+                "a" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(InitialConstantValue.Int(0)), global = true)),
+                "b" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(InitialConstantValue.Int(1)), global = false)),
+                "c" to Type.Long.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(InitialConstantValue.Long(0)), global = true)),
+                "d" to Type.Long.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(InitialConstantValue.Long(2)), global = true)),
             )
             staticVariable("a", global = true, initialValue = 0)
             staticVariable("b", global = false, initialValue = 1)
+            staticVariable("c", global = true, initialValue = 0L)
+            staticVariable("d", global = true, initialValue = 2L)
         }
 
         val assembly = tackyProgramToAssemblyString(tacky)
@@ -37,6 +42,18 @@ class TackyToAssemblyStaticVariablesTest {
                 .balign 4
             _b:
                 .long 1
+            
+                .globl _c
+                .bss
+                .balign 8
+            _c:
+                .zero 8
+            
+                .globl _d
+                .data
+                .balign 8
+            _d:
+                .quad 2
             """.trimIndent(),
             actual = assembly,
         )
@@ -46,7 +63,7 @@ class TackyToAssemblyStaticVariablesTest {
     fun `should properly refer to static variables relative to rip`() {
         val tacky = tackyProgram {
             symbolTable = mapOf(
-                "a" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(0), global = true)),
+                "a" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(InitialConstantValue.Int(0)), global = true)),
                 "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
             )
 

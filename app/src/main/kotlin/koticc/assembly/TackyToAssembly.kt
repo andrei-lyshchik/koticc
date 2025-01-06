@@ -1,6 +1,7 @@
 package koticc.assembly
 
 import koticc.ast.AST
+import koticc.ast.Type
 import koticc.tacky.Tacky
 
 fun tackyProgramToAssembly(tackyProgram: Tacky.Program): Assembly.Program =
@@ -68,6 +69,10 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
             name = tackyStaticVariable.name,
             global = tackyStaticVariable.global,
             initialValue = tackyStaticVariable.initialValue,
+            alignment = when (tackyStaticVariable.type) {
+                is Type.Int -> 4
+                is Type.Long -> 8
+            },
         )
 
     private fun tackyInstructionToAssembly(tackyInstruction: Tacky.Instruction): List<Assembly.Instruction> =

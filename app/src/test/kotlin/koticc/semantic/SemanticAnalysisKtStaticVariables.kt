@@ -7,6 +7,7 @@ import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.int
+import koticc.ast.long
 import koticc.ast.plus
 import koticc.ast.program
 import kotlin.test.Test
@@ -39,7 +40,7 @@ class SemanticAnalysisKtStaticVariables {
                     "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
                     "i.0" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(1),
+                            initialValue = InitialValue.Constant(InitialConstantValue.Int(1)),
                             global = false,
                         ),
                     ),
@@ -74,7 +75,7 @@ class SemanticAnalysisKtStaticVariables {
                 symbolTable = mapOf(
                     "x" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(5),
+                            initialValue = InitialValue.Constant(InitialConstantValue.Int(5)),
                             global = false,
                         ),
                     ),
@@ -127,7 +128,7 @@ class SemanticAnalysisKtStaticVariables {
                 symbolTable = mapOf(
                     "x" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(5),
+                            initialValue = InitialValue.Constant(InitialConstantValue.Int(5)),
                             global = false,
                         ),
                     ),
@@ -182,7 +183,7 @@ class SemanticAnalysisKtStaticVariables {
                     "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
                     "i.0" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(0),
+                            initialValue = InitialValue.Constant(InitialConstantValue.Int(0)),
                             global = false,
                         ),
                     ),
@@ -208,6 +209,92 @@ class SemanticAnalysisKtStaticVariables {
                 message = "non-constant initializer for local static variable 'i'",
                 location = DUMMY_LOCATION,
             ).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should convert initializers from long to int`() {
+        val program = program {
+            int("foo", storageClass = AST.StorageClass.Static) assign 2147483648L.e
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    int("foo", storageClass = AST.StorageClass.Static) assign (-2147483648).e.int()
+                },
+                renamedVariableCount = 0,
+                symbolTable = mapOf(
+                    "foo" to Type.Int.toSymbol(
+                        attributes = VariableAttributes.Static(
+                            initialValue = InitialValue.Constant(InitialConstantValue.Int(-2147483648)),
+                            global = false,
+                        ),
+                    ),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should convert initializers from int to long`() {
+        val program = program {
+            long("foo", storageClass = AST.StorageClass.Static) assign 1.e
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    long("foo", storageClass = AST.StorageClass.Static) assign 1L.e.long()
+                },
+                renamedVariableCount = 0,
+                symbolTable = mapOf(
+                    "foo" to Type.Long.toSymbol(
+                        attributes = VariableAttributes.Static(
+                            initialValue = InitialValue.Constant(InitialConstantValue.Long(1L)),
+                            global = false,
+                        ),
+                    ),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should support non-int block static variables`() {
+        val program = program {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                long("i", storageClass = AST.StorageClass.Static) assign 1.e
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        long("i.0", storageClass = AST.StorageClass.Static) assign 1L.e.long()
+                    }
+                },
+                renamedVariableCount = 1,
+                symbolTable = mapOf(
+                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "i.0" to Type.Long.toSymbol(
+                        attributes = VariableAttributes.Static(
+                            initialValue = InitialValue.Constant(InitialConstantValue.Long(1L)),
+                            global = false,
+                        ),
+                    ),
+                ),
+            ).right(),
             actual = actual,
         )
     }

@@ -2,6 +2,8 @@ package koticc.tacky
 
 import koticc.ast.AST
 import koticc.ast.LabelName
+import koticc.ast.Type
+import koticc.semantic.InitialConstantValue
 import koticc.semantic.SymbolTable
 
 object Tacky {
@@ -25,7 +27,8 @@ object Tacky {
     data class StaticVariable(
         val name: String,
         val global: Boolean,
-        val initialValue: Int,
+        val type: Type.Data,
+        val initialValue: InitialConstantValue,
     )
 
     sealed interface Instruction {

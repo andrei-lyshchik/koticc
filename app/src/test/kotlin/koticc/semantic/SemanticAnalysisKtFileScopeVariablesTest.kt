@@ -7,6 +7,7 @@ import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.int
+import koticc.ast.long
 import koticc.ast.plus
 import koticc.ast.program
 import org.junit.jupiter.api.Test
@@ -38,7 +39,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
                     ),
                     "b" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(1),
+                            initialValue = InitialValue.Constant(InitialConstantValue.Int(1)),
                             global = true,
                         ),
                     ),
@@ -83,7 +84,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
                     "foo.0" to Type.Int.toSymbol(attributes = VariableAttributes.Local),
                     "foo" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(2),
+                            initialValue = InitialValue.Constant(InitialConstantValue.Int(2)),
                             global = true,
                         ),
                     ),
@@ -140,6 +141,100 @@ class SemanticAnalysisKtFileScopeVariablesTest {
         assertEquals(
             expected = SemanticAnalysisError(
                 message = "redeclaration of 'a' with a different initializer",
+                location = DUMMY_LOCATION,
+            ).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should return errors if file scope variable declarations have conflicting types`() {
+        val program = program {
+            int("a")
+            long("a")
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError(
+                message = "conflicting types for 'a' at line 0, column 0",
+                location = DUMMY_LOCATION,
+            ).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should properly track types of non int extern local variables`() {
+        val program = program {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Long)) {
+                long("foo", storageClass = AST.StorageClass.Extern)
+                return_("foo".e)
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Long)) {
+                        long("foo", storageClass = AST.StorageClass.Extern)
+                        return_("foo".e.long())
+                    }
+                },
+                renamedVariableCount = 0,
+                symbolTable = mapOf(
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Long).toSymbol(),
+                    "foo" to Type.Long.toSymbol(
+                        attributes = VariableAttributes.Static(
+                            initialValue = InitialValue.NoInitializer,
+                            global = true,
+                        ),
+                    ),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should return error if file scope variable has conflicting type`() {
+        val program = program {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                long("foo", storageClass = AST.StorageClass.Extern)
+                return_("foo".e)
+            }
+            int("foo", storageClass = AST.StorageClass.Extern) assign 2.e
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError(
+                message = "conflicting types for 'foo' at line 0, column 0",
+                location = DUMMY_LOCATION,
+            ).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should return error if local extern variable has conflicting type`() {
+        val program = program {
+            int("foo", storageClass = AST.StorageClass.Extern) assign 2.e
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                long("foo", storageClass = AST.StorageClass.Extern)
+                return_("foo".e)
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError(
+                message = "conflicting types for 'foo' at line 0, column 0",
                 location = DUMMY_LOCATION,
             ).left(),
             actual = actual,

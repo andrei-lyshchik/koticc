@@ -3,6 +3,7 @@ package koticc.assembly
 import arrow.core.Either
 import arrow.core.raise.either
 import koticc.ast.LabelName
+import koticc.semantic.InitialConstantValue
 import java.io.IOException
 import java.io.Writer
 
@@ -63,27 +64,40 @@ private fun writeAssemblyStaticVariable(
             if (staticVariable.global) {
                 write("    .globl _${staticVariable.name}\n")
             }
-            if (staticVariable.initialValue == 0) {
+            if (staticVariable.initialValue.isZero()) {
                 write("    .bss\n")
             } else {
                 write("    .data\n")
             }
-            write("    .balign 4\n")
+            write("    .balign ${staticVariable.alignment}\n")
             write("_${staticVariable.name}:\n")
-            if (staticVariable.initialValue == 0) {
-                write("    .zero 4")
-            } else {
-                write("    .long ${staticVariable.initialValue}")
+            when (staticVariable.initialValue) {
+                is InitialConstantValue.Int -> {
+                    if (staticVariable.initialValue.isZero()) {
+                        write("    .zero 4")
+                    } else {
+                        write("    .long ${staticVariable.initialValue.value}")
+                    }
+                }
+                is InitialConstantValue.Long -> {
+                    if (staticVariable.initialValue.isZero()) {
+                        write("    .zero 8")
+                    } else {
+                        write("    .quad ${staticVariable.initialValue.value}")
+                    }
+                }
             }
         }
     }
 
 private fun Assembly.Type.instructionSuffix() = when (this) {
     Assembly.Type.LongWord -> "l"
+    Assembly.Type.QuadWord -> "q"
 }
 
 private fun Assembly.Type.toSize() = when (this) {
     Assembly.Type.LongWord -> Size.FourByte
+    Assembly.Type.QuadWord -> Size.EightByte
 }
 
 private fun Assembly.Instruction.toOperatorString(): String =
@@ -94,6 +108,7 @@ private fun Assembly.Instruction.toOperatorString(): String =
         }
         is Assembly.Instruction.Cdq -> when (type) {
             Assembly.Type.LongWord -> "cdq"
+            Assembly.Type.QuadWord -> "cqo"
         }
         is Assembly.Instruction.Cmp -> "cmp${type.instructionSuffix()} ${src.toOperatorString(size = type.toSize())}, ${dst.toOperatorString(size = type.toSize())}"
         is Assembly.Instruction.ConditionalJump -> "j${operator.toOperatorString()} ${target.toLocalOutputString()}"

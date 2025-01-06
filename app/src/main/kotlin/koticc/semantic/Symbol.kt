@@ -1,5 +1,6 @@
 package koticc.semantic
 
+import koticc.ast.AST
 import koticc.ast.Type
 
 sealed interface Symbol {
@@ -32,8 +33,24 @@ sealed interface VariableAttributes {
 
 sealed interface InitialValue {
     data object Tentative : InitialValue
-    data class Constant(val value: Int) : InitialValue
+    data class Constant(val value: InitialConstantValue) : InitialValue
     data object NoInitializer : InitialValue
+}
+
+sealed interface InitialConstantValue {
+    fun isZero(): Boolean
+
+    data class Int(val value: kotlin.Int) : InitialConstantValue {
+        override fun isZero(): Boolean = value == 0
+    }
+    data class Long(val value: kotlin.Long) : InitialConstantValue {
+        override fun isZero(): Boolean = value == 0L
+    }
+}
+
+fun AST.Constant.toInitialValue(): InitialConstantValue = when (this) {
+    is AST.IntConstant -> InitialConstantValue.Int(value)
+    is AST.LongConstant -> InitialConstantValue.Long(value)
 }
 
 typealias SymbolTable = Map<String, Symbol>

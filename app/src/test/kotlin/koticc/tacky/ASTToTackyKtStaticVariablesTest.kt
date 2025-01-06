@@ -3,6 +3,7 @@ package koticc.tacky
 import koticc.ast.Type
 import koticc.ast.e
 import koticc.ast.program
+import koticc.semantic.InitialConstantValue
 import koticc.semantic.InitialValue
 import koticc.semantic.ValidASTProgram
 import koticc.semantic.VariableAttributes
@@ -36,13 +37,13 @@ class ASTToTackyKtStaticVariablesTest {
                 ),
                 "c" to Type.Int.toSymbol(
                     attributes = VariableAttributes.Static(
-                        initialValue = InitialValue.Constant(2),
+                        initialValue = InitialValue.Constant(InitialConstantValue.Int(2)),
                         global = true,
                     ),
                 ),
                 "d" to Type.Int.toSymbol(
                     attributes = VariableAttributes.Static(
-                        initialValue = InitialValue.Constant(3),
+                        initialValue = InitialValue.Constant(InitialConstantValue.Int(3)),
                         global = false,
                     ),
                 ),
@@ -84,7 +85,7 @@ class ASTToTackyKtStaticVariablesTest {
                 ),
                 "b" to Type.Int.toSymbol(
                     attributes = VariableAttributes.Static(
-                        initialValue = InitialValue.Constant(2),
+                        initialValue = InitialValue.Constant(InitialConstantValue.Int(2)),
                         global = false,
                     ),
                 ),

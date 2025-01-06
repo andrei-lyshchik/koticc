@@ -673,4 +673,32 @@ class SemanticAnalysisKtFunctionsTest {
             actual = actual,
         )
     }
+
+    @Test
+    fun `should support non-int function parameters`() {
+        val program = program {
+            function("foo", Type.Function(parameters = listOf(Type.Long, Type.Int), returnType = Type.Long), "a", "b") {
+                return_("a".e + "b".e)
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("foo", Type.Function(parameters = listOf(Type.Long, Type.Int), returnType = Type.Long), "a.0", "b.1") {
+                        return_(("a.0".e.long() + cast(Type.Long, "b.1".e.int()).long()).long())
+                    }
+                },
+                renamedVariableCount = 2,
+                symbolTable = mapOf(
+                    "foo" to Type.Function(parameters = listOf(Type.Long, Type.Int), returnType = Type.Long).toSymbol(),
+                    "a.0" to Type.Long.toSymbol(),
+                    "b.1" to Type.Int.toSymbol(),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
 }

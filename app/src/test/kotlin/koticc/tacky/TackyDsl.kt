@@ -4,6 +4,8 @@ package koticc.tacky
 
 import koticc.ast.AST
 import koticc.ast.LabelName
+import koticc.ast.Type
+import koticc.semantic.InitialConstantValue
 import koticc.semantic.SymbolTable
 
 fun tackyProgram(block: TackyProgramBuilder.() -> Unit): Tacky.Program = TackyProgramBuilder().apply(block).build()
@@ -21,7 +23,11 @@ class TackyProgramBuilder {
     }
 
     fun staticVariable(name: String, global: Boolean, initialValue: Int) {
-        topLevel += Tacky.TopLevel.StaticVariable(Tacky.StaticVariable(name, global = global, initialValue))
+        topLevel += Tacky.TopLevel.StaticVariable(Tacky.StaticVariable(name, global = global, initialValue = InitialConstantValue.Int(initialValue), type = Type.Int))
+    }
+
+    fun staticVariable(name: String, global: Boolean, initialValue: Long) {
+        topLevel += Tacky.TopLevel.StaticVariable(Tacky.StaticVariable(name, global = global, initialValue = InitialConstantValue.Long(initialValue), type = Type.Long))
     }
 
     fun build(): Tacky.Program {

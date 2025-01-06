@@ -67,6 +67,9 @@ class ProgramBuilder {
     fun int(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
         setCurrentVariableBuilder(VariableDeclarationBuilder(name, storageClass, Type.Int))
 
+    fun long(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
+        setCurrentVariableBuilder(VariableDeclarationBuilder(name, storageClass, Type.Long))
+
     fun build(): AST.Program {
         currentVariableBuilder?.let {
             declarations.add(it.buildVariableDeclaration())

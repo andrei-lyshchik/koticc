@@ -4,6 +4,7 @@ import arrow.core.right
 import koticc.ast.AST
 import koticc.ast.LabelName
 import koticc.ast.Type
+import koticc.semantic.InitialConstantValue
 import koticc.semantic.InitialValue
 import koticc.semantic.Symbol
 import koticc.semantic.SymbolTable
@@ -62,10 +63,13 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                             is VariableAttributes.Static -> {
                                 val initialValue = when (val initialValue = symbol.attributes.initialValue) {
                                     is InitialValue.Constant -> initialValue.value
-                                    InitialValue.Tentative -> 0
+                                    InitialValue.Tentative -> when (symbol.type) {
+                                        is Type.Int -> InitialConstantValue.Int(0)
+                                        is Type.Long -> InitialConstantValue.Long(0L)
+                                    }
                                     InitialValue.NoInitializer -> return@mapNotNull null
                                 }
-                                Tacky.StaticVariable(name, global = symbol.attributes.global, initialValue = initialValue)
+                                Tacky.StaticVariable(name, global = symbol.attributes.global, initialValue = initialValue, type = symbol.type)
                             }
                             else -> null
                         }

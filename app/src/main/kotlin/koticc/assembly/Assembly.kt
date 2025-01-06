@@ -1,10 +1,12 @@
 package koticc.assembly
 
 import koticc.ast.LabelName
+import koticc.semantic.InitialConstantValue
 
 object Assembly {
     enum class Type(val byteSize: Int) {
         LongWord(4),
+        QuadWord(8),
     }
 
     data class Program(
@@ -25,7 +27,8 @@ object Assembly {
     data class StaticVariable(
         val name: String,
         val global: Boolean,
-        val initialValue: Int,
+        val initialValue: InitialConstantValue,
+        val alignment: Int,
     )
 
     sealed interface Instruction {
