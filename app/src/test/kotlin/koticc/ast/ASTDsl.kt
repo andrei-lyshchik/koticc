@@ -674,6 +674,15 @@ infix fun AST.Expression.ne(other: AST.Expression): AST.Expression {
     )
 }
 
+infix fun AST.Expression.shl(other: AST.Expression): AST.Expression {
+    return AST.Expression.Binary(
+        operator = AST.BinaryOperator.ShiftLeft,
+        left = this,
+        right = other,
+        type = null,
+    )
+}
+
 fun AST.Expression.postfixIncrement(): AST.Expression {
     return AST.Expression.Postfix(
         operator = AST.PostfixOperator.Increment,

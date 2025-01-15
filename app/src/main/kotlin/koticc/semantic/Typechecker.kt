@@ -405,6 +405,13 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     ).ofType(Type.Int)
                 }
 
+                if (expression.operator == AST.BinaryOperator.ShiftLeft || expression.operator == AST.BinaryOperator.ShiftRight) {
+                    return@either expression.copy(
+                        left = left,
+                        right = right,
+                    ).ofType(left.resolvedType())
+                }
+
                 val commonType = getCommonType(left.resolvedType(), right.resolvedType())
                 val resultType = when (expression.operator) {
                     AST.BinaryOperator.Add,

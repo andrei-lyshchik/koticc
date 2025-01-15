@@ -11,6 +11,7 @@ import koticc.ast.long
 import koticc.ast.or
 import koticc.ast.plus
 import koticc.ast.program
+import koticc.ast.shl
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -165,6 +166,33 @@ class SemanticAnalysisKtBinaryExpressionTypeTest {
                 value = program {
                     function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                         int("a.0") assign (cast(Type.Long, 1.e.int()).long() eq 2L.e.long()).int()
+                    }
+                },
+                renamedVariableCount = 1,
+                symbolTable = mapOf(
+                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should resolve shift expression type as left operand type`() {
+        val program = program {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                int("a") assign (1.e shl 2L.e)
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        int("a.0") assign (1.e.int() shl 2L.e.long()).int()
                     }
                 },
                 renamedVariableCount = 1,
