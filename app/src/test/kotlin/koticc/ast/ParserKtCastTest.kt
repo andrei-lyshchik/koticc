@@ -39,4 +39,84 @@ class ParserKtCastTest {
             actual = parseInput(input),
         )
     }
+
+    @Test
+    fun `cast should have higher precedence than assignment`() {
+        val input = """
+            int main(void) {
+                int i = 0;
+                i = (long) i = 10;
+            }
+        """.trimIndent()
+
+        assertEqualsIgnoringLocations(
+            expected = program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    int("i") assign 0.e
+                    assign("i".e, cast(Type.Long, "i".e) assign 10.e)
+                }
+            },
+            actual = parseInput(input),
+        )
+    }
+
+    @Test
+    fun `cast should have higher precedence than binary operators`() {
+        val input = """
+            int main(void) {
+                int i = 0;
+                long j = (long) i + 10;
+            }
+        """.trimIndent()
+
+        assertEqualsIgnoringLocations(
+            expected = program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    int("i") assign 0.e
+                    long("j") assign cast(Type.Long, "i".e) + 10.e
+                }
+            },
+            actual = parseInput(input),
+        )
+    }
+
+    @Test
+    fun `cast should have lower precedence than function call`() {
+        val input = """
+            int main(void) {
+                int i = 0;
+                long j = (long) foo();
+            }
+        """.trimIndent()
+
+        assertEqualsIgnoringLocations(
+            expected = program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    int("i") assign 0.e
+                    long("j") assign cast(Type.Long, "foo"())
+                }
+            },
+            actual = parseInput(input),
+        )
+    }
+
+    @Test
+    fun `cast should have lower precedence than increment`() {
+        val input = """
+            int main(void) {
+                int i = 0;
+                long j = (long) i++;
+            }
+        """.trimIndent()
+
+        assertEqualsIgnoringLocations(
+            expected = program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    int("i") assign 0.e
+                    long("j") assign cast(Type.Long, "i".e.postfixIncrement())
+                }
+            },
+            actual = parseInput(input),
+        )
+    }
 }

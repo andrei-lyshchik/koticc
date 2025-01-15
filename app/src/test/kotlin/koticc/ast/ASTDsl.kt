@@ -674,6 +674,14 @@ infix fun AST.Expression.ne(other: AST.Expression): AST.Expression {
     )
 }
 
+fun AST.Expression.postfixIncrement(): AST.Expression {
+    return AST.Expression.Postfix(
+        operator = AST.PostfixOperator.Increment,
+        operand = this,
+        type = null,
+    )
+}
+
 fun cond(condition: AST.Expression, thenExpression: AST.Expression, elseExpression: AST.Expression) =
     AST.Expression.Conditional(
         condition = condition,

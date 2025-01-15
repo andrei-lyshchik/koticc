@@ -528,7 +528,7 @@ private class Parser(
                         if (isDeclarationSpecifier(possibleTypeSpecifier?.value)) {
                             val targetType = parseType().bind()
                             expectToken(Token.CloseParen).bind()
-                            val expression = parseExpression(0).bind()
+                            val expression = parseFactor().bind()
                             AST.Expression.Cast(
                                 targetType = targetType,
                                 expression = expression,
