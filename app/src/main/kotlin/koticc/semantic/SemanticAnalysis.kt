@@ -23,10 +23,10 @@ fun semanticAnalysis(program: AST.Program): Either<SemanticAnalysisError, ValidA
     either {
         val identifierResolverResult = IdentifierResolver().resolveProgram(program).bind()
         val gotoLabelResolverResult = GotoLabelResolver().resolveLabels(identifierResolverResult.program).bind()
-        val programWithResolvedLoopsAndSwitches = LoopAndSwitchResolver().resolveLoopsAndSwitches(gotoLabelResolverResult).bind()
-        val typecheckedProgram = Typechecker(identifierResolverResult.nameMapping).typecheck(programWithResolvedLoopsAndSwitches).bind()
+        val typecheckedProgram = Typechecker(identifierResolverResult.nameMapping).typecheck(gotoLabelResolverResult).bind()
+        val programWithResolvedLoopsAndSwitches = LoopAndSwitchResolver().resolveLoopsAndSwitches(typecheckedProgram.value).bind()
         ValidASTProgram(
-            value = typecheckedProgram.value,
+            value = programWithResolvedLoopsAndSwitches,
             renamedVariableCount = identifierResolverResult.renamedVariableCount,
             symbolTable = typecheckedProgram.symbolTable,
         )

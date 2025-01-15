@@ -274,4 +274,66 @@ class SemanticAnalysisKtSwitchTest {
             actual = actual,
         )
     }
+
+    @Test
+    fun `should convert case expressions to switch expression type`() {
+        val program = program {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                int("a") assign 1.e
+                switch("a".e) {
+                    case(1L.e) {
+                        return_(1.e)
+                    }
+                }
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        int("a.0") assign 1.e.int()
+                        switch("a.0".e.int(), switchId = 0, caseExpressions = mapOf(1.c to 0), hasDefault = false) {
+                            case(1.e.int(), caseId = 0, switchId = 0) {
+                                return_(1.e.int())
+                            }
+                        }
+                    }
+                },
+                renamedVariableCount = 1,
+                symbolTable = mapOf(
+                    "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Int.toSymbol(),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should return error if case expression is a duplicate after conversion`() {
+        val program = program {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                int("a") assign 1.e
+                switch("a".e) {
+                    // this is the same as -1 after conversion to int
+                    case(9223372036854775807L.e) {
+                        return_(1.e)
+                    }
+                    case((-1).e) {
+                        return_(2.e)
+                    }
+                }
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError("duplicate case expression: -1", DUMMY_LOCATION).left(),
+            actual = actual,
+        )
+    }
 }

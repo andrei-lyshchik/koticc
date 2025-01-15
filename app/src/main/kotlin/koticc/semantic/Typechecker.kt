@@ -109,10 +109,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         declaration: AST.Declaration.Variable,
     ): Either<SemanticAnalysisError, AST.Declaration.Variable> = either {
         val convertedInitializer = when (declaration.initializer) {
-            is AST.Expression.Constant -> declaration.initializer.copy(
-                value = declaration.initializer.value.convertTo(declaration.type),
-                type = declaration.type,
-            )
+            is AST.Expression.Constant -> declaration.initializer.convertTo(declaration.type)
             null -> null
             else -> raise(
                 SemanticAnalysisError(
@@ -265,10 +262,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             }
             AST.StorageClass.Static -> {
                 val convertedInitializer = when (variableDeclaration.initializer) {
-                    is AST.Expression.Constant -> variableDeclaration.initializer.copy(
-                        value = variableDeclaration.initializer.value.convertTo(variableDeclaration.type),
-                        type = variableDeclaration.type,
-                    )
+                    is AST.Expression.Constant -> variableDeclaration.initializer.convertTo(variableDeclaration.type)
                     null -> null
                     else -> raise(
                         SemanticAnalysisError(

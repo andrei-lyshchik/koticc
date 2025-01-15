@@ -5,6 +5,8 @@ import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
 import koticc.ast.AST
+import koticc.ast.Type
+import koticc.ast.convertTo
 
 internal class LoopAndSwitchResolver {
     private var loopIdCount: Int = 0
@@ -143,12 +145,14 @@ internal class LoopAndSwitchResolver {
                         SemanticAnalysisError("case expression must be an integer constant", statement.location)
                     }
 
-                    ensure(!switchContext.caseExpressions.containsKey(statement.expression.value)) {
-                        SemanticAnalysisError("duplicate case expression: ${statement.expression.toDisplayString()}", statement.location)
+                    val convertedExpression = statement.expression.convertTo(switchContext.expressionType)
+                    ensure(!switchContext.caseExpressions.containsKey(convertedExpression.value)) {
+                        SemanticAnalysisError("duplicate case expression: ${convertedExpression.toDisplayString()}", statement.location)
                     }
 
-                    switchContext.caseExpressions[statement.expression.value] = caseId
+                    switchContext.caseExpressions[convertedExpression.value] = caseId
                     statement.copy(
+                        expression = convertedExpression,
                         body = resolveStatement(statement.body, context).bind(),
                         switchId = switchContext.id,
                         caseId = caseId,
@@ -170,7 +174,7 @@ internal class LoopAndSwitchResolver {
                 }
 
                 is AST.Statement.Switch -> {
-                    val contextWithSwitch = context.withNextSwitch()
+                    val contextWithSwitch = context.withNextSwitch(statement.expression.resolvedType())
                     val body = resolveStatement(statement.body, contextWithSwitch).bind()
                     AST.Statement.Switch(
                         expression = statement.expression,
@@ -189,6 +193,7 @@ internal class LoopAndSwitchResolver {
 
     private data class SwitchContext(
         val id: AST.SwitchId,
+        val expressionType: Type.Data,
         val caseExpressions: MutableMap<AST.Constant, AST.CaseId>,
         var hasDefault: Boolean,
     )
@@ -213,10 +218,11 @@ internal class LoopAndSwitchResolver {
         override val loopId: AST.LoopId?,
     ) : CurrentContext
 
-    private fun CurrentContext.withNextSwitch() =
+    private fun CurrentContext.withNextSwitch(expressionType: Type.Data) =
         ContextWithSwitch(
             switchContext = SwitchContext(
                 id = AST.SwitchId(switchIdCount++),
+                expressionType = expressionType,
                 caseExpressions = mutableMapOf(),
                 hasDefault = false,
             ),
