@@ -77,6 +77,16 @@ object Tacky {
             val arguments: List<Value>,
             val dst: Value,
         ) : Instruction
+
+        data class SignExtend(
+            val src: Value,
+            val dst: Value,
+        ) : Instruction
+
+        data class Truncate(
+            val src: Value,
+            val dst: Value,
+        ) : Instruction
     }
 
     sealed interface Value {

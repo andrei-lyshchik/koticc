@@ -1,6 +1,5 @@
 package koticc.tacky
 
-import arrow.core.right
 import koticc.ast.AST
 import koticc.ast.LabelName
 import koticc.ast.Type
@@ -493,7 +492,9 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                 dst
             }
 
-            is AST.Expression.Cast -> TODO()
+            is AST.Expression.Cast -> {
+                generateCast(expression)
+            }
         }
 
     private fun generateIf(ifStatement: AST.Statement.If) {
@@ -608,6 +609,39 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
             AST.UnaryOperator.Complement -> Tacky.UnaryOperator.Complement
             AST.UnaryOperator.LogicalNegate -> Tacky.UnaryOperator.LogicalNegate
         }
+
+    private fun generateCast(expression: AST.Expression.Cast): Tacky.Value {
+        val tackyExpression = generateExpression(expression.expression)
+        if (expression.targetType == expression.expression.resolvedType()) {
+            return tackyExpression
+        }
+
+        val dst = nextVariable(expression.resolvedType())
+        when (expression.expression.resolvedType()) {
+            Type.Int -> when (expression.targetType) {
+                Type.Long -> instructions.add(
+                    Tacky.Instruction.SignExtend(
+                        src = tackyExpression,
+                        dst = dst,
+                    ),
+                )
+                Type.Int -> error("Unreachable")
+            }
+            Type.Long -> {
+                when (expression.targetType) {
+                    Type.Int -> instructions.add(
+                        Tacky.Instruction.Truncate(
+                            src = tackyExpression,
+                            dst = dst,
+                        ),
+                    )
+                    Type.Long -> error("Unreachable")
+                }
+            }
+        }
+
+        return dst
+    }
 
     private fun AST.BinaryOperator.toTackyOperator() =
         when (this) {

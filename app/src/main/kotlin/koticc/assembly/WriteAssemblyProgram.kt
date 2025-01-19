@@ -116,6 +116,7 @@ private fun Assembly.Instruction.toOperatorString(): String =
         is Assembly.Instruction.Jump -> "jmp ${target.toLocalOutputString()}"
         is Assembly.Instruction.Label -> "${label.toLocalOutputString()}:"
         is Assembly.Instruction.Mov -> "mov${type.instructionSuffix()} ${src.toOperatorString(size = type.toSize())}, ${dst.toOperatorString(size = type.toSize())}"
+        is Assembly.Instruction.Movsx -> "movsx ${src.toOperatorString(size = Size.FourByte)}, ${dst.toOperatorString(size = Size.EightByte)}"
         Assembly.Instruction.Ret -> "movq %rbp, %rsp\n    popq %rbp\n    ret"
         is Assembly.Instruction.Set -> "set${operator.toOperatorString()} ${dst.toOperatorString(Size.OneByte)}"
         is Assembly.Instruction.Shift -> "${toOperatorString()} %cl, ${dst.toOperatorString(size = type.toSize())}"

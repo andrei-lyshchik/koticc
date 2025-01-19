@@ -115,6 +115,45 @@ fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Ins
             }
         }
 
+        is Assembly.Instruction.Movsx -> {
+            buildList {
+                val fixedSrc = if (instruction.src is Assembly.Operand.Immediate) {
+                    add(
+                        Assembly.Instruction.Mov(
+                            type = Assembly.Type.LongWord,
+                            src = instruction.src,
+                            dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                        ),
+                    )
+                    Assembly.Operand.Register(Assembly.RegisterValue.R10)
+                } else {
+                    instruction.src
+                }
+
+                if (instruction.dst.isMemory()) {
+                    add(
+                        Assembly.Instruction.Movsx(
+                            src = fixedSrc,
+                            dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
+                        ),
+                    )
+                    add(
+                        Assembly.Instruction.Mov(
+                            type = Assembly.Type.QuadWord,
+                            src = Assembly.Operand.Register(Assembly.RegisterValue.R11),
+                            dst = instruction.dst,
+                        ),
+                    )
+                } else {
+                    add(
+                        Assembly.Instruction.Movsx(
+                            src = fixedSrc,
+                            dst = instruction.dst,
+                        ),
+                    )
+                }
+            }
+        }
         Assembly.Instruction.Ret -> listOf(instruction)
         is Assembly.Instruction.Set -> listOf(instruction)
         is Assembly.Instruction.Shift -> listOf(instruction)

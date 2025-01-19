@@ -38,6 +38,11 @@ object Assembly {
             val dst: Operand,
         ) : Instruction
 
+        data class Movsx(
+            val src: Operand,
+            val dst: Operand,
+        ) : Instruction
+
         data class Unary(
             val type: Assembly.Type,
             val operator: UnaryOperator,

@@ -58,6 +58,10 @@ class FunctionBuilder(private val name: String, private val parameters: Array<ou
 
     fun jumpIfNotZero(src: Tacky.Value, target: String) = instructions.add(Tacky.Instruction.JumpIfNotZero(src, LabelName(target)))
 
+    fun signExtend(src: Tacky.Value, dst: String) = instructions.add(Tacky.Instruction.SignExtend(src, Tacky.Value.Variable(dst)))
+
+    fun truncate(src: Tacky.Value, dst: String) = instructions.add(Tacky.Instruction.Truncate(src, Tacky.Value.Variable(dst)))
+
     fun build() = Tacky.FunctionDefinition(name, parameters.toList(), global, instructions)
 }
 

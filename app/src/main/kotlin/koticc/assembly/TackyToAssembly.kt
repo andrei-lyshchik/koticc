@@ -286,6 +286,21 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                 )
 
             is Tacky.Instruction.Call -> functionCall(tackyInstruction)
+
+            is Tacky.Instruction.SignExtend -> listOf(
+                Assembly.Instruction.Movsx(
+                    src = tackyValueToOperand(tackyInstruction.src),
+                    dst = tackyValueToOperand(tackyInstruction.dst),
+                ),
+            )
+
+            is Tacky.Instruction.Truncate -> listOf(
+                Assembly.Instruction.Mov(
+                    type = Assembly.Type.LongWord,
+                    src = tackyValueToOperand(tackyInstruction.src),
+                    dst = tackyValueToOperand(tackyInstruction.dst),
+                ),
+            )
         }
 
     private fun tackyValueToOperand(tackyValue: Tacky.Value): Assembly.Operand =

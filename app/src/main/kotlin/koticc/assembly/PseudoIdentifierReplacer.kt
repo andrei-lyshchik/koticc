@@ -16,6 +16,12 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
                         Assembly.Instruction.Mov(instruction.type, src, dst)
                     }
 
+                    is Assembly.Instruction.Movsx -> {
+                        val src = replace(instruction.src)
+                        val dst = replace(instruction.dst)
+                        Assembly.Instruction.Movsx(src, dst)
+                    }
+
                     is Assembly.Instruction.AllocateStack -> instruction
                     is Assembly.Instruction.Binary -> {
                         val src = replace(instruction.src)
