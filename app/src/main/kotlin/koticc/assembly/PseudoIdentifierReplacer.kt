@@ -6,7 +6,14 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
 
     fun replace(instructions: List<Assembly.Instruction>): List<Assembly.Instruction> {
         val result = ArrayList<Assembly.Instruction>(instructions.size + 1)
-        result.add(Assembly.Instruction.AllocateStack(0))
+        result.add(
+            Assembly.Instruction.Binary(
+                operator = Assembly.BinaryOperator.Sub,
+                type = Assembly.Type.QuadWord,
+                src = Assembly.Operand.Immediate(0),
+                dst = Assembly.Operand.Register(Assembly.RegisterValue.Sp),
+            ),
+        )
         for (instruction in instructions) {
             val replacedInstruction =
                 when (instruction) {
@@ -22,7 +29,6 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
                         Assembly.Instruction.Movsx(src, dst)
                     }
 
-                    is Assembly.Instruction.AllocateStack -> instruction
                     is Assembly.Instruction.Binary -> {
                         val src = replace(instruction.src)
                         val dst = replace(instruction.dst)
@@ -61,7 +67,6 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
                     }
 
                     is Assembly.Instruction.Call -> instruction
-                    is Assembly.Instruction.DeallocateStack -> instruction
                     is Assembly.Instruction.Push -> {
                         val operand = replace(instruction.operand)
                         Assembly.Instruction.Push(operand)
@@ -76,7 +81,12 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
             val padding = 16 - currentStackBytes % 16
             currentStackBytes + padding
         }
-        result[0] = Assembly.Instruction.AllocateStack(alignedStackBytes)
+        result[0] = Assembly.Instruction.Binary(
+            operator = Assembly.BinaryOperator.Sub,
+            type = Assembly.Type.QuadWord,
+            src = Assembly.Operand.Immediate(alignedStackBytes.toLong()),
+            dst = Assembly.Operand.Register(Assembly.RegisterValue.Sp),
+        )
         return result
     }
 

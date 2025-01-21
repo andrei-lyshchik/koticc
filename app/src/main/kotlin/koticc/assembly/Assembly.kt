@@ -56,14 +56,6 @@ object Assembly {
             val dst: Operand,
         ) : Instruction
 
-        data class AllocateStack(
-            val size: Int,
-        ) : Instruction
-
-        data class DeallocateStack(
-            val size: Int,
-        ) : Instruction
-
         data class Push(
             val operand: Operand,
         ) : Instruction
@@ -133,6 +125,7 @@ object Assembly {
         Dx,
         Di,
         Si,
+        Sp,
         R8,
         R9,
         R10,

@@ -2,7 +2,6 @@ package koticc.assembly
 
 fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Instruction> =
     when (instruction) {
-        is Assembly.Instruction.AllocateStack -> listOf(instruction)
         is Assembly.Instruction.Binary -> {
             val (instructionWithFixedSrc, srcCopyInstructions) = if (instruction.src is Assembly.Operand.Immediate && !instruction.src.isInt()) {
                 instruction.copy(src = Assembly.Operand.Register(Assembly.RegisterValue.R10)) to listOf(
@@ -196,7 +195,6 @@ fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Ins
         is Assembly.Instruction.Shift -> listOf(instruction)
         is Assembly.Instruction.Unary -> listOf(instruction)
         is Assembly.Instruction.Call -> listOf(instruction)
-        is Assembly.Instruction.DeallocateStack -> listOf(instruction)
         is Assembly.Instruction.Push -> {
             if (instruction.operand is Assembly.Operand.Immediate && !instruction.operand.isInt()) {
                 listOf(

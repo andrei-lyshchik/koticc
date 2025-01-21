@@ -470,12 +470,19 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
         // stack must be 16-bytes aligned before issuing a call instruction
         // each stack argument is 8-bytes long, so if number is even, there's nothing to align
         val stackPadding = if (stackArguments.size % 2 == 0) {
-            0
+            0L
         } else {
-            8
+            8L
         }
-        if (stackPadding != 0) {
-            add(Assembly.Instruction.AllocateStack(stackPadding))
+        if (stackPadding != 0L) {
+            add(
+                Assembly.Instruction.Binary(
+                    operator = Assembly.BinaryOperator.Sub,
+                    type = Assembly.Type.QuadWord,
+                    src = Assembly.Operand.Immediate(stackPadding),
+                    dst = Assembly.Operand.Register(Assembly.RegisterValue.Sp),
+                ),
+            )
         }
 
         registerArguments.forEachIndexed { index, arg ->
@@ -514,8 +521,15 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
         add(Assembly.Instruction.Call(call.name))
 
         val bytesToRemove = stackArguments.size * 8 + stackPadding
-        if (bytesToRemove != 0) {
-            add(Assembly.Instruction.DeallocateStack(bytesToRemove))
+        if (bytesToRemove != 0L) {
+            add(
+                Assembly.Instruction.Binary(
+                    operator = Assembly.BinaryOperator.Add,
+                    type = Assembly.Type.QuadWord,
+                    src = Assembly.Operand.Immediate(bytesToRemove),
+                    dst = Assembly.Operand.Register(Assembly.RegisterValue.Sp),
+                ),
+            )
         }
 
         val assemblyDst = tackyValueToOperand(call.dst)

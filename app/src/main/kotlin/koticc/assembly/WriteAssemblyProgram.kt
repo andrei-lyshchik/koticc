@@ -102,7 +102,6 @@ private fun Assembly.Type.toSize() = when (this) {
 
 private fun Assembly.Instruction.toOperatorString(): String =
     when (this) {
-        is Assembly.Instruction.AllocateStack -> "subq \$$size, %rsp"
         is Assembly.Instruction.Binary -> {
             "${toOperatorString()} ${src.toOperatorString(size = type.toSize())}, ${dst.toOperatorString(size = type.toSize())}"
         }
@@ -122,7 +121,6 @@ private fun Assembly.Instruction.toOperatorString(): String =
         is Assembly.Instruction.Shift -> "${toOperatorString()} %cl, ${dst.toOperatorString(size = type.toSize())}"
         is Assembly.Instruction.Unary -> "${toOperatorString()} ${operand.toOperatorString(size = type.toSize())}"
         is Assembly.Instruction.Call -> "call _$name"
-        is Assembly.Instruction.DeallocateStack -> "addq \$$size, %rsp"
         is Assembly.Instruction.Push -> "pushq ${operand.toOperatorString(size = Size.EightByte)}"
     }
 
@@ -219,6 +217,13 @@ private fun Assembly.RegisterValue.toOutputString(size: Size): String =
                 Size.OneByte -> "%sil"
                 Size.FourByte -> "%esi"
                 Size.EightByte -> "%rsi"
+            }
+        }
+        Assembly.RegisterValue.Sp -> {
+            when (size) {
+                Size.OneByte -> "%spl"
+                Size.FourByte -> "%esp"
+                Size.EightByte -> "%rsp"
             }
         }
         Assembly.RegisterValue.R8 -> {
