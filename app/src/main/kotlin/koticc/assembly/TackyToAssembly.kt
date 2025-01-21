@@ -307,8 +307,8 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
         when (tackyValue) {
             is Tacky.Value.Constant -> {
                 when (tackyValue.value) {
-                    is AST.IntConstant -> Assembly.Operand.Immediate(tackyValue.value.value)
-                    is AST.LongConstant -> TODO()
+                    is AST.IntConstant -> Assembly.Operand.Immediate(tackyValue.value.value.toLong())
+                    is AST.LongConstant -> Assembly.Operand.Immediate(tackyValue.value.value)
                 }
             }
             is Tacky.Value.Variable -> {
@@ -490,10 +490,11 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
         stackArguments.reversed().forEach { arg ->
             // even though our values can be 4-bytes, pushq accepts 8-bytes operands,
             // in case of immediate or register values there's no problem
-            // but if the operand is the value somewhere in the memory, higher 4-bytes may lie in the inaccessible memory
+            // but if the operand is 4-bytes and is the value somewhere in the memory, higher 4-bytes may lie in the inaccessible memory
             // to prevent that, we move the 4-bytes value to the register first and then push the register
-            when (val assemblyArgument = tackyValueToOperand(arg)) {
-                is Assembly.Operand.Immediate, is Assembly.Operand.Register -> {
+            val assemblyArgument = tackyValueToOperand(arg)
+            when {
+                assemblyArgument is Assembly.Operand.Immediate || assemblyArgument is Assembly.Operand.Register || arg.assemblyType() == Assembly.Type.QuadWord -> {
                     add(Assembly.Instruction.Push(assemblyArgument))
                 }
 
@@ -530,7 +531,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
     private fun Tacky.Value.assemblyType() = when (this) {
         is Tacky.Value.Constant -> when (this.value) {
             is AST.IntConstant -> Assembly.Type.LongWord
-            is AST.LongConstant -> TODO()
+            is AST.LongConstant -> Assembly.Type.QuadWord
         }
         is Tacky.Value.Variable -> symbolTable.objectSymbol(name).type
     }

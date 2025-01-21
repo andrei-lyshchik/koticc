@@ -116,7 +116,9 @@ object Assembly {
     sealed interface Operand {
         data class Register(val value: RegisterValue) : Operand
 
-        data class Immediate(val value: Int) : Operand
+        data class Immediate(val value: Long) : Operand {
+            fun isInt(): Boolean = value >= Int.MIN_VALUE && value <= Int.MAX_VALUE
+        }
 
         data class Stack(val offset: Int) : Operand
 

@@ -4,75 +4,99 @@ fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Ins
     when (instruction) {
         is Assembly.Instruction.AllocateStack -> listOf(instruction)
         is Assembly.Instruction.Binary -> {
-            if (instruction.operator == Assembly.BinaryOperator.Mul && instruction.dst.isMemory()) {
-                listOf(
+            val (instructionWithFixedSrc, srcCopyInstructions) = if (instruction.src is Assembly.Operand.Immediate && !instruction.src.isInt()) {
+                instruction.copy(src = Assembly.Operand.Register(Assembly.RegisterValue.R10)) to listOf(
                     Assembly.Instruction.Mov(
-                        type = instruction.type,
-                        src = instruction.dst,
-                        dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
-                    ),
-                    Assembly.Instruction.Binary(
-                        operator = instruction.operator,
-                        type = instruction.type,
-                        src = instruction.src,
-                        dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
-                    ),
-                    Assembly.Instruction.Mov(
-                        type = instruction.type,
-                        src = Assembly.Operand.Register(Assembly.RegisterValue.R11),
-                        dst = instruction.dst,
-                    ),
-                )
-            } else if (instruction.src.isMemory() && instruction.dst.isMemory()) {
-                listOf(
-                    Assembly.Instruction.Mov(
-                        type = instruction.type,
+                        type = Assembly.Type.QuadWord,
                         src = instruction.src,
                         dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
                     ),
+                )
+            } else {
+                instruction to emptyList()
+            }
+            val instructions = if (instructionWithFixedSrc.operator == Assembly.BinaryOperator.Mul && instructionWithFixedSrc.dst.isMemory()) {
+                listOf(
+                    Assembly.Instruction.Mov(
+                        type = instructionWithFixedSrc.type,
+                        src = instructionWithFixedSrc.dst,
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
+                    ),
                     Assembly.Instruction.Binary(
-                        operator = instruction.operator,
-                        type = instruction.type,
+                        operator = instructionWithFixedSrc.operator,
+                        type = instructionWithFixedSrc.type,
+                        src = instructionWithFixedSrc.src,
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
+                    ),
+                    Assembly.Instruction.Mov(
+                        type = instructionWithFixedSrc.type,
+                        src = Assembly.Operand.Register(Assembly.RegisterValue.R11),
+                        dst = instructionWithFixedSrc.dst,
+                    ),
+                )
+            } else if (instructionWithFixedSrc.src.isMemory() && instructionWithFixedSrc.dst.isMemory()) {
+                listOf(
+                    Assembly.Instruction.Mov(
+                        type = instructionWithFixedSrc.type,
+                        src = instructionWithFixedSrc.src,
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                    ),
+                    Assembly.Instruction.Binary(
+                        operator = instructionWithFixedSrc.operator,
+                        type = instructionWithFixedSrc.type,
                         src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                        dst = instruction.dst,
+                        dst = instructionWithFixedSrc.dst,
                     ),
                 )
             } else {
-                listOf(instruction)
+                listOf(instructionWithFixedSrc)
             }
+            srcCopyInstructions + instructions
         }
 
         is Assembly.Instruction.Cdq -> listOf(instruction)
         is Assembly.Instruction.Cmp -> {
-            if (instruction.src.isMemory() && instruction.dst.isMemory()) {
-                listOf(
+            val (instructionWithFixedSrc, srcCopyInstructions) = if (instruction.src is Assembly.Operand.Immediate && !instruction.src.isInt()) {
+                instruction.copy(src = Assembly.Operand.Register(Assembly.RegisterValue.R11)) to listOf(
                     Assembly.Instruction.Mov(
-                        type = instruction.type,
+                        type = Assembly.Type.QuadWord,
                         src = instruction.src,
-                        dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                    ),
-                    Assembly.Instruction.Cmp(
-                        type = instruction.type,
-                        src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
-                        dst = instruction.dst,
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
                     ),
                 )
-            } else if (instruction.dst is Assembly.Operand.Immediate) {
+            } else {
+                instruction to emptyList()
+            }
+            val instructions = if (instructionWithFixedSrc.src.isMemory() && instructionWithFixedSrc.dst.isMemory()) {
                 listOf(
                     Assembly.Instruction.Mov(
-                        type = instruction.type,
-                        src = instruction.dst,
+                        type = instructionWithFixedSrc.type,
+                        src = instructionWithFixedSrc.src,
                         dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
                     ),
                     Assembly.Instruction.Cmp(
-                        type = instruction.type,
-                        src = instruction.src,
+                        type = instructionWithFixedSrc.type,
+                        src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                        dst = instructionWithFixedSrc.dst,
+                    ),
+                )
+            } else if (instructionWithFixedSrc.dst is Assembly.Operand.Immediate) {
+                listOf(
+                    Assembly.Instruction.Mov(
+                        type = instructionWithFixedSrc.type,
+                        src = instructionWithFixedSrc.dst,
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                    ),
+                    Assembly.Instruction.Cmp(
+                        type = instructionWithFixedSrc.type,
+                        src = instructionWithFixedSrc.src,
                         dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
                     ),
                 )
             } else {
-                listOf(instruction)
+                listOf(instructionWithFixedSrc)
             }
+            srcCopyInstructions + instructions
         }
 
         is Assembly.Instruction.ConditionalJump -> listOf(instruction)
@@ -98,6 +122,19 @@ fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Ins
         is Assembly.Instruction.Label -> listOf(instruction)
         is Assembly.Instruction.Mov -> {
             if (instruction.src.isMemory() && instruction.dst.isMemory()) {
+                listOf(
+                    Assembly.Instruction.Mov(
+                        type = instruction.type,
+                        src = instruction.src,
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                    ),
+                    Assembly.Instruction.Mov(
+                        type = instruction.type,
+                        src = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                        dst = instruction.dst,
+                    ),
+                )
+            } else if (instruction.src is Assembly.Operand.Immediate && !instruction.src.isInt() && instruction.dst.isMemory()) {
                 listOf(
                     Assembly.Instruction.Mov(
                         type = instruction.type,
@@ -160,5 +197,20 @@ fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Ins
         is Assembly.Instruction.Unary -> listOf(instruction)
         is Assembly.Instruction.Call -> listOf(instruction)
         is Assembly.Instruction.DeallocateStack -> listOf(instruction)
-        is Assembly.Instruction.Push -> listOf(instruction)
+        is Assembly.Instruction.Push -> {
+            if (instruction.operand is Assembly.Operand.Immediate && !instruction.operand.isInt()) {
+                listOf(
+                    Assembly.Instruction.Mov(
+                        type = Assembly.Type.QuadWord,
+                        src = instruction.operand,
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                    ),
+                    Assembly.Instruction.Push(
+                        operand = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                    ),
+                )
+            } else {
+                listOf(instruction)
+            }
+        }
     }

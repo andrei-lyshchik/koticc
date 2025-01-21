@@ -38,6 +38,9 @@ class TackyProgramBuilder {
 val Int.t
     get() = Tacky.Value.Constant(AST.IntConstant(this))
 
+val Long.t
+    get() = Tacky.Value.Constant(AST.LongConstant(this))
+
 val String.t
     get() = Tacky.Value.Variable(this)
 
