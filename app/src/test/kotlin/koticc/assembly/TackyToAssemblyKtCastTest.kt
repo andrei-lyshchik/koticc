@@ -32,7 +32,7 @@ class TackyToAssemblyKtCastTest {
                  movq %rsp, %rbp
                  subq $16, %rsp
                  movl $1, %r10d
-                 movsx %r10d, %r11
+                 movslq %r10d, %r11
                  movq %r11, -8(%rbp)
             """.trimIndent(),
             actual = result,

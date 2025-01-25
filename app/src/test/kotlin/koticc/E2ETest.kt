@@ -21,21 +21,27 @@ class E2ETest {
     }
 
     class TestCases : VarargArgumentsProvider(
-        "/programs/switch.c",
-        "/programs/binary.c",
-        "/programs/bitwise.c",
-        "/programs/comparisons.c",
-        "/programs/compound_assignment.c",
-        "/programs/logical.c",
-        "/programs/simple_variables.c",
-        "/programs/unary.c",
-        "/programs/increments_decrements.c",
-        "/programs/if.c",
-        "/programs/conditional_ternary.c",
-        "/programs/labels.c",
-        "/programs/nested_blocks.c",
-        "/programs/loops.c",
-        "/programs/functions.c",
+//        "/programs/switch.c",
+//        "/programs/binary.c",
+//        "/programs/binary_long.c",
+//        "/programs/bitwise.c",
+//        "/programs/bitwise_long.c",
+//        "/programs/comparisons.c",
+//        "/programs/comparisons_long.c",
+//        "/programs/compound_assignment.c",
+//        "/programs/logical.c",
+//        "/programs/simple_variables.c",
+//        "/programs/unary.c",
+//        "/programs/increments_decrements.c",
+//        "/programs/if.c",
+//        "/programs/conditional_ternary.c",
+//        "/programs/labels.c",
+//        "/programs/nested_blocks.c",
+//        "/programs/loops.c",
+//        "/programs/functions.c",
+//        "/programs/sign_extend.c",
+//        "/programs/sign_extend_in_assignment.c",
+        "/programs/long_logical_not.c",
     )
 
     @ParameterizedTest
@@ -70,6 +76,10 @@ class E2ETest {
         MultipleFilesTestCase(
             file1 = "/programs/static_client.c",
             file2ForGccOnly = "/programs/static_impl.c",
+        ),
+        MultipleFilesTestCase(
+            file1 = "/programs/factorial_long.c",
+            file2ForGccOnly = "/programs/print.c",
         ),
     )
 

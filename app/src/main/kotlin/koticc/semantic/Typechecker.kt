@@ -299,7 +299,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     location = variableDeclaration.location,
                 )
                 variableDeclaration.copy(
-                    initializer = variableDeclaration.initializer?.let { typecheckExpression(it).bind() },
+                    initializer = variableDeclaration.initializer?.let { typecheckExpression(it).bind().castTo(variableDeclaration.type) },
                 )
             }
         }

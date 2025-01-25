@@ -2,6 +2,7 @@ package koticc.assembly
 
 import koticc.VarargArgumentsProvider
 import koticc.ast.Type
+import koticc.semantic.tempVariablesSymbolTable
 import koticc.semantic.toSymbol
 import koticc.tacky.Tacky
 import koticc.tacky.and
@@ -630,6 +631,66 @@ class TackyToAssemblyKtTest {
                     movq %rbp, %rsp
                     popq %rbp
                     ret
+            """.trimIndent(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should use movl for comparison result initialization even if comparing quadwords`() {
+        val tackyProgram = tackyProgram {
+            symbolTable = mapOf(
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+            ) + tempVariablesSymbolTable(start = 0, count = 1)
+
+            function("main") {
+                assign("tmp.0", 1L.t eq 2L.t)
+            }
+        }
+
+        val actual = tackyProgramToAssemblyString(tackyProgram)
+
+        assertEquals(
+            expected = """
+                    .globl _main
+                _main:
+                    pushq %rbp
+                    movq %rsp, %rbp
+                    subq $16, %rsp
+                    movl $0, -4(%rbp)
+                    movq $1, %r10
+                    cmpq $2, %r10
+                    sete -4(%rbp)
+            """.trimIndent(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should use movl to initialize logical not result`() {
+        val tackyProgram = tackyProgram {
+            symbolTable = mapOf(
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+            ) + tempVariablesSymbolTable(start = 0, count = 1)
+
+            function("main") {
+                assign("tmp.0", !1L.t)
+            }
+        }
+
+        val actual = tackyProgramToAssemblyString(tackyProgram)
+
+        assertEquals(
+            expected = """
+                    .globl _main
+                _main:
+                    pushq %rbp
+                    movq %rsp, %rbp
+                    subq $16, %rsp
+                    movq $0, %r10
+                    cmpq $1, %r10
+                    movl $0, -4(%rbp)
+                    sete -4(%rbp)
             """.trimIndent(),
             actual = actual,
         )

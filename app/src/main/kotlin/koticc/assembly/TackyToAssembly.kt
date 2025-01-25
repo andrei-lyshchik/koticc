@@ -347,14 +347,14 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
     ): List<Assembly.Instruction> {
         val dstAssembly = tackyValueToOperand(dst)
         return listOf(
-            Assembly.Instruction.Mov(
-                type = src.assemblyType(),
-                src = Assembly.Operand.Immediate(0),
-                dst = dstAssembly,
-            ),
             Assembly.Instruction.Cmp(
                 type = src.assemblyType(),
                 src = tackyValueToOperand(src),
+                dst = Assembly.Operand.Immediate(0),
+            ),
+            Assembly.Instruction.Mov(
+                type = dst.assemblyType(),
+                src = Assembly.Operand.Immediate(0),
                 dst = dstAssembly,
             ),
             Assembly.Instruction.Set(
@@ -421,7 +421,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
         val dstAssembly = tackyValueToOperand(dst)
         return listOf(
             Assembly.Instruction.Mov(
-                type = left.assemblyType(),
+                type = dst.assemblyType(),
                 src = Assembly.Operand.Immediate(0),
                 dst = dstAssembly,
             ),

@@ -4,8 +4,10 @@ import arrow.core.left
 import arrow.core.right
 import koticc.ast.AST
 import koticc.ast.Type
+import koticc.ast.cast
 import koticc.ast.e
 import koticc.ast.int
+import koticc.ast.long
 import koticc.ast.program
 import koticc.token.Location
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -1247,5 +1249,29 @@ class SemanticAnalysisKtTest {
         val expected = SemanticAnalysisError("'a' already declared at line 0, column 0", Location(0, 0))
 
         assertEquals(expected.left(), semanticAnalysis(input))
+    }
+
+    @Test
+    fun `should insert a cast if right side of assignment needs it`() {
+        val input = program {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                long("a") assign 1.e
+            }
+        }
+
+        val expected = ValidASTProgram(
+            value = program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    long("a.0") assign cast(Type.Long, 1.e.int()).long()
+                }
+            },
+            renamedVariableCount = 1,
+            symbolTable = mapOf(
+                "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                "a.0" to Type.Long.toSymbol(),
+            ),
+        )
+
+        assertEquals(expected.right(), semanticAnalysis(input))
     }
 }
