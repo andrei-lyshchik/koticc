@@ -466,12 +466,11 @@ private class Parser(
                                 type = null,
                             )
                         is BinaryOperatorLike.CompoundAssignmentOperator ->
-                            AST.Expression.CompoundAssignment(
+                            compoundAssignment(
                                 operator = binaryOperatorLike.value,
                                 left = left,
                                 // minPrecedence = precedence => right associative
                                 right = parseExpression(precedence).bind(),
-                                type = null,
                             )
                         is BinaryOperatorLike.Conditional -> {
                             // any expression can be between ? and : - even assignment
@@ -585,8 +584,8 @@ private class Parser(
             val peekToken = peekToken()
             val operator =
                 when (peekToken?.value) {
-                    Token.DoublePlus -> AST.CompoundAssignmentOperator.Add
-                    Token.DoubleMinus -> AST.CompoundAssignmentOperator.Subtract
+                    Token.DoublePlus -> AST.BinaryOperator.Add
+                    Token.DoubleMinus -> AST.BinaryOperator.Subtract
                     else ->
                         raise(
                             ParserError(
@@ -597,13 +596,27 @@ private class Parser(
                 }
             nextToken()
             val operand = parseFactor().bind()
-            AST.Expression.CompoundAssignment(
+            compoundAssignment(
                 operator = operator,
                 left = operand,
                 right = AST.Expression.Constant(AST.IntConstant(1), null, peekToken.location),
-                type = null,
             )
         }
+
+    private fun compoundAssignment(
+        left: AST.Expression,
+        right: AST.Expression,
+        operator: AST.BinaryOperator,
+    ) = AST.Expression.Assignment(
+        left = left,
+        right = AST.Expression.Binary(
+            operator = operator,
+            left = left,
+            right = right,
+            type = null,
+        ),
+        type = null,
+    )
 
     private fun parseUnary(): Either<ParserError, AST.Expression.Unary> =
         either {
@@ -661,52 +674,52 @@ private class Parser(
             Token.Equal -> BinaryOperatorLike.Assignment(token.location)
             Token.PlusEqual ->
                 BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.CompoundAssignmentOperator.Add,
+                    AST.BinaryOperator.Add,
                     token.location,
                 )
             Token.MinusEqual ->
                 BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.CompoundAssignmentOperator.Subtract,
+                    AST.BinaryOperator.Subtract,
                     token.location,
                 )
             Token.AsteriskEqual ->
                 BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.CompoundAssignmentOperator.Multiply,
+                    AST.BinaryOperator.Multiply,
                     token.location,
                 )
             Token.SlashEqual ->
                 BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.CompoundAssignmentOperator.Divide,
+                    AST.BinaryOperator.Divide,
                     token.location,
                 )
             Token.PercentEqual ->
                 BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.CompoundAssignmentOperator.Modulo,
+                    AST.BinaryOperator.Modulo,
                     token.location,
                 )
             Token.AmpersandEqual ->
                 BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.CompoundAssignmentOperator.BitwiseAnd,
+                    AST.BinaryOperator.BitwiseAnd,
                     token.location,
                 )
             Token.CaretEqual ->
                 BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.CompoundAssignmentOperator.BitwiseXor,
+                    AST.BinaryOperator.BitwiseXor,
                     token.location,
                 )
             Token.PipeEqual ->
                 BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.CompoundAssignmentOperator.BitwiseOr,
+                    AST.BinaryOperator.BitwiseOr,
                     token.location,
                 )
             Token.DoubleLessThanEqual ->
                 BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.CompoundAssignmentOperator.ShiftLeft,
+                    AST.BinaryOperator.ShiftLeft,
                     token.location,
                 )
             Token.DoubleGreaterThanEqual ->
                 BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.CompoundAssignmentOperator.ShiftRight,
+                    AST.BinaryOperator.ShiftRight,
                     token.location,
                 )
             Token.QuestionMark -> BinaryOperatorLike.Conditional
@@ -773,7 +786,7 @@ private sealed interface BinaryOperatorLike {
     data class Assignment(val location: Location) : BinaryOperatorLike
 
     data class CompoundAssignmentOperator(
-        val value: AST.CompoundAssignmentOperator,
+        val value: AST.BinaryOperator,
         val location: Location,
     ) : BinaryOperatorLike
 

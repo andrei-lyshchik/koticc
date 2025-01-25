@@ -20,7 +20,7 @@ class ASTToTackyKtWhileTest {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     int("a.0") assign 1.e.int()
                     while_(("a.0".e.int() lt 10.e.int()).int(), loopId = 0) {
-                        plusAssign("a.0".e.int(), 1.e.int(), type = Type.Int)
+                        plusAssign("a.0".e.int(), 1.e.int(), resultType = Type.Int, Type.Int)
                     }
                 }
             },
@@ -65,7 +65,7 @@ class ASTToTackyKtWhileTest {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     int("a.0") assign 1.e.int()
                     while_(("a.0".e.int() lt 10.e.int()).int(), loopId = 0) {
-                        plusAssign("a.0".e.int(), 1.e.int(), type = Type.Int)
+                        plusAssign("a.0".e.int(), 1.e.int(), resultType = Type.Int, rightSideType = Type.Int)
                         if_(("a.0".e.int() eq 5.e.int()).int()) {
                             continue_(0)
                         } else_ {

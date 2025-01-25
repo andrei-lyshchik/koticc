@@ -294,54 +294,6 @@ class SemanticAnalysisKtTest {
     }
 
     @ParameterizedTest
-    @EnumSource(AST.CompoundAssignmentOperator::class)
-    fun `should return error if left side of compound assignment is not a variable`(
-        compoundAssignmentOperator: AST.CompoundAssignmentOperator,
-    ) {
-        val input =
-            AST.Program(
-                declarations =
-                listOf(
-                    AST.Declaration.Function(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Statement(
-                                    statement =
-                                    AST.Statement.Expression(
-                                        expression =
-                                        AST.Expression.CompoundAssignment(
-                                            operator = compoundAssignmentOperator,
-                                            left =
-                                            AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 5)),
-                                            right =
-                                            AST.Expression.Constant(AST.IntConstant(2), null, Location(2, 9)),
-                                            type = null,
-                                        ),
-                                    ),
-                                ),
-                            ),
-                        ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                        storageClass = null,
-                        location = Location(1, 1),
-                    ),
-                ),
-            )
-
-        val expected =
-            SemanticAnalysisError(
-                "left side of compound assignment must be a left-value, got '1'",
-                Location(2, 5),
-            )
-
-        assertEquals(expected.left(), semanticAnalysis(input))
-    }
-
-    @ParameterizedTest
     @EnumSource(AST.PostfixOperator::class)
     fun `should return error if left side of postfix operator is not a variable`(postfixOperator: AST.PostfixOperator) {
         val input =

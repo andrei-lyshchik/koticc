@@ -80,7 +80,6 @@ fun AST.Expression.withDummyLocations(): AST.Expression = when (this) {
     is AST.Expression.Binary -> copy(left = left.withDummyLocations(), right = right.withDummyLocations())
     is AST.Expression.Unary -> copy(location = DUMMY_LOCATION)
     is AST.Expression.Assignment -> copy(left = left.withDummyLocations(), right = right.withDummyLocations())
-    is AST.Expression.CompoundAssignment -> copy(left = left.withDummyLocations(), right = right.withDummyLocations())
     is AST.Expression.Conditional -> copy(condition = condition.withDummyLocations(), thenExpression = thenExpression.withDummyLocations(), elseExpression = elseExpression.withDummyLocations())
     is AST.Expression.Postfix -> copy(operand = operand.withDummyLocations())
     is AST.Expression.FunctionCall -> copy(arguments = arguments.map { it.withDummyLocations() }, location = DUMMY_LOCATION)

@@ -20,7 +20,7 @@ class ASTToTackyKtDoWhileTest {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     int("a") assign 1.e.int()
                     do_ {
-                        plusAssign("a".e, 1.e.int(), type = Type.Int)
+                        plusAssign("a".e, 1.e.int(), resultType = Type.Int, Type.Int)
                     }.while_(("a".e.int() lt 10.e.int()).int(), loopId = 0)
                     return_("a".e.int())
                 }
@@ -67,7 +67,7 @@ class ASTToTackyKtDoWhileTest {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     int("a.0") assign 1.e.int()
                     do_ {
-                        plusAssign("a.0".e, 1.e.int(), type = Type.Int)
+                        plusAssign("a.0".e, 1.e.int(), resultType = Type.Int, Type.Int)
                         if_(("a.0".e.int() eq 5.e.int()).int()) {
                             continue_(0)
                         } else_ {

@@ -18,10 +18,10 @@ class SemanticAnalysisKtWhileTest {
             function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 while_("a".e lt 10.e) {
-                    plusAssign("a".e, 1.e)
+                    plusAssign("a".e, 1.e, rightSideType = Type.Int)
                 }
                 while_("a".e lt 40.e) {
-                    plusMultiply("a".e, 2.e)
+                    plusMultiply("a".e, 2.e, rightSideType = Type.Int)
                 }
                 return_("a".e)
             }
@@ -35,10 +35,10 @@ class SemanticAnalysisKtWhileTest {
                     function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                         int("a.0") assign 1.e.int()
                         while_(("a.0".e.int() lt 10.e.int()).int(), loopId = 0) {
-                            plusAssign("a.0".e.int(), 1.e.int(), type = Type.Int)
+                            plusAssign("a.0".e.int(), 1.e.int(), resultType = Type.Int, rightSideType = Type.Int)
                         }
                         while_(("a.0".e.int() lt 40.e.int()).int(), loopId = 1) {
-                            plusMultiply("a.0".e.int(), 2.e.int(), type = Type.Int)
+                            plusMultiply("a.0".e.int(), 2.e.int(), resultType = Type.Int, rightSideType = Type.Int)
                         }
                         return_("a.0".e.int())
                     }
@@ -59,7 +59,7 @@ class SemanticAnalysisKtWhileTest {
             function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 while_("a".e lt 10.e) {
-                    plusAssign("a".e, 1.e)
+                    plusAssign("a".e, 1.e, rightSideType = Type.Int)
                     if_("a".e eq 5.e) {
                         break_()
                     }
@@ -68,7 +68,7 @@ class SemanticAnalysisKtWhileTest {
                     }
                 }
                 while_("a".e lt 40.e) {
-                    plusAssign("a".e, 1.e)
+                    plusAssign("a".e, 1.e, rightSideType = Type.Int)
                     if_("a".e eq 10.e) {
                         break_()
                     }
@@ -88,7 +88,7 @@ class SemanticAnalysisKtWhileTest {
                     function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                         int("a.0") assign 1.e.int()
                         while_(("a.0".e.int() lt 10.e.int()).int(), loopId = 0) {
-                            plusAssign("a.0".e.int(), 1.e.int(), type = Type.Int)
+                            plusAssign("a.0".e.int(), 1.e.int(), resultType = Type.Int, Type.Int)
                             if_(("a.0".e.int() eq 5.e.int()).int()) {
                                 breakLoop(0)
                             }
@@ -97,7 +97,7 @@ class SemanticAnalysisKtWhileTest {
                             }
                         }
                         while_(("a.0".e.int() lt 40.e.int()).int(), loopId = 1) {
-                            plusAssign("a.0".e.int(), 1.e.int(), type = Type.Int)
+                            plusAssign("a.0".e.int(), 1.e.int(), resultType = Type.Int, Type.Int)
                             if_(("a.0".e.int() eq 10.e.int()).int()) {
                                 breakLoop(1)
                             }
@@ -124,9 +124,9 @@ class SemanticAnalysisKtWhileTest {
             function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 while_(1.e) {
-                    plusAssign("a".e, 1.e)
+                    plusAssign("a".e, 1.e, rightSideType = Type.Int)
                     while_(1.e) {
-                        plusAssign("a".e, 2.e)
+                        plusAssign("a".e, 2.e, rightSideType = Type.Int)
                         if_("a".e gt 10.e) {
                             break_()
                         }
@@ -147,9 +147,9 @@ class SemanticAnalysisKtWhileTest {
                     function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                         int("a.0") assign 1.e.int()
                         while_(1.e.int(), loopId = 0) {
-                            plusAssign("a.0".e.int(), 1.e.int(), type = Type.Int)
+                            plusAssign("a.0".e.int(), 1.e.int(), resultType = Type.Int, Type.Int)
                             while_(1.e.int(), loopId = 1) {
-                                plusAssign("a.0".e.int(), 2.e.int(), type = Type.Int)
+                                plusAssign("a.0".e.int(), 2.e.int(), resultType = Type.Int, Type.Int)
                                 if_(("a.0".e.int() gt 10.e.int()).int()) {
                                     breakLoop(1)
                                 }

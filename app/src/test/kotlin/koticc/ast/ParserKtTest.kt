@@ -408,20 +408,20 @@ int main(void) {
                     type = null,
                 ),
             *listOf(
-                "+=" to AST.CompoundAssignmentOperator.Add,
-                "-=" to AST.CompoundAssignmentOperator.Subtract,
-                "*=" to AST.CompoundAssignmentOperator.Multiply,
-                "/=" to AST.CompoundAssignmentOperator.Divide,
-                "%=" to AST.CompoundAssignmentOperator.Modulo,
-                "&=" to AST.CompoundAssignmentOperator.BitwiseAnd,
-                "|=" to AST.CompoundAssignmentOperator.BitwiseOr,
-                "^=" to AST.CompoundAssignmentOperator.BitwiseXor,
-                "<<=" to AST.CompoundAssignmentOperator.ShiftLeft,
-                ">>=" to AST.CompoundAssignmentOperator.ShiftRight,
+                "+=" to AST.BinaryOperator.Add,
+                "-=" to AST.BinaryOperator.Subtract,
+                "*=" to AST.BinaryOperator.Multiply,
+                "/=" to AST.BinaryOperator.Divide,
+                "%=" to AST.BinaryOperator.Modulo,
+                "&=" to AST.BinaryOperator.BitwiseAnd,
+                "|=" to AST.BinaryOperator.BitwiseOr,
+                "^=" to AST.BinaryOperator.BitwiseXor,
+                "<<=" to AST.BinaryOperator.ShiftLeft,
+                ">>=" to AST.BinaryOperator.ShiftRight,
             )
                 .map { (token, operator) ->
                     "a $token 1 + 2" to
-                        AST.Expression.CompoundAssignment(
+                        compoundAssignment(
                             operator = operator,
                             left = AST.Expression.Variable(name = "a", type = null, location = Location(2, 5)),
                             right =
@@ -441,7 +441,7 @@ int main(void) {
                                 ),
                                 type = null,
                             ),
-                            type = null,
+                            resultType = null,
                         )
                 }
                 .toTypedArray(),
@@ -449,8 +449,8 @@ int main(void) {
                 AST.Expression.Assignment(
                     left = AST.Expression.Variable(name = "a", type = null, location = Location(2, 5)),
                     right =
-                    AST.Expression.CompoundAssignment(
-                        operator = AST.CompoundAssignmentOperator.Add,
+                    compoundAssignment(
+                        operator = AST.BinaryOperator.Add,
                         left =
                         AST.Expression.Variable(
                             name = "b",
@@ -466,8 +466,8 @@ int main(void) {
                                 location = Location(2, 14),
                             ),
                             right =
-                            AST.Expression.CompoundAssignment(
-                                operator = AST.CompoundAssignmentOperator.BitwiseAnd,
+                            compoundAssignment(
+                                operator = AST.BinaryOperator.BitwiseAnd,
                                 left =
                                 AST.Expression.Variable(
                                     name = "b",
@@ -480,73 +480,73 @@ int main(void) {
                                     type = null,
                                     location = Location(2, 23),
                                 ),
-                                type = null,
+                                resultType = null,
                             ),
                             type = null,
                         ),
-                        type = null,
+                        resultType = null,
                     ),
                     type = null,
                 ),
             "++i" to
-                AST.Expression.CompoundAssignment(
-                    operator = AST.CompoundAssignmentOperator.Add,
+                compoundAssignment(
+                    operator = AST.BinaryOperator.Add,
                     left = AST.Expression.Variable(name = "i", type = null, location = Location(2, 7)),
                     right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
-                    type = null,
+                    resultType = null,
                 ),
             "++++i" to
-                AST.Expression.CompoundAssignment(
-                    operator = AST.CompoundAssignmentOperator.Add,
+                compoundAssignment(
+                    operator = AST.BinaryOperator.Add,
                     left =
-                    AST.Expression.CompoundAssignment(
-                        operator = AST.CompoundAssignmentOperator.Add,
+                    compoundAssignment(
+                        operator = AST.BinaryOperator.Add,
                         left = AST.Expression.Variable(name = "i", type = null, location = Location(2, 9)),
                         right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 7)),
-                        type = null,
+                        resultType = null,
                     ),
                     right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
-                    type = null,
+                    resultType = null,
                 ),
             "-++i" to
                 AST.Expression.Unary(
                     operator = AST.UnaryOperator.Negate,
                     operand =
-                    AST.Expression.CompoundAssignment(
-                        operator = AST.CompoundAssignmentOperator.Add,
+                    compoundAssignment(
+                        operator = AST.BinaryOperator.Add,
                         left = AST.Expression.Variable(name = "i", type = null, location = Location(2, 8)),
                         right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 6)),
-                        type = null,
+                        resultType = null,
                     ),
                     type = null,
                     location = Location(2, 5),
                 ),
             "--i" to
-                AST.Expression.CompoundAssignment(
-                    operator = AST.CompoundAssignmentOperator.Subtract,
+                compoundAssignment(
+                    operator = AST.BinaryOperator.Subtract,
                     left = AST.Expression.Variable(name = "i", type = null, location = Location(2, 7)),
                     right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
-                    type = null,
+                    resultType = null,
                 ),
             "----i" to
-                AST.Expression.CompoundAssignment(
-                    operator = AST.CompoundAssignmentOperator.Subtract,
+                compoundAssignment(
+                    operator = AST.BinaryOperator.Subtract,
                     left =
-                    AST.Expression.CompoundAssignment(
-                        operator = AST.CompoundAssignmentOperator.Subtract,
+                    compoundAssignment(
+                        operator = AST.BinaryOperator.Subtract,
                         left = AST.Expression.Variable(name = "i", type = null, location = Location(2, 9)),
                         right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 7)),
-                        type = null,
+                        resultType = null,
                     ),
                     right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
-                    type = null,
+                    resultType = null,
                 ),
             "++3" to
-                AST.Expression.CompoundAssignment(
-                    operator = AST.CompoundAssignmentOperator.Add,
+                compoundAssignment(
+                    operator = AST.BinaryOperator.Add,
                     left = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(2, 7)),
                     right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
-                    type = null,
+                    resultType = null,
                 ),
             "i++" to
                 AST.Expression.Postfix(
@@ -590,8 +590,8 @@ int main(void) {
                     type = null,
                 ),
             "++i++" to
-                AST.Expression.CompoundAssignment(
-                    operator = AST.CompoundAssignmentOperator.Add,
+                compoundAssignment(
+                    operator = AST.BinaryOperator.Add,
                     left =
                     AST.Expression.Postfix(
                         operator = AST.PostfixOperator.Increment,
@@ -599,7 +599,7 @@ int main(void) {
                         type = null,
                     ),
                     right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 5)),
-                    type = null,
+                    resultType = null,
                 ),
             "i = j++" to
                 AST.Expression.Assignment(
@@ -622,11 +622,11 @@ int main(void) {
                         type = null,
                     ),
                     right =
-                    AST.Expression.CompoundAssignment(
-                        operator = AST.CompoundAssignmentOperator.Add,
+                    compoundAssignment(
+                        operator = AST.BinaryOperator.Add,
                         left = AST.Expression.Variable(name = "j", type = null, location = Location(2, 13)),
                         right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 11)),
-                        type = null,
+                        resultType = null,
                     ),
                     type = null,
                 ),

@@ -318,10 +318,6 @@ internal class IdentifierResolver {
                     resolveAssignment(expression, identifierMapping).bind()
                 }
 
-                is AST.Expression.CompoundAssignment -> {
-                    resolveCompoundAssignment(expression, identifierMapping).bind()
-                }
-
                 is AST.Expression.Postfix -> {
                     resolvePostfix(expression, identifierMapping).bind()
                 }
@@ -374,28 +370,6 @@ internal class IdentifierResolver {
             val right = resolveExpression(assignment.right, identifierMapping).bind()
 
             AST.Expression.Assignment(left, right, null)
-        }
-
-    private fun resolveCompoundAssignment(
-        assignment: AST.Expression.CompoundAssignment,
-        identifierMapping: MutableMap<String, DeclaredIdentifier>,
-    ): Either<SemanticAnalysisError, AST.Expression.CompoundAssignment> =
-        either {
-            val left =
-                when (val result = resolveExpression(assignment.left, identifierMapping = identifierMapping).bind()) {
-                    is AST.Expression.Variable -> result
-                    else ->
-                        raise(
-                            SemanticAnalysisError(
-                                "left side of compound assignment must be a left-value, " +
-                                    "got '${assignment.left.toDisplayString()}'",
-                                assignment.location,
-                            ),
-                        )
-                }
-            val right = resolveExpression(assignment.right, identifierMapping).bind()
-
-            AST.Expression.CompoundAssignment(assignment.operator, left, right, null)
         }
 
     private fun resolvePostfix(postfix: AST.Expression.Postfix, identifierMapping: MutableMap<String, DeclaredIdentifier>): Either<SemanticAnalysisError, AST.Expression.Postfix> =

@@ -441,14 +441,6 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     right = right.castTo(commonType),
                 ).ofType(resultType)
             }
-            is AST.Expression.CompoundAssignment -> {
-                val left = typecheckExpression(expression.left).bind()
-                val right = typecheckExpression(expression.right).bind().castTo(left.resolvedType())
-                expression.copy(
-                    left = left,
-                    right = right,
-                ).ofType(left.resolvedType())
-            }
             is AST.Expression.Conditional -> {
                 val thenExpression = typecheckExpression(expression.thenExpression).bind()
                 val elseExpression = typecheckExpression(expression.elseExpression).bind()

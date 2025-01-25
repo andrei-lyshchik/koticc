@@ -118,30 +118,42 @@ class BlockBuilder {
         )
     }
 
-    fun plusAssign(left: AST.Expression, right: AST.Expression, type: Type.Data? = null) {
+    fun plusAssign(
+        left: AST.Expression,
+        right: AST.Expression,
+        resultType: Type.Data? = null,
+        rightSideType: Type.Data? = null,
+    ) {
         addBlockItem(
             AST.BlockItem.Statement(
                 AST.Statement.Expression(
-                    AST.Expression.CompoundAssignment(
-                        operator = AST.CompoundAssignmentOperator.Add,
+                    compoundAssignment(
+                        operator = AST.BinaryOperator.Add,
                         left = left,
                         right = right,
-                        type = type,
+                        resultType = resultType,
+                        rightSideType = rightSideType,
                     ),
                 ),
             ),
         )
     }
 
-    fun plusMultiply(left: AST.Expression, right: AST.Expression, type: Type.Data? = null) {
+    fun plusMultiply(
+        left: AST.Expression,
+        right: AST.Expression,
+        resultType: Type.Data? = null,
+        rightSideType: Type.Data? = null,
+    ) {
         addBlockItem(
             AST.BlockItem.Statement(
                 AST.Statement.Expression(
-                    AST.Expression.CompoundAssignment(
-                        operator = AST.CompoundAssignmentOperator.Multiply,
+                    compoundAssignment(
+                        operator = AST.BinaryOperator.Multiply,
                         left = left,
                         right = right,
-                        type = type,
+                        resultType = resultType,
+                        rightSideType = rightSideType,
                     ),
                 ),
             ),
@@ -540,20 +552,21 @@ fun AST.Expression.complement(): AST.Expression {
 }
 
 infix fun AST.Expression.plusAssign(other: AST.Expression): AST.Expression {
-    return AST.Expression.CompoundAssignment(
-        operator = AST.CompoundAssignmentOperator.Add,
+    return compoundAssignment(
+        operator = AST.BinaryOperator.Add,
         left = this,
         right = other,
-        type = type,
+        resultType = type,
+        rightSideType = type,
     )
 }
 
 infix fun AST.Expression.plusMultiply(other: AST.Expression): AST.Expression {
-    return AST.Expression.CompoundAssignment(
-        operator = AST.CompoundAssignmentOperator.Multiply,
+    return compoundAssignment(
+        operator = AST.BinaryOperator.Multiply,
         left = this,
         right = other,
-        type = null,
+        resultType = null,
     )
 }
 
@@ -702,3 +715,21 @@ fun cond(condition: AST.Expression, thenExpression: AST.Expression, elseExpressi
 fun AST.Expression.int() = ofType(Type.Int)
 
 fun AST.Expression.long() = ofType(Type.Long)
+
+fun compoundAssignment(
+    left: AST.Expression,
+    right: AST.Expression,
+    operator: AST.BinaryOperator,
+    resultType: Type.Data? = null,
+    rightSideType: Type.Data? = null,
+) =
+    AST.Expression.Assignment(
+        left = left,
+        right = AST.Expression.Binary(
+            operator = operator,
+            left = left,
+            right = right,
+            type = rightSideType,
+        ),
+        type = resultType,
+    )

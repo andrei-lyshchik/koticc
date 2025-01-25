@@ -28,7 +28,7 @@ class SemanticAnalysisKtForTest {
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
-                    plusAssign("a".e, "i".e)
+                    plusAssign("a".e, "i".e, rightSideType = Type.Int)
                 }
                 return_("a".e)
             }
@@ -47,7 +47,7 @@ class SemanticAnalysisKtForTest {
                             ("i.1".e.int() plusAssign 1.e.int()).int(),
                             loopId = 0,
                         ) {
-                            plusAssign("a.0".e.int(), "i.1".e.int(), type = Type.Int)
+                            plusAssign("a.0".e.int(), "i.1".e.int(), resultType = Type.Int, Type.Int)
                         }
                         return_("a.0".e.int())
                     }
@@ -73,7 +73,7 @@ class SemanticAnalysisKtForTest {
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
-                    plusAssign("a".e, "i".e)
+                    plusAssign("a".e, "i".e, rightSideType = Type.Int)
                     if_("a".e eq 5.e) {
                         break_()
                     }
@@ -86,7 +86,7 @@ class SemanticAnalysisKtForTest {
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
-                    plusAssign("a".e, "i".e)
+                    plusAssign("a".e, "i".e, rightSideType = Type.Int)
                     if_("a".e eq 20.e) {
                         break_()
                     }
@@ -111,7 +111,7 @@ class SemanticAnalysisKtForTest {
                             ("i.1".e.int() plusAssign 1.e.int()).int(),
                             loopId = 0,
                         ) {
-                            plusAssign("a.0".e.int(), "i.1".e.int(), type = Type.Int)
+                            plusAssign("a.0".e.int(), "i.1".e.int(), resultType = Type.Int, Type.Int)
                             if_(("a.0".e.int() eq 5.e.int()).int()) {
                                 breakLoop(0)
                             }
@@ -125,7 +125,7 @@ class SemanticAnalysisKtForTest {
                             ("i.2".e.int() plusAssign 1.e.int()).int(),
                             loopId = 1,
                         ) {
-                            plusAssign("a.0".e.int(), "i.2".e.int(), type = Type.Int)
+                            plusAssign("a.0".e.int(), "i.2".e.int(), resultType = Type.Int, Type.Int)
                             if_(("a.0".e.int() eq 20.e.int()).int()) {
                                 breakLoop(1)
                             }
@@ -158,13 +158,13 @@ class SemanticAnalysisKtForTest {
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
-                    plusAssign("a".e, "i".e)
+                    plusAssign("a".e, "i".e, rightSideType = Type.Int)
                     for_(
                         initDecl("j", 0.e),
                         "j".e lt 10.e,
                         "j".e plusAssign 1.e,
                     ) {
-                        plusAssign("a".e, "j".e)
+                        plusAssign("a".e, "j".e, rightSideType = Type.Int)
                         if_("a".e eq 5.e) {
                             break_()
                         }
@@ -196,14 +196,14 @@ class SemanticAnalysisKtForTest {
                             ("i.1".e.int() plusAssign 1.e.int()).int(),
                             loopId = 0,
                         ) {
-                            plusAssign("a.0".e.int(), "i.1".e.int(), type = Type.Int)
+                            plusAssign("a.0".e.int(), "i.1".e.int(), resultType = Type.Int, Type.Int)
                             for_(
                                 initDecl("j.2", 0.e.int()),
                                 ("j.2".e.int() lt 10.e.int()).int(),
                                 ("j.2".e.int() plusAssign 1.e.int()).int(),
                                 loopId = 1,
                             ) {
-                                plusAssign("a.0".e.int(), "j.2".e.int(), type = Type.Int)
+                                plusAssign("a.0".e.int(), "j.2".e.int(), resultType = Type.Int, Type.Int)
                                 if_(("a.0".e.int() eq 5.e.int()).int()) {
                                     breakLoop(1)
                                 }
@@ -248,7 +248,7 @@ class SemanticAnalysisKtForTest {
                     // this is again a nested scope,
                     // so the variable i is different from the one outside and the one in the header
                     int("i") assign 4.e
-                    plusAssign("a".e, "i".e)
+                    plusAssign("a".e, "i".e, rightSideType = Type.Int)
                 }
                 return_("a".e)
             }
@@ -269,7 +269,7 @@ class SemanticAnalysisKtForTest {
                             loopId = 0,
                         ) {
                             int("i.3") assign 4.e.int()
-                            plusAssign("a.0".e.int(), "i.3".e.int(), type = Type.Int)
+                            plusAssign("a.0".e.int(), "i.3".e.int(), resultType = Type.Int, Type.Int)
                         }
                         return_("a.0".e.int())
                     }

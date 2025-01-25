@@ -403,26 +403,6 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                 )
                 dst
             }
-            is AST.Expression.CompoundAssignment -> {
-                val right = generateExpression(expression.right)
-                val left = generateExpression(expression.left)
-                val dst = nextVariable(expression.resolvedType())
-                instructions.add(
-                    Tacky.Instruction.Binary(
-                        operator = expression.operator.toTackyOperator(),
-                        left = left,
-                        right = right,
-                        dst = dst,
-                    ),
-                )
-                instructions.add(
-                    Tacky.Instruction.Copy(
-                        src = dst,
-                        dst = left,
-                    ),
-                )
-                dst
-            }
             is AST.Expression.Postfix -> {
                 val operand = generateExpression(expression.operand)
                 val tempValue = nextVariable(expression.resolvedType())
@@ -664,20 +644,6 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
 
             AST.BinaryOperator.LogicalAnd -> TackyBinaryOperator.ShortCircuitingAnd
             AST.BinaryOperator.LogicalOr -> TackyBinaryOperator.ShortCircuitingOr
-        }
-
-    private fun AST.CompoundAssignmentOperator.toTackyOperator(): Tacky.BinaryOperator =
-        when (this) {
-            AST.CompoundAssignmentOperator.Add -> Tacky.BinaryOperator.Add
-            AST.CompoundAssignmentOperator.Subtract -> Tacky.BinaryOperator.Subtract
-            AST.CompoundAssignmentOperator.Multiply -> Tacky.BinaryOperator.Multiply
-            AST.CompoundAssignmentOperator.Divide -> Tacky.BinaryOperator.Divide
-            AST.CompoundAssignmentOperator.Modulo -> Tacky.BinaryOperator.Modulo
-            AST.CompoundAssignmentOperator.BitwiseAnd -> Tacky.BinaryOperator.BitwiseAnd
-            AST.CompoundAssignmentOperator.BitwiseOr -> Tacky.BinaryOperator.BitwiseOr
-            AST.CompoundAssignmentOperator.BitwiseXor -> Tacky.BinaryOperator.BitwiseXor
-            AST.CompoundAssignmentOperator.ShiftLeft -> Tacky.BinaryOperator.ShiftLeft
-            AST.CompoundAssignmentOperator.ShiftRight -> Tacky.BinaryOperator.ShiftRight
         }
 
     private fun AST.PostfixOperator.toTackyOperator(): Tacky.BinaryOperator =

@@ -19,7 +19,7 @@ class SemanticAnalysisKtStaticVariables {
         val program = program {
             function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("i", storageClass = AST.StorageClass.Static) assign 1.e
-                plusAssign("i".e, 1.e)
+                plusAssign("i".e, 1.e, rightSideType = Type.Int)
                 return_("i".e)
             }
         }
@@ -31,7 +31,7 @@ class SemanticAnalysisKtStaticVariables {
                 value = program {
                     function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                         int("i.0", storageClass = AST.StorageClass.Static) assign 1.e.int()
-                        plusAssign("i.0".e.int(), 1.e.int(), type = Type.Int)
+                        plusAssign("i.0".e.int(), 1.e.int(), resultType = Type.Int, Type.Int)
                         return_("i.0".e.int())
                     }
                 },

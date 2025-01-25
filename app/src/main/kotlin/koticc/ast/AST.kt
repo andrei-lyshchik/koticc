@@ -263,20 +263,6 @@ object AST {
             override fun ofType(type: Type.Data): Assignment = copy(type = type)
         }
 
-        data class CompoundAssignment(
-            val operator: CompoundAssignmentOperator,
-            val left: Expression,
-            val right: Expression,
-            override val type: Type.Data?,
-        ) : Expression {
-            override val location: Location
-                get() = left.location
-
-            override fun toDisplayString(): String = "${left.toDisplayString()} ${operator.toDisplayString()} ${right.toDisplayString()}"
-
-            override fun ofType(type: Type.Data): CompoundAssignment = copy(type = type)
-        }
-
         data class Postfix(
             val operator: PostfixOperator,
             val operand: Expression,
@@ -390,33 +376,6 @@ object AST {
             BitwiseXor -> "^"
             ShiftLeft -> "<<"
             ShiftRight -> ">>"
-        }
-    }
-
-    enum class CompoundAssignmentOperator : Displayable {
-        Add,
-        Subtract,
-        Multiply,
-        Divide,
-        Modulo,
-        BitwiseAnd,
-        BitwiseOr,
-        BitwiseXor,
-        ShiftLeft,
-        ShiftRight,
-        ;
-
-        override fun toDisplayString(): String = when (this) {
-            Add -> "+="
-            Subtract -> "-="
-            Multiply -> "*="
-            Divide -> "/="
-            Modulo -> "%="
-            BitwiseAnd -> "&="
-            BitwiseOr -> "|="
-            BitwiseXor -> "^="
-            ShiftLeft -> "<<="
-            ShiftRight -> ">>="
         }
     }
 

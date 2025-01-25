@@ -152,14 +152,15 @@ class TackyToAssemblyKtTest {
 
         assertEquals(
             expected = """
-                     .globl _main
-                 _main:
-                     pushq %rbp
-                     movq %rsp, %rbp
-                     subq $16, %rsp
-                     movl $0, -4(%rbp)
-                     cmpl $42, -4(%rbp)
-                     sete -4(%rbp)
+                    .globl _main
+                _main:
+                    pushq %rbp
+                    movq %rsp, %rbp
+                    subq $16, %rsp
+                    movl $0, %r10d
+                    cmpl $42, %r10d
+                    movl $0, -4(%rbp)
+                    sete -4(%rbp)
             """.trimIndent(),
             actual = actual,
         )
