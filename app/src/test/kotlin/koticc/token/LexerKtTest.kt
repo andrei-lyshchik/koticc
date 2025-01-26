@@ -40,7 +40,7 @@ int main(void) {
             """
             abc cde_fgh 123 void return int (){};=-+~*/%^&| << >> < > <= >= != && || ! += -=
             *= /= %= &= ^= |= <<= >>= ++ -- if else ifnot elsenot ? : goto _id
-            do while for break continue case default switch , extern static long
+            do while for break continue case default switch , extern static long unsigned signed
             """.trimIndent()
 
         assertEquals(
@@ -108,6 +108,8 @@ int main(void) {
                 Token.Extern,
                 Token.Static,
                 Token.LongKeyword,
+                Token.Unsigned,
+                Token.Signed,
             ).right(),
             lexer(input).map { tokens -> tokens.map { it.value } },
         )
@@ -115,7 +117,8 @@ int main(void) {
 
     @Test
     fun `int literals`() {
-        val input = "123 0 2147483647 ${Int.MAX_VALUE.toLong() + 1} ${Long.MAX_VALUE} 100l 200L"
+        val input = "123 0 2147483647 ${Int.MAX_VALUE.toLong() + 1} ${Long.MAX_VALUE} 100l 200L " +
+            "100lu 100lu 100ul 100UL 100Ul ${ULong.MAX_VALUE}uL 200u ${UInt.MAX_VALUE}U ${UInt.MAX_VALUE.toLong() + 1}u"
 
         assertEquals(
             listOf(
@@ -126,6 +129,15 @@ int main(void) {
                 Token.LongLiteral(Long.MAX_VALUE),
                 Token.LongLiteral(100),
                 Token.LongLiteral(200),
+                Token.UnsignedLongLiteral(100u),
+                Token.UnsignedLongLiteral(100u),
+                Token.UnsignedLongLiteral(100u),
+                Token.UnsignedLongLiteral(100u),
+                Token.UnsignedLongLiteral(100u),
+                Token.UnsignedLongLiteral(ULong.MAX_VALUE),
+                Token.UnsignedIntLiteral(200u),
+                Token.UnsignedIntLiteral(UInt.MAX_VALUE),
+                Token.UnsignedLongLiteral(UInt.MAX_VALUE.toULong() + 1u),
             )
                 .right(),
             lexer(input).map { tokens -> tokens.map { it.value } },

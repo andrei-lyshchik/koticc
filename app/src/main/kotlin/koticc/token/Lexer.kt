@@ -237,6 +237,8 @@ private val KEYWORD_TOKENS = mapOf(
     "switch" to Token.Switch,
     "extern" to Token.Extern,
     "static" to Token.Static,
+    "unsigned" to Token.Unsigned,
+    "signed" to Token.Signed,
 )
 
 private val NUMBER_TOKENS = listOf(
@@ -247,6 +249,28 @@ private val NUMBER_TOKENS = listOf(
                 LexerError("invalid long literal: '${match.value}'", Location(line, current + 1))
             }
             TokenWithLocation(Token.LongLiteral(longValue), Location(line, current + 1))
+        }
+    },
+    """(\d+)[uU]\b""".toRegex() to { match: MatchResult, line: Int, current: Int ->
+        either {
+            val unsignedIntValue = match.groupValues[1].toUIntOrNull()
+            if (unsignedIntValue != null) {
+                return@either TokenWithLocation(Token.UnsignedIntLiteral(unsignedIntValue), Location(line, current + 1))
+            }
+            val unsignedLongValue = match.groupValues[1].toULongOrNull()
+            ensureNotNull(unsignedLongValue) {
+                LexerError("invalid unsigned number literal: '${match.value}'", Location(line, current + 1))
+            }
+            TokenWithLocation(Token.UnsignedLongLiteral(unsignedLongValue), Location(line, current + 1))
+        }
+    },
+    """(\d+)([uU][lL]|[lL][uU])\b""".toRegex() to { match: MatchResult, line: Int, current: Int ->
+        either {
+            val unsignedLongValue = match.groupValues[1].toULongOrNull()
+            ensureNotNull(unsignedLongValue) {
+                LexerError("invalid unsigned long literal: '${match.value}'", Location(line, current + 1))
+            }
+            TokenWithLocation(Token.UnsignedLongLiteral(unsignedLongValue), Location(line, current + 1))
         }
     },
     """\d+\b""".toRegex() to { match: MatchResult, line: Int, current: Int ->

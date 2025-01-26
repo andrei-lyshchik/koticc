@@ -16,6 +16,14 @@ sealed interface Token : Displayable {
         override fun toDisplayString(): String = value.toString()
     }
 
+    data class UnsignedIntLiteral(val value: UInt) : Token {
+        override fun toDisplayString(): String = value.toString() + "u"
+    }
+
+    data class UnsignedLongLiteral(val value: ULong) : Token {
+        override fun toDisplayString(): String = value.toString() + "ul"
+    }
+
     // keywords
     data object Void : Token {
         override fun toDisplayString(): String = "void"
@@ -84,6 +92,14 @@ sealed interface Token : Displayable {
 
     data object LongKeyword : Token {
         override fun toDisplayString(): String = "long"
+    }
+
+    data object Signed : Token {
+        override fun toDisplayString(): String = "signed"
+    }
+
+    data object Unsigned : Token {
+        override fun toDisplayString(): String = "unsigned"
     }
 
     // punctuation
