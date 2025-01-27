@@ -65,6 +65,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                                     InitialValue.Tentative -> when (symbol.type) {
                                         is Type.Int -> InitialConstantValue.Int(0)
                                         is Type.Long -> InitialConstantValue.Long(0L)
+                                        else -> TODO()
                                     }
                                     InitialValue.NoInitializer -> return@mapNotNull null
                                 }
@@ -606,6 +607,8 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                     ),
                 )
                 Type.Int -> error("Unreachable")
+                Type.UInt -> TODO()
+                Type.ULong -> TODO()
             }
             Type.Long -> {
                 when (expression.targetType) {
@@ -616,8 +619,13 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                         ),
                     )
                     Type.Long -> error("Unreachable")
+                    Type.UInt -> TODO()
+                    Type.ULong -> TODO()
                 }
             }
+
+            Type.UInt -> TODO()
+            Type.ULong -> TODO()
         }
 
         return dst

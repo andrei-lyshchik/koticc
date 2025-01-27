@@ -71,7 +71,9 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
             initialValue = tackyStaticVariable.initialValue,
             alignment = when (tackyStaticVariable.type) {
                 is Type.Int -> 4
+                is Type.UInt -> 4
                 is Type.Long -> 8
+                is Type.ULong -> 8
             },
         )
 
@@ -309,6 +311,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                 when (tackyValue.value) {
                     is AST.IntConstant -> Assembly.Operand.Immediate(tackyValue.value.value.toLong())
                     is AST.LongConstant -> Assembly.Operand.Immediate(tackyValue.value.value)
+                    else -> TODO()
                 }
             }
             is Tacky.Value.Variable -> {
@@ -546,6 +549,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
         is Tacky.Value.Constant -> when (this.value) {
             is AST.IntConstant -> Assembly.Type.LongWord
             is AST.LongConstant -> Assembly.Type.QuadWord
+            else -> TODO()
         }
         is Tacky.Value.Variable -> symbolTable.objectSymbol(name).type
     }

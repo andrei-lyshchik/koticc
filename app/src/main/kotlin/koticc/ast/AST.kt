@@ -323,6 +323,14 @@ object AST {
         override fun toDisplayString(): String = value.toString()
     }
 
+    data class UIntConstant(val value: UInt) : Constant {
+        override fun toDisplayString(): String = "${value}u"
+    }
+
+    data class ULongConstant(val value: ULong) : Constant {
+        override fun toDisplayString(): String = "${value}ul"
+    }
+
     enum class UnaryOperator : Displayable {
         Negate,
         Complement,

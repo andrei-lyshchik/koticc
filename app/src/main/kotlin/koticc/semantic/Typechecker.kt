@@ -122,6 +122,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             when (convertedInitializer.value) {
                 is AST.IntConstant -> InitialValue.Constant(InitialConstantValue.Int(convertedInitializer.value.value))
                 is AST.LongConstant -> InitialValue.Constant(InitialConstantValue.Long(convertedInitializer.value.value))
+                else -> TODO()
             }
         } else {
             when (declaration.storageClass) {
@@ -277,6 +278,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     when (variableDeclaration.type) {
                         is Type.Int -> InitialConstantValue.Int(0)
                         is Type.Long -> InitialConstantValue.Long(0)
+                        else -> TODO()
                     }
                 }
                 symbolTable[variableDeclaration.name] = SymbolWithLocation(
@@ -480,6 +482,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 val constantType = when (expression.value) {
                     is AST.IntConstant -> Type.Int
                     is AST.LongConstant -> Type.Long
+                    else -> TODO()
                 }
                 expression.ofType(constantType)
             }

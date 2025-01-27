@@ -141,6 +141,8 @@ private class Parser(
         when (token) {
             Token.IntKeyword -> DeclarationSpecifier.Type.Int
             Token.LongKeyword -> DeclarationSpecifier.Type.Long
+            Token.Signed -> DeclarationSpecifier.Type.Signed
+            Token.Unsigned -> DeclarationSpecifier.Type.Unsigned
             Token.Extern -> DeclarationSpecifier.StorageClass.Extern
             Token.Static -> DeclarationSpecifier.StorageClass.Static
             else -> null
@@ -242,19 +244,35 @@ private class Parser(
     }
 
     private fun getType(typeSpecifiers: List<DeclarationSpecifier.Type>, startLocation: Location): Either<ParserError, Type.Data> = either {
-        if (typeSpecifiers == listOf(DeclarationSpecifier.Type.Int)) {
-            return@either Type.Int
+        val grouped = typeSpecifiers.groupBy { it }
+        ensure(grouped.all { (_, values) -> values.size == 1 }) {
+            invalidTypeSpecifiersError(typeSpecifiers, startLocation)
         }
-        if (typeSpecifiers == listOf(DeclarationSpecifier.Type.Long) ||
-            typeSpecifiers == listOf(DeclarationSpecifier.Type.Long, DeclarationSpecifier.Type.Int) ||
-            typeSpecifiers == listOf(DeclarationSpecifier.Type.Int, DeclarationSpecifier.Type.Long)
-        ) {
+        ensure(DeclarationSpecifier.Type.Signed !in typeSpecifiers || DeclarationSpecifier.Type.Unsigned !in typeSpecifiers) {
+            invalidTypeSpecifiersError(typeSpecifiers, startLocation)
+        }
+
+        if (DeclarationSpecifier.Type.Long in typeSpecifiers && DeclarationSpecifier.Type.Unsigned in typeSpecifiers) {
+            return@either Type.ULong
+        }
+        if (DeclarationSpecifier.Type.Unsigned in typeSpecifiers) {
+            return@either Type.UInt
+        }
+        if (DeclarationSpecifier.Type.Long in typeSpecifiers) {
             return@either Type.Long
         }
-        val typeSpecifierString = typeSpecifiers.joinToString(separator = " ")
+        if (DeclarationSpecifier.Type.Int in typeSpecifiers || DeclarationSpecifier.Type.Signed in typeSpecifiers) {
+            return@either Type.Int
+        }
+
         raise(
-            ParserError("invalid type specifier: '$typeSpecifierString'", startLocation),
+            invalidTypeSpecifiersError(typeSpecifiers, startLocation),
         )
+    }
+
+    private fun invalidTypeSpecifiersError(typeSpecifiers: List<DeclarationSpecifier.Type>, startLocation: Location): ParserError {
+        val typeSpecifierString = typeSpecifiers.joinToString(separator = " ")
+        return ParserError("invalid type specifier: '$typeSpecifierString'", startLocation)
     }
 
     private fun DeclarationSpecifier.StorageClass.toASTStorageClass() =
@@ -504,6 +522,14 @@ private class Parser(
                     is Token.LongLiteral -> {
                         nextToken()
                         AST.Expression.Constant(AST.LongConstant(peekTokenValue.value), null, peekToken.location)
+                    }
+                    is Token.UIntLiteral -> {
+                        nextToken()
+                        AST.Expression.Constant(AST.UIntConstant(peekTokenValue.value), null, peekToken.location)
+                    }
+                    is Token.ULongLiteral -> {
+                        nextToken()
+                        AST.Expression.Constant(AST.ULongConstant(peekTokenValue.value), null, peekToken.location)
                     }
                     is Token.Identifier -> {
                         nextToken()
@@ -797,6 +823,8 @@ private sealed interface DeclarationSpecifier {
     sealed interface Type : DeclarationSpecifier {
         data object Int : Type
         data object Long : Type
+        data object Unsigned : Type
+        data object Signed : Type
     }
     sealed interface StorageClass : DeclarationSpecifier {
         data object Extern : StorageClass

@@ -16,11 +16,11 @@ sealed interface Token : Displayable {
         override fun toDisplayString(): String = value.toString()
     }
 
-    data class UnsignedIntLiteral(val value: UInt) : Token {
+    data class UIntLiteral(val value: UInt) : Token {
         override fun toDisplayString(): String = value.toString() + "u"
     }
 
-    data class UnsignedLongLiteral(val value: ULong) : Token {
+    data class ULongLiteral(val value: ULong) : Token {
         override fun toDisplayString(): String = value.toString() + "ul"
     }
 

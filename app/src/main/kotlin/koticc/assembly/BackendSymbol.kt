@@ -31,8 +31,10 @@ fun SymbolTable.toBackendSymbolTable() = mapValues { (_, symbol) ->
         is Symbol.Function -> BackendSymbol.Function(symbol.defined)
         is Symbol.Variable -> BackendSymbol.Object(
             type = when (symbol.type) {
-                is Type.Int -> Assembly.Type.LongWord
-                is Type.Long -> Assembly.Type.QuadWord
+                Type.Int -> Assembly.Type.LongWord
+                Type.Long -> Assembly.Type.QuadWord
+                Type.UInt -> Assembly.Type.LongWord
+                Type.ULong -> Assembly.Type.QuadWord
             },
             static = when (symbol.attributes) {
                 VariableAttributes.Local -> false

@@ -67,6 +67,9 @@ class ProgramBuilder {
     fun int(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
         setCurrentVariableBuilder(VariableDeclarationBuilder(name, storageClass, Type.Int))
 
+    fun uInt(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
+        setCurrentVariableBuilder(VariableDeclarationBuilder(name, storageClass, Type.UInt))
+
     fun long(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
         setCurrentVariableBuilder(VariableDeclarationBuilder(name, storageClass, Type.Long))
 
@@ -101,8 +104,14 @@ class BlockBuilder {
     fun int(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
         setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Int))
 
+    fun uInt(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
+        setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.UInt))
+
     fun long(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
         setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Long))
+
+    fun uLong(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
+        setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.ULong))
 
     fun assign(left: AST.Expression, right: AST.Expression, type: Type.Data? = null) {
         addBlockItem(

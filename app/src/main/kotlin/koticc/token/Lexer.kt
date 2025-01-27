@@ -255,13 +255,13 @@ private val NUMBER_TOKENS = listOf(
         either {
             val unsignedIntValue = match.groupValues[1].toUIntOrNull()
             if (unsignedIntValue != null) {
-                return@either TokenWithLocation(Token.UnsignedIntLiteral(unsignedIntValue), Location(line, current + 1))
+                return@either TokenWithLocation(Token.UIntLiteral(unsignedIntValue), Location(line, current + 1))
             }
             val unsignedLongValue = match.groupValues[1].toULongOrNull()
             ensureNotNull(unsignedLongValue) {
                 LexerError("invalid unsigned number literal: '${match.value}'", Location(line, current + 1))
             }
-            TokenWithLocation(Token.UnsignedLongLiteral(unsignedLongValue), Location(line, current + 1))
+            TokenWithLocation(Token.ULongLiteral(unsignedLongValue), Location(line, current + 1))
         }
     },
     """(\d+)([uU][lL]|[lL][uU])\b""".toRegex() to { match: MatchResult, line: Int, current: Int ->
@@ -270,7 +270,7 @@ private val NUMBER_TOKENS = listOf(
             ensureNotNull(unsignedLongValue) {
                 LexerError("invalid unsigned long literal: '${match.value}'", Location(line, current + 1))
             }
-            TokenWithLocation(Token.UnsignedLongLiteral(unsignedLongValue), Location(line, current + 1))
+            TokenWithLocation(Token.ULongLiteral(unsignedLongValue), Location(line, current + 1))
         }
     },
     """\d+\b""".toRegex() to { match: MatchResult, line: Int, current: Int ->
