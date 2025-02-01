@@ -492,11 +492,17 @@ fun initExpr(expression: AST.Expression) =
 val Int.e
     get() = AST.Expression.Constant(AST.IntConstant(this), null, DUMMY_LOCATION)
 
+val UInt.e
+    get() = AST.Expression.Constant(AST.UIntConstant(this), null, DUMMY_LOCATION)
+
 val Int.c
     get() = AST.IntConstant(this)
 
 val Long.e
     get() = AST.Expression.Constant(AST.LongConstant(this), null, DUMMY_LOCATION)
+
+val ULong.e
+    get() = AST.Expression.Constant(AST.ULongConstant(this), null, DUMMY_LOCATION)
 
 val Long.c
     get() = AST.LongConstant(this)
@@ -724,6 +730,10 @@ fun cond(condition: AST.Expression, thenExpression: AST.Expression, elseExpressi
 fun AST.Expression.int() = ofType(Type.Int)
 
 fun AST.Expression.long() = ofType(Type.Long)
+
+fun AST.Expression.uInt() = ofType(Type.UInt)
+
+fun AST.Expression.uLong() = ofType(Type.ULong)
 
 fun compoundAssignment(
     left: AST.Expression,

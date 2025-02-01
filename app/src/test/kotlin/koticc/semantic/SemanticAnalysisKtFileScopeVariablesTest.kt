@@ -10,6 +10,7 @@ import koticc.ast.int
 import koticc.ast.long
 import koticc.ast.plus
 import koticc.ast.program
+import koticc.ast.uInt
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -237,6 +238,33 @@ class SemanticAnalysisKtFileScopeVariablesTest {
                 message = "conflicting types for 'foo' at line 0, column 0",
                 location = DUMMY_LOCATION,
             ).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should support unsigned int constants`() {
+        val program = program {
+            uInt("a") assign 1u.e
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    uInt("a") assign 1.toUInt().e.uInt()
+                },
+                renamedVariableCount = 0,
+                symbolTable = mapOf(
+                    "a" to Type.UInt.toSymbol(
+                        attributes = VariableAttributes.Static(
+                            initialValue = InitialValue.Constant(InitialConstantValue.UInt(1u)),
+                            global = true,
+                        ),
+                    ),
+                ),
+            ).right(),
             actual = actual,
         )
     }

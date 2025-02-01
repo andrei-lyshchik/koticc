@@ -79,7 +79,21 @@ private fun writeAssemblyStaticVariable(
                         write("    .long ${staticVariable.initialValue.value}")
                     }
                 }
+                is InitialConstantValue.UInt -> {
+                    if (staticVariable.initialValue.isZero()) {
+                        write("    .zero 4")
+                    } else {
+                        write("    .long ${staticVariable.initialValue.value}")
+                    }
+                }
                 is InitialConstantValue.Long -> {
+                    if (staticVariable.initialValue.isZero()) {
+                        write("    .zero 8")
+                    } else {
+                        write("    .quad ${staticVariable.initialValue.value}")
+                    }
+                }
+                is InitialConstantValue.ULong -> {
                     if (staticVariable.initialValue.isZero()) {
                         write("    .zero 8")
                     } else {

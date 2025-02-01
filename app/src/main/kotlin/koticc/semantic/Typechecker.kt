@@ -122,7 +122,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             when (convertedInitializer.value) {
                 is AST.IntConstant -> InitialValue.Constant(InitialConstantValue.Int(convertedInitializer.value.value))
                 is AST.LongConstant -> InitialValue.Constant(InitialConstantValue.Long(convertedInitializer.value.value))
-                else -> TODO()
+                is AST.UIntConstant -> InitialValue.Constant(InitialConstantValue.UInt(convertedInitializer.value.value))
+                is AST.ULongConstant -> InitialValue.Constant(InitialConstantValue.ULong(convertedInitializer.value.value))
             }
         } else {
             when (declaration.storageClass) {
@@ -482,7 +483,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 val constantType = when (expression.value) {
                     is AST.IntConstant -> Type.Int
                     is AST.LongConstant -> Type.Long
-                    else -> TODO()
+                    is AST.UIntConstant -> Type.UInt
+                    is AST.ULongConstant -> Type.ULong
                 }
                 expression.ofType(constantType)
             }
@@ -523,7 +525,15 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     private fun getCommonType(type1: Type.Data, type2: Type.Data): Type.Data {
         return when {
             type1 == type2 -> type1
-            else -> Type.Long
+            type1.size() == type2.size() -> {
+                if (type1.signed()) {
+                    type2
+                } else {
+                    type1
+                }
+            }
+            type1.size() > type2.size() -> type1
+            else -> type2
         }
     }
 

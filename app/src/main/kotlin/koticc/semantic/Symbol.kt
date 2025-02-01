@@ -43,8 +43,14 @@ sealed interface InitialConstantValue {
     data class Int(val value: kotlin.Int) : InitialConstantValue {
         override fun isZero(): Boolean = value == 0
     }
+    data class UInt(val value: kotlin.UInt) : InitialConstantValue {
+        override fun isZero(): Boolean = value == 0u
+    }
     data class Long(val value: kotlin.Long) : InitialConstantValue {
         override fun isZero(): Boolean = value == 0L
+    }
+    data class ULong(val value: kotlin.ULong) : InitialConstantValue {
+        override fun isZero(): Boolean = value == 0uL
     }
 }
 
