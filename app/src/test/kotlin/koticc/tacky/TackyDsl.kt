@@ -38,8 +38,14 @@ class TackyProgramBuilder {
 val Int.t
     get() = Tacky.Value.Constant(AST.IntConstant(this))
 
+val UInt.t
+    get() = Tacky.Value.Constant(AST.UIntConstant(this))
+
 val Long.t
     get() = Tacky.Value.Constant(AST.LongConstant(this))
+
+val ULong.t
+    get() = Tacky.Value.Constant(AST.ULongConstant(this))
 
 val String.t
     get() = Tacky.Value.Variable(this)
@@ -62,6 +68,8 @@ class FunctionBuilder(private val name: String, private val parameters: Array<ou
     fun jumpIfNotZero(src: Tacky.Value, target: String) = instructions.add(Tacky.Instruction.JumpIfNotZero(src, LabelName(target)))
 
     fun signExtend(src: Tacky.Value, dst: String) = instructions.add(Tacky.Instruction.SignExtend(src, Tacky.Value.Variable(dst)))
+
+    fun zeroExtend(src: Tacky.Value, dst: String) = instructions.add(Tacky.Instruction.ZeroExtend(src, Tacky.Value.Variable(dst)))
 
     fun truncate(src: Tacky.Value, dst: String) = instructions.add(Tacky.Instruction.Truncate(src, Tacky.Value.Variable(dst)))
 

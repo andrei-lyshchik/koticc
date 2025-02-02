@@ -296,6 +296,8 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                 ),
             )
 
+            is Tacky.Instruction.ZeroExtend -> TODO()
+
             is Tacky.Instruction.Truncate -> listOf(
                 Assembly.Instruction.Mov(
                     type = Assembly.Type.LongWord,

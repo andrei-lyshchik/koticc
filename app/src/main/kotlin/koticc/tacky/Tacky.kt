@@ -83,6 +83,11 @@ object Tacky {
             val dst: Value,
         ) : Instruction
 
+        data class ZeroExtend(
+            val src: Value,
+            val dst: Value,
+        ) : Instruction
+
         data class Truncate(
             val src: Value,
             val dst: Value,

@@ -593,39 +593,38 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
 
     private fun generateCast(expression: AST.Expression.Cast): Tacky.Value {
         val tackyExpression = generateExpression(expression.expression)
-        if (expression.targetType == expression.expression.resolvedType()) {
+        val innerExpressionType = expression.expression.resolvedType()
+
+        if (expression.targetType == innerExpressionType) {
             return tackyExpression
         }
 
         val dst = nextVariable(expression.resolvedType())
-        when (expression.expression.resolvedType()) {
-            Type.Int -> when (expression.targetType) {
-                Type.Long -> instructions.add(
-                    Tacky.Instruction.SignExtend(
-                        src = tackyExpression,
-                        dst = dst,
-                    ),
-                )
-                Type.Int -> error("Unreachable")
-                Type.UInt -> TODO()
-                Type.ULong -> TODO()
-            }
-            Type.Long -> {
-                when (expression.targetType) {
-                    Type.Int -> instructions.add(
-                        Tacky.Instruction.Truncate(
-                            src = tackyExpression,
-                            dst = dst,
-                        ),
-                    )
-                    Type.Long -> error("Unreachable")
-                    Type.UInt -> TODO()
-                    Type.ULong -> TODO()
-                }
-            }
-
-            Type.UInt -> TODO()
-            Type.ULong -> TODO()
+        when {
+            expression.targetType.size() == innerExpressionType.size() -> instructions.add(
+                Tacky.Instruction.Copy(
+                    src = tackyExpression,
+                    dst = dst,
+                ),
+            )
+            expression.targetType.size() < innerExpressionType.size() -> instructions.add(
+                Tacky.Instruction.Truncate(
+                    src = tackyExpression,
+                    dst = dst,
+                ),
+            )
+            expression.targetType.signed() -> instructions.add(
+                Tacky.Instruction.SignExtend(
+                    src = tackyExpression,
+                    dst = dst,
+                ),
+            )
+            else -> instructions.add(
+                Tacky.Instruction.ZeroExtend(
+                    src = tackyExpression,
+                    dst = dst,
+                ),
+            )
         }
 
         return dst
