@@ -84,6 +84,7 @@ object Assembly {
         // always uses %cl as count
         data class Shift(
             val type: Type,
+            val shiftType: ShiftType,
             val operator: ShiftOperator,
             val dst: Operand,
         ) : Instruction
@@ -159,6 +160,11 @@ object Assembly {
     enum class ShiftOperator {
         Left,
         Right,
+    }
+
+    enum class ShiftType {
+        Logical,
+        Arithmetic,
     }
 
     enum class ConditionalOperator {

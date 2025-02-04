@@ -67,7 +67,7 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
 
                     is Assembly.Instruction.Shift -> {
                         val dst = replace(instruction.dst)
-                        Assembly.Instruction.Shift(instruction.type, instruction.operator, dst)
+                        Assembly.Instruction.Shift(instruction.type, instruction.shiftType, instruction.operator, dst)
                     }
 
                     is Assembly.Instruction.Unary -> {

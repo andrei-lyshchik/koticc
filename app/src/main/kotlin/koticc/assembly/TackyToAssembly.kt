@@ -505,6 +505,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                 type = left.assemblyType(),
                 operator = operator,
                 dst = dstAssembly,
+                shiftType = if (left.signed()) Assembly.ShiftType.Arithmetic else Assembly.ShiftType.Logical,
             ),
         )
     }

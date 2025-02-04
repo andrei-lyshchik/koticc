@@ -43,6 +43,7 @@ class E2ETest {
         "/programs/sign_extend_in_assignment.c",
         "/programs/long_logical_not.c",
         "/programs/unsigned_casts.c",
+        "/programs/unsigned_shift_right.c",
     )
 
     @ParameterizedTest

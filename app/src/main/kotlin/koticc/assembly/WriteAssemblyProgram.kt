@@ -105,8 +105,8 @@ private fun writeAssemblyStaticVariable(
     }
 
 private fun Assembly.Type.instructionSuffix() = when (this) {
-    Assembly.Type.LongWord -> "l"
-    Assembly.Type.QuadWord -> "q"
+    Assembly.Type.LongWord -> 'l'
+    Assembly.Type.QuadWord -> 'q'
 }
 
 private fun Assembly.Type.toSize() = when (this) {
@@ -180,11 +180,15 @@ private fun Assembly.Operand.toOperatorString(size: Size): String =
     }
 
 private fun Assembly.Instruction.Shift.toOperatorString(): String {
-    val operatorString = when (operator) {
-        Assembly.ShiftOperator.Left -> "sal"
-        Assembly.ShiftOperator.Right -> "sar"
+    val shiftTypeChar = when (shiftType) {
+        Assembly.ShiftType.Logical -> 'h'
+        Assembly.ShiftType.Arithmetic -> 'a'
     }
-    return "$operatorString${type.instructionSuffix()}"
+    val operatorChar = when (operator) {
+        Assembly.ShiftOperator.Left -> 'l'
+        Assembly.ShiftOperator.Right -> 'r'
+    }
+    return "s$shiftTypeChar$operatorChar${type.instructionSuffix()}"
 }
 
 private fun Assembly.Instruction.Unary.toOperatorString(): String {
