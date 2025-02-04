@@ -119,12 +119,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             )
         }
         var initialValue = if (convertedInitializer != null) {
-            when (convertedInitializer.value) {
-                is AST.IntConstant -> InitialValue.Constant(InitialConstantValue.Int(convertedInitializer.value.value))
-                is AST.LongConstant -> InitialValue.Constant(InitialConstantValue.Long(convertedInitializer.value.value))
-                is AST.UIntConstant -> InitialValue.Constant(InitialConstantValue.UInt(convertedInitializer.value.value))
-                is AST.ULongConstant -> InitialValue.Constant(InitialConstantValue.ULong(convertedInitializer.value.value))
-            }
+            InitialValue.Constant(convertedInitializer.value.toInitialValue())
         } else {
             when (declaration.storageClass) {
                 AST.StorageClass.Extern -> InitialValue.NoInitializer
@@ -279,7 +274,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     when (variableDeclaration.type) {
                         is Type.Int -> InitialConstantValue.Int(0)
                         is Type.Long -> InitialConstantValue.Long(0)
-                        else -> TODO()
+                        is Type.UInt -> InitialConstantValue.UInt(0u)
+                        is Type.ULong -> InitialConstantValue.ULong(0uL)
                     }
                 }
                 symbolTable[variableDeclaration.name] = SymbolWithLocation(
@@ -480,13 +476,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 ).ofType(functionType.returnType)
             }
             is AST.Expression.Constant -> {
-                val constantType = when (expression.value) {
-                    is AST.IntConstant -> Type.Int
-                    is AST.LongConstant -> Type.Long
-                    is AST.UIntConstant -> Type.UInt
-                    is AST.ULongConstant -> Type.ULong
-                }
-                expression.ofType(constantType)
+                expression.ofType(expression.value.type)
             }
             is AST.Expression.Postfix -> {
                 val operand = typecheckExpression(expression.operand).bind()

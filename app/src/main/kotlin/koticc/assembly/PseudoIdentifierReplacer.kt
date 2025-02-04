@@ -22,6 +22,11 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
                         val dst = replace(instruction.dst)
                         Assembly.Instruction.Mov(instruction.type, src, dst)
                     }
+                    is Assembly.Instruction.MovZeroExtend -> {
+                        val src = replace(instruction.src)
+                        val dst = replace(instruction.dst)
+                        Assembly.Instruction.MovZeroExtend(src, dst)
+                    }
 
                     is Assembly.Instruction.Movsx -> {
                         val src = replace(instruction.src)
@@ -46,6 +51,10 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
                     is Assembly.Instruction.Idiv -> {
                         val operand = replace(instruction.operand)
                         Assembly.Instruction.Idiv(instruction.type, operand)
+                    }
+                    is Assembly.Instruction.Div -> {
+                        val operand = replace(instruction.operand)
+                        Assembly.Instruction.Div(instruction.type, operand)
                     }
 
                     is Assembly.Instruction.Jump -> instruction

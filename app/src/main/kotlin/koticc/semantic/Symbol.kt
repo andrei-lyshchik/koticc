@@ -57,7 +57,8 @@ sealed interface InitialConstantValue {
 fun AST.Constant.toInitialValue(): InitialConstantValue = when (this) {
     is AST.IntConstant -> InitialConstantValue.Int(value)
     is AST.LongConstant -> InitialConstantValue.Long(value)
-    else -> TODO()
+    is AST.UIntConstant -> InitialConstantValue.UInt(value)
+    is AST.ULongConstant -> InitialConstantValue.ULong(value)
 }
 
 typealias SymbolTable = Map<String, Symbol>

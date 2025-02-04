@@ -42,6 +42,7 @@ class E2ETest {
         "/programs/sign_extend.c",
         "/programs/sign_extend_in_assignment.c",
         "/programs/long_logical_not.c",
+        "/programs/unsigned_casts.c",
     )
 
     @ParameterizedTest
@@ -79,6 +80,10 @@ class E2ETest {
         ),
         MultipleFilesTestCase(
             file1 = "/programs/factorial_long.c",
+            file2ForGccOnly = "/programs/print.c",
+        ),
+        MultipleFilesTestCase(
+            file1 = "/programs/fibonacci_unsigned.c",
             file2ForGccOnly = "/programs/print.c",
         ),
     )
@@ -200,7 +205,7 @@ class E2ETest {
             runCommand(outputFilePath)
                 .mapLeft { "Binary failed to run: $it" }
                 .bind()
-        return binaryResult
+        binaryResult
     }.fold(
         ifLeft = {
             fail(it)

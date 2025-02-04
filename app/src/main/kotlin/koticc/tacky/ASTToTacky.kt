@@ -65,7 +65,8 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                                     InitialValue.Tentative -> when (symbol.type) {
                                         is Type.Int -> InitialConstantValue.Int(0)
                                         is Type.Long -> InitialConstantValue.Long(0L)
-                                        else -> TODO()
+                                        is Type.UInt -> InitialConstantValue.UInt(0u)
+                                        is Type.ULong -> InitialConstantValue.ULong(0uL)
                                     }
                                     InitialValue.NoInitializer -> return@mapNotNull null
                                 }
@@ -613,7 +614,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                     dst = dst,
                 ),
             )
-            expression.targetType.signed() -> instructions.add(
+            innerExpressionType.signed() -> instructions.add(
                 Tacky.Instruction.SignExtend(
                     src = tackyExpression,
                     dst = dst,

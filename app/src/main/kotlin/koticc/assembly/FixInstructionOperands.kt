@@ -116,6 +116,23 @@ fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Ins
                 listOf(instruction)
             }
         }
+        is Assembly.Instruction.Div -> {
+            if (instruction.operand is Assembly.Operand.Immediate) {
+                listOf(
+                    Assembly.Instruction.Mov(
+                        type = instruction.type,
+                        src = instruction.operand,
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                    ),
+                    Assembly.Instruction.Div(
+                        type = instruction.type,
+                        operand = Assembly.Operand.Register(Assembly.RegisterValue.R10),
+                    ),
+                )
+            } else {
+                listOf(instruction)
+            }
+        }
 
         is Assembly.Instruction.Jump -> listOf(instruction)
         is Assembly.Instruction.Label -> listOf(instruction)
@@ -188,6 +205,30 @@ fun fixInstructionOperands(instruction: Assembly.Instruction): List<Assembly.Ins
                         ),
                     )
                 }
+            }
+        }
+        is Assembly.Instruction.MovZeroExtend -> {
+            if (instruction.dst is Assembly.Operand.Register) {
+                listOf(
+                    Assembly.Instruction.Mov(
+                        type = Assembly.Type.LongWord,
+                        src = instruction.src,
+                        dst = instruction.dst,
+                    ),
+                )
+            } else {
+                listOf(
+                    Assembly.Instruction.Mov(
+                        type = Assembly.Type.LongWord,
+                        src = instruction.src,
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.R11),
+                    ),
+                    Assembly.Instruction.Mov(
+                        type = Assembly.Type.QuadWord,
+                        src = Assembly.Operand.Register(Assembly.RegisterValue.R11),
+                        dst = instruction.dst,
+                    ),
+                )
             }
         }
         Assembly.Instruction.Ret -> listOf(instruction)

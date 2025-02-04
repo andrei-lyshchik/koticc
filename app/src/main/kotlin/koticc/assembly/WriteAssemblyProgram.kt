@@ -126,9 +126,11 @@ private fun Assembly.Instruction.toOperatorString(): String =
         is Assembly.Instruction.Cmp -> "cmp${type.instructionSuffix()} ${src.toOperatorString(size = type.toSize())}, ${dst.toOperatorString(size = type.toSize())}"
         is Assembly.Instruction.ConditionalJump -> "j${operator.toOperatorString()} ${target.toLocalOutputString()}"
         is Assembly.Instruction.Idiv -> "idiv${type.instructionSuffix()} ${operand.toOperatorString(size = type.toSize())}"
+        is Assembly.Instruction.Div -> "div${type.instructionSuffix()} ${operand.toOperatorString(size = type.toSize())}"
         is Assembly.Instruction.Jump -> "jmp ${target.toLocalOutputString()}"
         is Assembly.Instruction.Label -> "${label.toLocalOutputString()}:"
         is Assembly.Instruction.Mov -> "mov${type.instructionSuffix()} ${src.toOperatorString(size = type.toSize())}, ${dst.toOperatorString(size = type.toSize())}"
+        is Assembly.Instruction.MovZeroExtend -> error("Bug: mov zero extend should be removed before writing assembly output")
         is Assembly.Instruction.Movsx -> "movslq ${src.toOperatorString(size = Size.FourByte)}, ${dst.toOperatorString(size = Size.EightByte)}"
         Assembly.Instruction.Ret -> "movq %rbp, %rsp\n    popq %rbp\n    ret"
         is Assembly.Instruction.Set -> "set${operator.toOperatorString()} ${dst.toOperatorString(Size.OneByte)}"
@@ -158,6 +160,10 @@ private fun Assembly.ConditionalOperator.toOperatorString(): String =
         Assembly.ConditionalOperator.GreaterThanOrEqual -> "ge"
         Assembly.ConditionalOperator.Equal -> "e"
         Assembly.ConditionalOperator.NotEqual -> "ne"
+        Assembly.ConditionalOperator.AboveOrEqual -> "ae"
+        Assembly.ConditionalOperator.Above -> "a"
+        Assembly.ConditionalOperator.BelowOrEqual -> "be"
+        Assembly.ConditionalOperator.Below -> "b"
     }
 
 private fun Assembly.Operand.toOperatorString(size: Size): String =

@@ -167,7 +167,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
 
                     Tacky.BinaryOperator.LessThan ->
                         cmpInstructions(
-                            conditionalOperator = Assembly.ConditionalOperator.LessThan,
+                            conditionalOperator = if (tackyInstruction.left.signed()) Assembly.ConditionalOperator.LessThan else Assembly.ConditionalOperator.Below,
                             left = tackyInstruction.left,
                             right = tackyInstruction.right,
                             dst = tackyInstruction.dst,
@@ -175,7 +175,11 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
 
                     Tacky.BinaryOperator.LessThanOrEqual ->
                         cmpInstructions(
-                            conditionalOperator = Assembly.ConditionalOperator.LessThanOrEqual,
+                            conditionalOperator = if (tackyInstruction.left.signed()) {
+                                Assembly.ConditionalOperator.LessThanOrEqual
+                            } else {
+                                Assembly.ConditionalOperator.BelowOrEqual
+                            },
                             left = tackyInstruction.left,
                             right = tackyInstruction.right,
                             dst = tackyInstruction.dst,
@@ -183,7 +187,11 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
 
                     Tacky.BinaryOperator.GreaterThan ->
                         cmpInstructions(
-                            conditionalOperator = Assembly.ConditionalOperator.GreaterThan,
+                            conditionalOperator = if (tackyInstruction.left.signed()) {
+                                Assembly.ConditionalOperator.GreaterThan
+                            } else {
+                                Assembly.ConditionalOperator.Above
+                            },
                             left = tackyInstruction.left,
                             right = tackyInstruction.right,
                             dst = tackyInstruction.dst,
@@ -191,7 +199,11 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
 
                     Tacky.BinaryOperator.GreaterThanOrEqual ->
                         cmpInstructions(
-                            conditionalOperator = Assembly.ConditionalOperator.GreaterThanOrEqual,
+                            conditionalOperator = if (tackyInstruction.left.signed()) {
+                                Assembly.ConditionalOperator.GreaterThanOrEqual
+                            } else {
+                                Assembly.ConditionalOperator.AboveOrEqual
+                            },
                             left = tackyInstruction.left,
                             right = tackyInstruction.right,
                             dst = tackyInstruction.dst,
@@ -296,7 +308,12 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                 ),
             )
 
-            is Tacky.Instruction.ZeroExtend -> TODO()
+            is Tacky.Instruction.ZeroExtend -> listOf(
+                Assembly.Instruction.MovZeroExtend(
+                    src = tackyValueToOperand(tackyInstruction.src),
+                    dst = tackyValueToOperand(tackyInstruction.dst),
+                ),
+            )
 
             is Tacky.Instruction.Truncate -> listOf(
                 Assembly.Instruction.Mov(
@@ -313,7 +330,8 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                 when (tackyValue.value) {
                     is AST.IntConstant -> Assembly.Operand.Immediate(tackyValue.value.value.toLong())
                     is AST.LongConstant -> Assembly.Operand.Immediate(tackyValue.value.value)
-                    else -> TODO()
+                    is AST.UIntConstant -> Assembly.Operand.Immediate(tackyValue.value.value.toLong())
+                    is AST.ULongConstant -> Assembly.Operand.Immediate(tackyValue.value.value.toLong())
                 }
             }
             is Tacky.Value.Variable -> {
@@ -398,7 +416,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
         left: Tacky.Value,
         right: Tacky.Value,
         dst: Tacky.Value,
-    ): List<Assembly.Instruction> =
+    ): List<Assembly.Instruction> = if (left.signed()) {
         listOf(
             Assembly.Instruction.Mov(
                 type = left.assemblyType(),
@@ -416,6 +434,29 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                 dst = tackyValueToOperand(dst),
             ),
         )
+    } else {
+        listOf(
+            Assembly.Instruction.Mov(
+                type = left.assemblyType(),
+                src = tackyValueToOperand(left),
+                dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+            ),
+            Assembly.Instruction.Mov(
+                type = left.assemblyType(),
+                src = Assembly.Operand.Immediate(0),
+                dst = Assembly.Operand.Register(Assembly.RegisterValue.Dx),
+            ),
+            Assembly.Instruction.Div(
+                type = right.assemblyType(),
+                operand = tackyValueToOperand(right),
+            ),
+            Assembly.Instruction.Mov(
+                type = dst.assemblyType(),
+                src = Assembly.Operand.Register(registerValue),
+                dst = tackyValueToOperand(dst),
+            ),
+        )
+    }
 
     private fun cmpInstructions(
         conditionalOperator: Assembly.ConditionalOperator,
@@ -548,12 +589,13 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
     }
 
     private fun Tacky.Value.assemblyType() = when (this) {
-        is Tacky.Value.Constant -> when (this.value) {
-            is AST.IntConstant -> Assembly.Type.LongWord
-            is AST.LongConstant -> Assembly.Type.QuadWord
-            else -> TODO()
-        }
+        is Tacky.Value.Constant -> value.type.toAssemblyType()
         is Tacky.Value.Variable -> symbolTable.objectSymbol(name).type
+    }
+
+    private fun Tacky.Value.signed() = when (this) {
+        is Tacky.Value.Constant -> value.type.signed()
+        is Tacky.Value.Variable -> symbolTable.objectSymbol(name).signed
     }
 }
 

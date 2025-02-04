@@ -43,6 +43,11 @@ object Assembly {
             val dst: Operand,
         ) : Instruction
 
+        data class MovZeroExtend(
+            val src: Operand,
+            val dst: Operand,
+        ) : Instruction
+
         data class Unary(
             val type: Assembly.Type,
             val operator: UnaryOperator,
@@ -67,6 +72,11 @@ object Assembly {
         data class Cdq(val type: Type) : Instruction
 
         data class Idiv(
+            val type: Type,
+            val operand: Operand,
+        ) : Instruction
+
+        data class Div(
             val type: Type,
             val operand: Operand,
         ) : Instruction
@@ -158,5 +168,9 @@ object Assembly {
         GreaterThanOrEqual,
         Equal,
         NotEqual,
+        Below,
+        BelowOrEqual,
+        Above,
+        AboveOrEqual,
     }
 }

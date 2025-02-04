@@ -197,7 +197,7 @@ class ASTToTackyKtCastTest {
                 symbolTable = program.symbolTable + tempVariablesSymbolTable(1, 1, type = Type.Long)
 
                 function("foo") {
-                    signExtend(1u.t, "tmp.1")
+                    zeroExtend(1u.t, "tmp.1")
                     assign("a", "tmp.1".t)
 
                     return_(0.t)

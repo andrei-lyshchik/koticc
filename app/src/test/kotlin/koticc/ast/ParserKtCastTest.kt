@@ -119,4 +119,22 @@ class ParserKtCastTest {
             actual = parseInput(input),
         )
     }
+
+    @Test
+    fun `should parse chained casts`() {
+        val input = """
+            int main(void) {
+                unsigned long a = (unsigned long) (signed) 1ul;
+            }
+        """.trimIndent()
+
+        assertEqualsIgnoringLocations(
+            expected = program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    uLong("a") assign cast(Type.ULong, cast(Type.Int, 1uL.e))
+                }
+            },
+            actual = parseInput(input),
+        )
+    }
 }

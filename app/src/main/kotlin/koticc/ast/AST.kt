@@ -313,21 +313,31 @@ object AST {
         }
     }
 
-    sealed interface Constant : Displayable
+    sealed interface Constant : Displayable {
+        val type: Type.Data
+    }
 
     data class IntConstant(val value: Int) : Constant {
+        override val type: Type.Data
+            get() = Type.Int
         override fun toDisplayString(): String = value.toString()
     }
 
     data class LongConstant(val value: Long) : Constant {
+        override val type: Type.Data
+            get() = Type.Long
         override fun toDisplayString(): String = value.toString()
     }
 
     data class UIntConstant(val value: UInt) : Constant {
+        override val type: Type.Data
+            get() = Type.UInt
         override fun toDisplayString(): String = "${value}u"
     }
 
     data class ULongConstant(val value: ULong) : Constant {
+        override val type: Type.Data
+            get() = Type.ULong
         override fun toDisplayString(): String = "${value}ul"
     }
 
