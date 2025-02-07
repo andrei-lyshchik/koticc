@@ -32,6 +32,7 @@ enum class PartialMode {
 fun runCompilerDriver(
     inputFile: Path,
     partialMode: PartialMode?,
+    sharedLibraries: List<String>,
     outputFile: Path,
 ): Either<CompilerError, Unit> =
     either {
@@ -71,7 +72,7 @@ fun runCompilerDriver(
         if (partialMode == PartialMode.ObjectFile) {
             runAssembler(assemblyFile, outputFile).bind()
         } else {
-            runAssemblerAndLinker(assemblyFile, outputFile).bind()
+            runAssemblerAndLinker(assemblyFile, sharedLibraries, outputFile).bind()
         }
 
         Either.catchOrThrow<IOException, Unit> { assemblyFile.deleteIfExists() }
@@ -129,6 +130,7 @@ data class LinkerAndAssemblerError(
 
 fun runAssemblerAndLinker(
     assemblyFilePath: Path,
+    sharedLibraries: List<String>,
     outputFile: Path,
 ): Either<CompilerError, Unit> =
     either {
@@ -140,6 +142,7 @@ fun runAssemblerAndLinker(
                 assemblyFilePath.absolutePathString(),
                 "-o",
                 outputFile.absolutePathString(),
+                *sharedLibraries.map { "-l$it" }.toTypedArray(),
             ).mapLeft { LinkerAndAssemblerError("failed to run linked and assembler: ${it.message}") }
                 .bind()
 

@@ -7,7 +7,10 @@ import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.groups.single
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.help
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.path
 import kotlin.io.path.nameWithoutExtension
 import kotlin.system.exitProcess
@@ -64,6 +67,14 @@ class CompilerCommand : CliktCommand(name = "ktc") {
                 .convert { PartialMode.ObjectFile },
         ).single()
 
+    private val sharedLibraries by option("-l")
+        .convert { it }
+        .help("Options to pass to the linker, f.ex.: -lm -lstdc++")
+        .multiple()
+        .validate { options ->
+            options.all { it.startsWith("-l") }
+        }
+
     private val inputFile by argument(help = "Input file to compile").path()
 
     override fun run() {
@@ -73,7 +84,7 @@ class CompilerCommand : CliktCommand(name = "ktc") {
             inputFile.nameWithoutExtension
         }
         val outputFile = inputFile.resolveSibling(outputFileName)
-        runCompilerDriver(inputFile, partialMode, outputFile)
+        runCompilerDriver(inputFile, partialMode, sharedLibraries, outputFile)
             .fold(
                 ifLeft = { error ->
                     echo("Error: ${error.message()}")

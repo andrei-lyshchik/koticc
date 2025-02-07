@@ -136,6 +136,7 @@ class E2ETest {
             runCompilerDriver(
                 inputFile = inputFile.toPath(),
                 partialMode = PartialMode.EmitAssembly,
+                sharedLibraries = emptyList(),
                 outputFile = tempDir.resolve("ktc_output"),
             ).mapLeft { "ktc failed to produce assembly: ${it.message()}" }.bind()
             inputFile.resolveSibling(inputFile.nameWithoutExtension + ".s").readText()
@@ -146,6 +147,7 @@ class E2ETest {
             runCompilerDriver(
                 inputFile = inputFile.toPath(),
                 partialMode = null,
+                sharedLibraries = emptyList(),
                 outputFile = tempDir.resolve(outputFileName),
             ).mapLeft { "ktc failed: ${it.message()}" }.bind()
             val ktcBinaryResult =
@@ -182,6 +184,7 @@ class E2ETest {
             runCompilerDriver(
                 inputFile = inputFile.toPath(),
                 partialMode = PartialMode.ObjectFile,
+                sharedLibraries = emptyList(),
                 outputFile = outputFilePath,
             ).mapLeft { "ktc failed: ${it.message()}" }.bind()
             val ktcObjectFile = outputFilePath.toFile()
