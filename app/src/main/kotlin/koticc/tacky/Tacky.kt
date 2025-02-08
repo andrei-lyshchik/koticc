@@ -92,6 +92,26 @@ object Tacky {
             val src: Value,
             val dst: Value,
         ) : Instruction
+
+        data class DoubleToInt(
+            val src: Value,
+            val dst: Value,
+        ) : Instruction
+
+        data class IntToDouble(
+            val src: Value,
+            val dst: Value,
+        ) : Instruction
+
+        data class DoubleToUInt(
+            val src: Value,
+            val dst: Value,
+        ) : Instruction
+
+        data class UIntToDouble(
+            val src: Value,
+            val dst: Value,
+        ) : Instruction
     }
 
     sealed interface Value {

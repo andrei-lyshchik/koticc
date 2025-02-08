@@ -323,6 +323,11 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                     dst = tackyValueToOperand(tackyInstruction.dst),
                 ),
             )
+
+            is Tacky.Instruction.DoubleToInt -> TODO()
+            is Tacky.Instruction.DoubleToUInt -> TODO()
+            is Tacky.Instruction.IntToDouble -> TODO()
+            is Tacky.Instruction.UIntToDouble -> TODO()
         }
 
     private fun tackyValueToOperand(tackyValue: Tacky.Value): Assembly.Operand =

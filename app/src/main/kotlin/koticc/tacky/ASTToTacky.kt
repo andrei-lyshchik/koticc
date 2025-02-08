@@ -603,6 +603,40 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
 
         val dst = nextVariable(expression.resolvedType())
         when {
+            expression.targetType is Type.Double -> {
+                if (innerExpressionType.signed()) {
+                    instructions.add(
+                        Tacky.Instruction.IntToDouble(
+                            src = tackyExpression,
+                            dst = dst,
+                        ),
+                    )
+                } else {
+                    instructions.add(
+                        Tacky.Instruction.UIntToDouble(
+                            src = tackyExpression,
+                            dst = dst,
+                        ),
+                    )
+                }
+            }
+            innerExpressionType is Type.Double -> {
+                if (expression.targetType.signed()) {
+                    instructions.add(
+                        Tacky.Instruction.DoubleToInt(
+                            src = tackyExpression,
+                            dst = dst,
+                        ),
+                    )
+                } else {
+                    instructions.add(
+                        Tacky.Instruction.DoubleToUInt(
+                            src = tackyExpression,
+                            dst = dst,
+                        ),
+                    )
+                }
+            }
             expression.targetType.size() == innerExpressionType.size() -> instructions.add(
                 Tacky.Instruction.Copy(
                     src = tackyExpression,

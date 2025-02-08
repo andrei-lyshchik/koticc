@@ -2,6 +2,7 @@ package koticc.tacky
 
 import koticc.ast.Type
 import koticc.ast.cast
+import koticc.ast.double
 import koticc.ast.e
 import koticc.ast.int
 import koticc.ast.long
@@ -230,6 +231,134 @@ class ASTToTackyKtCastTest {
 
                 function("foo") {
                     truncate(1.toULong().t, "tmp.1")
+                    assign("a", "tmp.1".t)
+
+                    return_(0.t)
+                }
+            },
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should generate tacky for cast from double to int`() {
+        val program = ValidASTProgram(
+            value = program {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    int("a") assign cast(Type.Int, 1.0.e.double()).int()
+                }
+            },
+            renamedVariableCount = 1,
+            symbolTable = mapOf(
+                "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                "a" to Type.Int.toSymbol(),
+            ),
+        )
+
+        val actual = programASTToTacky(program)
+
+        assertEquals(
+            expected = tackyProgram {
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(1, 1, type = Type.Int)
+
+                function("foo") {
+                    doubleToInt(1.0.t, "tmp.1")
+                    assign("a", "tmp.1".t)
+
+                    return_(0.t)
+                }
+            },
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should generate tacky for cast from double to unsigned long`() {
+        val program = ValidASTProgram(
+            value = program {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    uLong("a") assign cast(Type.ULong, 1.0.e.double()).uLong()
+                }
+            },
+            renamedVariableCount = 1,
+            symbolTable = mapOf(
+                "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                "a" to Type.ULong.toSymbol(),
+            ),
+        )
+
+        val actual = programASTToTacky(program)
+
+        assertEquals(
+            expected = tackyProgram {
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(1, 1, type = Type.ULong)
+
+                function("foo") {
+                    doubleToUInt(1.0.t, "tmp.1")
+                    assign("a", "tmp.1".t)
+
+                    return_(0.t)
+                }
+            },
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should generate tacky for cast from long to double`() {
+        val program = ValidASTProgram(
+            value = program {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    double("a") assign cast(Type.Double, 1L.e.long()).double()
+                }
+            },
+            renamedVariableCount = 1,
+            symbolTable = mapOf(
+                "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                "a" to Type.Double.toSymbol(),
+            ),
+        )
+
+        val actual = programASTToTacky(program)
+
+        assertEquals(
+            expected = tackyProgram {
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(1, 1, type = Type.Double)
+
+                function("foo") {
+                    intToDouble(1L.t, "tmp.1")
+                    assign("a", "tmp.1".t)
+
+                    return_(0.t)
+                }
+            },
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should generate tacky for cast from unsigned int to double`() {
+        val program = ValidASTProgram(
+            value = program {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    double("a") assign cast(Type.Double, 1u.e.uInt()).double()
+                }
+            },
+            renamedVariableCount = 1,
+            symbolTable = mapOf(
+                "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                "a" to Type.Double.toSymbol(),
+            ),
+        )
+
+        val actual = programASTToTacky(program)
+
+        assertEquals(
+            expected = tackyProgram {
+                symbolTable = program.symbolTable + tempVariablesSymbolTable(1, 1, type = Type.Double)
+
+                function("foo") {
+                    uIntToDouble(1u.t, "tmp.1")
                     assign("a", "tmp.1".t)
 
                     return_(0.t)

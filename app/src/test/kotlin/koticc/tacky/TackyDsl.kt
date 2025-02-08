@@ -47,6 +47,9 @@ val Long.t
 val ULong.t
     get() = Tacky.Value.Constant(AST.ULongConstant(this))
 
+val Double.t
+    get() = Tacky.Value.Constant(AST.DoubleConstant(this))
+
 val String.t
     get() = Tacky.Value.Variable(this)
 
@@ -72,6 +75,14 @@ class FunctionBuilder(private val name: String, private val parameters: Array<ou
     fun zeroExtend(src: Tacky.Value, dst: String) = instructions.add(Tacky.Instruction.ZeroExtend(src, Tacky.Value.Variable(dst)))
 
     fun truncate(src: Tacky.Value, dst: String) = instructions.add(Tacky.Instruction.Truncate(src, Tacky.Value.Variable(dst)))
+
+    fun doubleToInt(src: Tacky.Value, dst: String) = instructions.add(Tacky.Instruction.DoubleToInt(src, Tacky.Value.Variable(dst)))
+
+    fun intToDouble(src: Tacky.Value, dst: String) = instructions.add(Tacky.Instruction.IntToDouble(src, Tacky.Value.Variable(dst)))
+
+    fun doubleToUInt(src: Tacky.Value, dst: String) = instructions.add(Tacky.Instruction.DoubleToUInt(src, Tacky.Value.Variable(dst)))
+
+    fun uIntToDouble(src: Tacky.Value, dst: String) = instructions.add(Tacky.Instruction.UIntToDouble(src, Tacky.Value.Variable(dst)))
 
     fun build() = Tacky.FunctionDefinition(name, parameters.toList(), global, instructions)
 }
