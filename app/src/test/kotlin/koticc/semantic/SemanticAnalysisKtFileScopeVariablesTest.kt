@@ -5,6 +5,7 @@ import arrow.core.right
 import koticc.ast.AST
 import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
+import koticc.ast.double
 import koticc.ast.e
 import koticc.ast.int
 import koticc.ast.long
@@ -260,6 +261,87 @@ class SemanticAnalysisKtFileScopeVariablesTest {
                     "a" to Type.UInt.toSymbol(
                         attributes = VariableAttributes.Static(
                             initialValue = InitialValue.Constant(InitialConstantValue.UInt(1u)),
+                            global = true,
+                        ),
+                    ),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should support double constants`() {
+        val program = program {
+            double("a") assign 3.14.e
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    double("a") assign 3.14.e.double()
+                },
+                renamedVariableCount = 0,
+                symbolTable = mapOf(
+                    "a" to Type.Double.toSymbol(
+                        attributes = VariableAttributes.Static(
+                            initialValue = InitialValue.Constant(InitialConstantValue.Double(3.14)),
+                            global = true,
+                        ),
+                    ),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should convert double constant to int`() {
+        val program = program {
+            int("a") assign 3.8.e
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    int("a") assign 3.e.int()
+                },
+                renamedVariableCount = 0,
+                symbolTable = mapOf(
+                    "a" to Type.Int.toSymbol(
+                        attributes = VariableAttributes.Static(
+                            initialValue = InitialValue.Constant(InitialConstantValue.Int(3)),
+                            global = true,
+                        ),
+                    ),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should convert long constant to double`() {
+        val program = program {
+            double("a") assign 3L.e
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    double("a") assign 3.0.e.double()
+                },
+                renamedVariableCount = 0,
+                symbolTable = mapOf(
+                    "a" to Type.Double.toSymbol(
+                        attributes = VariableAttributes.Static(
+                            initialValue = InitialValue.Constant(InitialConstantValue.Double(3.0)),
                             global = true,
                         ),
                     ),

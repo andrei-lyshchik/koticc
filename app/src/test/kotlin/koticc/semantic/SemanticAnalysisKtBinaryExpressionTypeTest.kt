@@ -1,9 +1,12 @@
 package koticc.semantic
 
+import arrow.core.left
 import arrow.core.right
+import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
 import koticc.ast.and
 import koticc.ast.cast
+import koticc.ast.double
 import koticc.ast.e
 import koticc.ast.eq
 import koticc.ast.int
@@ -11,9 +14,11 @@ import koticc.ast.long
 import koticc.ast.or
 import koticc.ast.plus
 import koticc.ast.program
+import koticc.ast.rem
 import koticc.ast.shl
 import koticc.ast.uInt
 import koticc.ast.uLong
+import koticc.ast.xor
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -235,6 +240,114 @@ class SemanticAnalysisKtBinaryExpressionTypeTest {
     }
 
     @Test
+    fun `should resolve common type for double and int to be double`() {
+        val program = program {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                double("a") assign 1.0.e + 2.e
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        double("a.0") assign (1.0.e.double() + cast(Type.Double, 2.e.int()).double()).double()
+                    }
+                },
+                renamedVariableCount = 1,
+                symbolTable = mapOf(
+                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Double.toSymbol(),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should resolve common type for double and long to be double`() {
+        val program = program {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                double("a") assign 1.0.e + 2L.e
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        double("a.0") assign (1.0.e.double() + cast(Type.Double, 2L.e.long()).double()).double()
+                    }
+                },
+                renamedVariableCount = 1,
+                symbolTable = mapOf(
+                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Double.toSymbol(),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should resolve common type for double and unsigned long to be double`() {
+        val program = program {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                double("a") assign 1.0.e + 2uL.e
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        double("a.0") assign (1.0.e.double() + cast(Type.Double, 2uL.e.uLong()).double()).double()
+                    }
+                },
+                renamedVariableCount = 1,
+                symbolTable = mapOf(
+                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Double.toSymbol(),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should resolve common type for double and unsigned int to be double`() {
+        val program = program {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                double("a") assign 1.0.e + 2u.e
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = ValidASTProgram(
+                value = program {
+                    function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                        double("a.0") assign (1.0.e.double() + cast(Type.Double, 2u.e.uInt()).double()).double()
+                    }
+                },
+                renamedVariableCount = 1,
+                symbolTable = mapOf(
+                    "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
+                    "a.0" to Type.Double.toSymbol(),
+                ),
+            ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
     fun `should resolve or expression type`() {
         val program = program {
             function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
@@ -311,6 +424,63 @@ class SemanticAnalysisKtBinaryExpressionTypeTest {
                     "a.0" to Type.Int.toSymbol(),
                 ),
             ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should not allow double operands for modulo binary operator`() {
+        val program = program {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                int("a") assign 1.0.e % 2.e
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError(
+                message = "invalid double operand type for '%'",
+                location = DUMMY_LOCATION,
+            ).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should not allow double for bitwise xor`() {
+        val program = program {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                int("a") assign (1.0.e xor 2.e)
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError(
+                message = "invalid double operand type for '^'",
+                location = DUMMY_LOCATION,
+            ).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should not allow double for bitwise shift`() {
+        val program = program {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                int("a") assign (1.0.e shl 2.e)
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError(
+                message = "invalid double operand type for '<<'",
+                location = DUMMY_LOCATION,
+            ).left(),
             actual = actual,
         )
     }

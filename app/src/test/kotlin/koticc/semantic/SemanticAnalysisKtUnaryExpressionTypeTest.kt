@@ -1,6 +1,8 @@
 package koticc.semantic
 
+import arrow.core.left
 import arrow.core.right
+import koticc.ast.DUMMY_LOCATION
 import koticc.ast.Type
 import koticc.ast.complement
 import koticc.ast.e
@@ -90,6 +92,25 @@ class SemanticAnalysisKtUnaryExpressionTypeTest {
                     "a.0" to Type.Int.toSymbol(),
                 ),
             ).right(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should not allow bitwise complement double operand`() {
+        val program = program {
+            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                int("a") assign 1.0.e.complement()
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError(
+                message = "invalid operand type for '~': double",
+                location = DUMMY_LOCATION,
+            ).left(),
             actual = actual,
         )
     }

@@ -336,4 +336,42 @@ class SemanticAnalysisKtSwitchTest {
             actual = actual,
         )
     }
+
+    @Test
+    fun `should return error if switch expression is a double`() {
+        val program = program {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                switch(1.0.e) {
+                    return_(1.e)
+                }
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError("switch expression must have an integer type, got double", DUMMY_LOCATION).left(),
+            actual = actual,
+        )
+    }
+
+    @Test
+    fun `should return error if case expression is a double`() {
+        val program = program {
+            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                switch(1.e) {
+                    case(1.0.e) {
+                        return_(1.e)
+                    }
+                }
+            }
+        }
+
+        val actual = semanticAnalysis(program)
+
+        assertEquals(
+            expected = SemanticAnalysisError("case expression must be an integer constant", DUMMY_LOCATION).left(),
+            actual = actual,
+        )
+    }
 }

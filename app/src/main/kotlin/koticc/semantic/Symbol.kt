@@ -52,6 +52,9 @@ sealed interface InitialConstantValue {
     data class ULong(val value: kotlin.ULong) : InitialConstantValue {
         override fun isZero(): Boolean = value == 0uL
     }
+    data class Double(val value: kotlin.Double) : InitialConstantValue {
+        override fun isZero(): Boolean = value == 0.0
+    }
 }
 
 fun AST.Constant.toInitialValue(): InitialConstantValue = when (this) {
@@ -59,7 +62,7 @@ fun AST.Constant.toInitialValue(): InitialConstantValue = when (this) {
     is AST.LongConstant -> InitialConstantValue.Long(value)
     is AST.UIntConstant -> InitialConstantValue.UInt(value)
     is AST.ULongConstant -> InitialConstantValue.ULong(value)
-    is AST.DoubleConstant -> TODO()
+    is AST.DoubleConstant -> InitialConstantValue.Double(value)
 }
 
 typealias SymbolTable = Map<String, Symbol>

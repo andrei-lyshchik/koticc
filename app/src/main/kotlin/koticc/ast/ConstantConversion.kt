@@ -13,30 +13,35 @@ fun AST.Constant.convertTo(type: Type.Data): AST.Constant {
             is AST.LongConstant -> AST.IntConstant(value.toInt())
             is AST.UIntConstant -> AST.IntConstant(value.toInt())
             is AST.ULongConstant -> AST.IntConstant(value.toInt())
-            is AST.DoubleConstant -> TODO()
+            is AST.DoubleConstant -> AST.IntConstant(value.toInt())
         }
         is Type.Long -> when (this) {
             is AST.LongConstant -> this
             is AST.IntConstant -> AST.LongConstant(value.toLong())
             is AST.UIntConstant -> AST.LongConstant(value.toLong())
             is AST.ULongConstant -> AST.LongConstant(value.toLong())
-            is AST.DoubleConstant -> TODO()
+            is AST.DoubleConstant -> AST.LongConstant(value.toLong())
         }
         is Type.UInt -> when (this) {
             is AST.UIntConstant -> this
             is AST.IntConstant -> AST.UIntConstant(value.toUInt())
             is AST.LongConstant -> AST.UIntConstant(value.toUInt())
             is AST.ULongConstant -> AST.UIntConstant(value.toUInt())
-            is AST.DoubleConstant -> TODO()
+            is AST.DoubleConstant -> AST.UIntConstant(value.toUInt())
         }
         is Type.ULong -> when (this) {
             is AST.ULongConstant -> this
             is AST.IntConstant -> AST.ULongConstant(value.toULong())
             is AST.LongConstant -> AST.ULongConstant(value.toULong())
             is AST.UIntConstant -> AST.ULongConstant(value.toULong())
-            is AST.DoubleConstant -> TODO()
+            is AST.DoubleConstant -> AST.ULongConstant(value.toULong())
         }
-
-        Type.Double -> TODO()
+        Type.Double -> when (this) {
+            is AST.DoubleConstant -> this
+            is AST.IntConstant -> AST.DoubleConstant(value.toDouble())
+            is AST.LongConstant -> AST.DoubleConstant(value.toDouble())
+            is AST.UIntConstant -> AST.DoubleConstant(value.toDouble())
+            is AST.ULongConstant -> AST.DoubleConstant(value.toDouble())
+        }
     }
 }

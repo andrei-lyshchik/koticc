@@ -385,6 +385,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         }
     }
 
+    @Suppress("KotlinConstantConditions")
     private fun typecheckExpression(expression: AST.Expression): Either<SemanticAnalysisError, AST.Expression> = either {
         when (expression) {
             is AST.Expression.Assignment -> {
@@ -398,6 +399,18 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             is AST.Expression.Binary -> {
                 val left = typecheckExpression(expression.left).bind()
                 val right = typecheckExpression(expression.right).bind()
+
+                if (expression.operator in operatorsForbiddenForDouble &&
+                    (left.resolvedType() is Type.Double || right.resolvedType() is Type.Double)
+                ) {
+                    raise(
+                        SemanticAnalysisError(
+                            "invalid double operand type for '${expression.operator.toDisplayString()}'",
+                            expression.location,
+                        ),
+                    )
+                }
+
                 if (expression.operator == AST.BinaryOperator.LogicalAnd || expression.operator == AST.BinaryOperator.LogicalOr) {
                     return@either expression.copy(
                         left = left,
@@ -422,8 +435,6 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     AST.BinaryOperator.BitwiseAnd,
                     AST.BinaryOperator.BitwiseOr,
                     AST.BinaryOperator.BitwiseXor,
-                    AST.BinaryOperator.ShiftLeft,
-                    AST.BinaryOperator.ShiftRight,
                     -> commonType
                     AST.BinaryOperator.Equal,
                     AST.BinaryOperator.NotEqual,
@@ -432,6 +443,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     AST.BinaryOperator.GreaterThan,
                     AST.BinaryOperator.GreaterThanOrEqual,
                     -> Type.Int
+                    AST.BinaryOperator.ShiftLeft,
+                    AST.BinaryOperator.ShiftRight,
                     AST.BinaryOperator.LogicalAnd,
                     AST.BinaryOperator.LogicalOr,
                     -> error("unreachable")
@@ -489,7 +502,12 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 val operand = typecheckExpression(expression.operand).bind()
                 val type = when (expression.operator) {
                     AST.UnaryOperator.Negate -> operand.resolvedType()
-                    AST.UnaryOperator.Complement -> operand.resolvedType()
+                    AST.UnaryOperator.Complement -> {
+                        ensure(operand.resolvedType() !is Type.Double) {
+                            SemanticAnalysisError("invalid operand type for '~': double", expression.location)
+                        }
+                        operand.resolvedType()
+                    }
                     AST.UnaryOperator.LogicalNegate -> Type.Int
                 }
                 expression.copy(
@@ -516,6 +534,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     private fun getCommonType(type1: Type.Data, type2: Type.Data): Type.Data {
         return when {
             type1 == type2 -> type1
+            type1 == Type.Double || type2 == Type.Double -> Type.Double
             type1.size() == type2.size() -> {
                 if (type1.signed()) {
                     type2
@@ -545,4 +564,15 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         val value: Symbol,
         val location: Location,
     )
+
+    companion object {
+        private val operatorsForbiddenForDouble = setOf(
+            AST.BinaryOperator.Modulo,
+            AST.BinaryOperator.BitwiseXor,
+            AST.BinaryOperator.BitwiseAnd,
+            AST.BinaryOperator.BitwiseOr,
+            AST.BinaryOperator.ShiftLeft,
+            AST.BinaryOperator.ShiftRight,
+        )
+    }
 }

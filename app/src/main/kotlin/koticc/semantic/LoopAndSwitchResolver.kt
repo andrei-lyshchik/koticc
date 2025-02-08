@@ -141,7 +141,7 @@ internal class LoopAndSwitchResolver {
                     }
                     val caseId = AST.CaseId(switchContext.caseExpressions.size)
 
-                    ensure(statement.expression is AST.Expression.Constant) {
+                    ensure(statement.expression is AST.Expression.Constant && statement.expression.value !is AST.DoubleConstant) {
                         SemanticAnalysisError("case expression must be an integer constant", statement.location)
                     }
 
@@ -176,6 +176,9 @@ internal class LoopAndSwitchResolver {
                 is AST.Statement.Switch -> {
                     val contextWithSwitch = context.withNextSwitch(statement.expression.resolvedType())
                     val body = resolveStatement(statement.body, contextWithSwitch).bind()
+                    if (statement.expression.resolvedType() is Type.Double) {
+                        raise(SemanticAnalysisError("switch expression must have an integer type, got ${statement.expression.resolvedType().toDisplayString()}", statement.location))
+                    }
                     AST.Statement.Switch(
                         expression = statement.expression,
                         body = body,

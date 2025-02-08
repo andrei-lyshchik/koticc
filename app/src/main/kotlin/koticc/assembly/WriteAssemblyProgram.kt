@@ -100,6 +100,8 @@ private fun writeAssemblyStaticVariable(
                         write("    .quad ${staticVariable.initialValue.value}")
                     }
                 }
+
+                is InitialConstantValue.Double -> TODO()
             }
         }
     }

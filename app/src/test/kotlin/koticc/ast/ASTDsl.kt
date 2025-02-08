@@ -73,6 +73,9 @@ class ProgramBuilder {
     fun long(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
         setCurrentVariableBuilder(VariableDeclarationBuilder(name, storageClass, Type.Long))
 
+    fun double(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
+        setCurrentVariableBuilder(VariableDeclarationBuilder(name, storageClass, Type.Double))
+
     fun build(): AST.Program {
         currentVariableBuilder?.let {
             declarations.add(it.buildVariableDeclaration())
@@ -720,6 +723,15 @@ infix fun AST.Expression.shl(other: AST.Expression): AST.Expression {
     )
 }
 
+infix fun AST.Expression.xor(other: AST.Expression): AST.Expression {
+    return AST.Expression.Binary(
+        operator = AST.BinaryOperator.BitwiseXor,
+        left = this,
+        right = other,
+        type = null,
+    )
+}
+
 fun AST.Expression.postfixIncrement(): AST.Expression {
     return AST.Expression.Postfix(
         operator = AST.PostfixOperator.Increment,
@@ -743,6 +755,8 @@ fun AST.Expression.long() = ofType(Type.Long)
 fun AST.Expression.uInt() = ofType(Type.UInt)
 
 fun AST.Expression.uLong() = ofType(Type.ULong)
+
+fun AST.Expression.double() = ofType(Type.Double)
 
 fun compoundAssignment(
     left: AST.Expression,
