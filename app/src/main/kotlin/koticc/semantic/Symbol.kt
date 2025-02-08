@@ -59,6 +59,7 @@ fun AST.Constant.toInitialValue(): InitialConstantValue = when (this) {
     is AST.LongConstant -> InitialConstantValue.Long(value)
     is AST.UIntConstant -> InitialConstantValue.UInt(value)
     is AST.ULongConstant -> InitialConstantValue.ULong(value)
+    is AST.DoubleConstant -> TODO()
 }
 
 typealias SymbolTable = Map<String, Symbol>

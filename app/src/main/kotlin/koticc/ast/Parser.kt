@@ -143,6 +143,7 @@ private class Parser(
             Token.LongKeyword -> DeclarationSpecifier.Type.Long
             Token.SignedKeyword -> DeclarationSpecifier.Type.Signed
             Token.UnsignedKeyword -> DeclarationSpecifier.Type.Unsigned
+            Token.DoubleKeyword -> DeclarationSpecifier.Type.Double
             Token.Extern -> DeclarationSpecifier.StorageClass.Extern
             Token.Static -> DeclarationSpecifier.StorageClass.Static
             else -> null
@@ -250,6 +251,15 @@ private class Parser(
         }
         ensure(DeclarationSpecifier.Type.Signed !in typeSpecifiers || DeclarationSpecifier.Type.Unsigned !in typeSpecifiers) {
             invalidTypeSpecifiersError(typeSpecifiers, startLocation)
+        }
+
+        if (typeSpecifiers == listOf(DeclarationSpecifier.Type.Double)) {
+            return@either Type.Double
+        }
+        if (DeclarationSpecifier.Type.Double in typeSpecifiers) {
+            raise(
+                invalidTypeSpecifiersError(typeSpecifiers, startLocation),
+            )
         }
 
         if (DeclarationSpecifier.Type.Long in typeSpecifiers && DeclarationSpecifier.Type.Unsigned in typeSpecifiers) {
@@ -530,6 +540,10 @@ private class Parser(
                     is Token.ULongLiteral -> {
                         nextToken()
                         AST.Expression.Constant(AST.ULongConstant(peekTokenValue.value), null, peekToken.location)
+                    }
+                    is Token.DoubleLiteral -> {
+                        nextToken()
+                        AST.Expression.Constant(AST.DoubleConstant(peekTokenValue.value), null, peekToken.location)
                     }
                     is Token.Identifier -> {
                         nextToken()
@@ -825,6 +839,7 @@ private sealed interface DeclarationSpecifier {
         data object Long : Type
         data object Unsigned : Type
         data object Signed : Type
+        data object Double : Type
     }
     sealed interface StorageClass : DeclarationSpecifier {
         data object Extern : StorageClass

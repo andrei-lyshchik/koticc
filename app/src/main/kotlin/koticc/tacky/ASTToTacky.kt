@@ -67,6 +67,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                                         is Type.Long -> InitialConstantValue.Long(0L)
                                         is Type.UInt -> InitialConstantValue.UInt(0u)
                                         is Type.ULong -> InitialConstantValue.ULong(0uL)
+                                        Type.Double -> TODO()
                                     }
                                     InitialValue.NoInitializer -> return@mapNotNull null
                                 }

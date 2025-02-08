@@ -46,4 +46,5 @@ fun Type.Data.toAssemblyType(): Assembly.Type = when (this) {
     Type.UInt -> Assembly.Type.LongWord
     Type.Long -> Assembly.Type.QuadWord
     Type.ULong -> Assembly.Type.QuadWord
+    Type.Double -> Assembly.Type.QuadWord
 }

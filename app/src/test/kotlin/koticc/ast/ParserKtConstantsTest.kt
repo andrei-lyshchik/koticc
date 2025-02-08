@@ -23,4 +23,24 @@ class ParserKtConstantsTest {
             actual = actual,
         )
     }
+
+    @Test
+    fun `should parse double constants`() {
+        val input = """
+            int main(void) {
+                double d = 3.14;
+            }
+        """.trimIndent()
+
+        val actual = parseInput(input)
+
+        assertEqualsIgnoringLocations(
+            expected = program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    double("d") assign 3.14.e
+                }
+            },
+            actual = actual,
+        )
+    }
 }

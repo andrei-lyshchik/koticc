@@ -341,6 +341,12 @@ object AST {
         override fun toDisplayString(): String = "${value}ul"
     }
 
+    data class DoubleConstant(val value: Double) : Constant {
+        override val type: Type.Data
+            get() = Type.Double
+        override fun toDisplayString(): String = value.toString()
+    }
+
     enum class UnaryOperator : Displayable {
         Negate,
         Complement,

@@ -74,6 +74,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                 is Type.UInt -> 4
                 is Type.Long -> 8
                 is Type.ULong -> 8
+                is Type.Double -> 8
             },
         )
 
@@ -332,6 +333,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                     is AST.LongConstant -> Assembly.Operand.Immediate(tackyValue.value.value)
                     is AST.UIntConstant -> Assembly.Operand.Immediate(tackyValue.value.value.toLong())
                     is AST.ULongConstant -> Assembly.Operand.Immediate(tackyValue.value.value.toLong())
+                    is AST.DoubleConstant -> TODO()
                 }
             }
             is Tacky.Value.Variable -> {

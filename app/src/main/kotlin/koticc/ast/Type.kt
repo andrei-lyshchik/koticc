@@ -40,6 +40,14 @@ sealed interface Type : Displayable {
         override fun size(): kotlin.Int = 8
     }
 
+    data object Double : Data {
+        override fun toDisplayString(): String = "double"
+
+        override fun signed(): Boolean = true
+
+        override fun size(): kotlin.Int = 8
+    }
+
     data class Function(
         val parameters: List<Data>,
         val returnType: Data,

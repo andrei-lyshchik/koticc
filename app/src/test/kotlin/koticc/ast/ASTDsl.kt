@@ -113,6 +113,9 @@ class BlockBuilder {
     fun uLong(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
         setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.ULong))
 
+    fun double(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
+        setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Double))
+
     fun assign(left: AST.Expression, right: AST.Expression, type: Type.Data? = null) {
         addBlockItem(
             AST.BlockItem.Statement(
@@ -503,6 +506,12 @@ val Long.e
 
 val ULong.e
     get() = AST.Expression.Constant(AST.ULongConstant(this), null, DUMMY_LOCATION)
+
+val Double.e
+    get() = AST.Expression.Constant(AST.DoubleConstant(this), null, DUMMY_LOCATION)
+
+val Double.c
+    get() = AST.DoubleConstant(this)
 
 val Long.c
     get() = AST.LongConstant(this)

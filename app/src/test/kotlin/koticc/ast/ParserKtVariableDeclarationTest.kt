@@ -1,8 +1,12 @@
 package koticc.ast
 
+import arrow.core.left
 import koticc.parseInput
+import koticc.token.Location
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ParserKtVariableDeclarationTest {
     @ParameterizedTest
@@ -100,6 +104,38 @@ class ParserKtVariableDeclarationTest {
                     int("a") assign 1.e
                 }
             },
+            actual = parseInput(input),
+        )
+    }
+
+    @Test
+    fun `should parse double declaration`() {
+        val input = """
+            int main(void) {
+                double a = 1;
+            }
+        """.trimIndent()
+
+        assertEqualsIgnoringLocations(
+            expected = program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    double("a") assign 1.e
+                }
+            },
+            actual = parseInput(input),
+        )
+    }
+
+    @Test
+    fun `should return error if double is mixed with other types`() {
+        val input = """
+            int main(void) {
+                double int a = 1;
+            }
+        """.trimIndent()
+
+        assertEquals(
+            expected = ParserError("invalid type specifier: 'Double Int'", Location(2, 5)).left(),
             actual = parseInput(input),
         )
     }

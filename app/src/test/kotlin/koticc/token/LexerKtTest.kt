@@ -151,7 +151,7 @@ int main(void) {
 
     @Test
     fun `double literals`() {
-        val input = "1.0 .9 3. 10e5 .05e-2"
+        val input = "1.0 .9 3. 10e5 .05e-2 3.14;"
 
         assertEquals(
             listOf(
@@ -160,6 +160,8 @@ int main(void) {
                 Token.DoubleLiteral(3.0),
                 Token.DoubleLiteral(10e5),
                 Token.DoubleLiteral(0.05e-2),
+                Token.DoubleLiteral(3.14),
+                Token.Semicolon,
             ).right(),
             lexer(input).map { tokens -> tokens.map { it.value } },
         )

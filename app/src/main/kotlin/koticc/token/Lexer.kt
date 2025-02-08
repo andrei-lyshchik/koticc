@@ -249,7 +249,8 @@ private val NUMBER_TOKENS = listOf(
             ensureNotNull(doubleValue) {
                 LexerError("invalid double literal: '${match.value}'", Location(line, current + 1))
             }
-            TokenWithLocation(Token.DoubleLiteral(doubleValue), Location(line, current + 1))
+            // The last character of the match is not part of the number literal
+            ParsedToken(TokenWithLocation(Token.DoubleLiteral(doubleValue), Location(line, current + 1)), current + match.groupValues[1].length - 1)
         }
     },
     """(\d+)[lL]\b""".toRegex() to { match: MatchResult, line: Int, current: Int ->
@@ -258,20 +259,20 @@ private val NUMBER_TOKENS = listOf(
             ensureNotNull(longValue) {
                 LexerError("invalid long literal: '${match.value}'", Location(line, current + 1))
             }
-            TokenWithLocation(Token.LongLiteral(longValue), Location(line, current + 1))
+            ParsedToken(TokenWithLocation(Token.LongLiteral(longValue), Location(line, current + 1)), current + match.value.length - 1)
         }
     },
     """(\d+)[uU]\b""".toRegex() to { match: MatchResult, line: Int, current: Int ->
         either {
             val unsignedIntValue = match.groupValues[1].toUIntOrNull()
             if (unsignedIntValue != null) {
-                return@either TokenWithLocation(Token.UIntLiteral(unsignedIntValue), Location(line, current + 1))
+                return@either ParsedToken(TokenWithLocation(Token.UIntLiteral(unsignedIntValue), Location(line, current + 1)), current + match.value.length - 1)
             }
             val unsignedLongValue = match.groupValues[1].toULongOrNull()
             ensureNotNull(unsignedLongValue) {
                 LexerError("invalid unsigned number literal: '${match.value}'", Location(line, current + 1))
             }
-            TokenWithLocation(Token.ULongLiteral(unsignedLongValue), Location(line, current + 1))
+            ParsedToken(TokenWithLocation(Token.ULongLiteral(unsignedLongValue), Location(line, current + 1)), current + match.value.length - 1)
         }
     },
     """(\d+)([uU][lL]|[lL][uU])\b""".toRegex() to { match: MatchResult, line: Int, current: Int ->
@@ -280,20 +281,20 @@ private val NUMBER_TOKENS = listOf(
             ensureNotNull(unsignedLongValue) {
                 LexerError("invalid unsigned long literal: '${match.value}'", Location(line, current + 1))
             }
-            TokenWithLocation(Token.ULongLiteral(unsignedLongValue), Location(line, current + 1))
+            ParsedToken(TokenWithLocation(Token.ULongLiteral(unsignedLongValue), Location(line, current + 1)), current + match.value.length - 1)
         }
     },
     """\d+\b""".toRegex() to { match: MatchResult, line: Int, current: Int ->
         either {
             val intValue = match.value.toIntOrNull()
             if (intValue != null) {
-                return@either TokenWithLocation(Token.IntLiteral(intValue), Location(line, current + 1))
+                return@either ParsedToken(TokenWithLocation(Token.IntLiteral(intValue), Location(line, current + 1)), current + match.value.length - 1)
             }
             val longValue = match.value.toLongOrNull()
             ensureNotNull(longValue) {
                 LexerError("invalid number literal: '${match.value}'", Location(line, current + 1))
             }
-            TokenWithLocation(Token.LongLiteral(longValue), Location(line, current + 1))
+            ParsedToken(TokenWithLocation(Token.LongLiteral(longValue), Location(line, current + 1)), current + match.value.length - 1)
         }
     },
 )
@@ -303,9 +304,6 @@ private fun parseNumberToken(lineContent: String, current: Int, line: Int): Eith
         val match = regex.matchAt(lineContent, current)
         if (match != null) {
             return parser(match, line, current)
-                .map { token ->
-                    ParsedToken(token, current + match.value.length - 1)
-                }
         }
     }
 

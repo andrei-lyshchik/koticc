@@ -276,6 +276,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                         is Type.Long -> InitialConstantValue.Long(0)
                         is Type.UInt -> InitialConstantValue.UInt(0u)
                         is Type.ULong -> InitialConstantValue.ULong(0uL)
+                        Type.Double -> TODO()
                     }
                 }
                 symbolTable[variableDeclaration.name] = SymbolWithLocation(
