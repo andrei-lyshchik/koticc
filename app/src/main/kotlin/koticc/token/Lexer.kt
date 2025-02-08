@@ -21,7 +21,7 @@ fun lexer(input: String): Either<LexerError, List<TokenWithLocation>> =
             while (current < lineContent.length) {
                 val char = lineContent[current]
                 when {
-                    char.isDigit() -> {
+                    char.isDigit() || char == '.' -> {
                         val parsedToken = parseNumberToken(lineContent, current, line).bind()
                         result.add(parsedToken.value)
                         current = parsedToken.newCurrent
@@ -237,11 +237,21 @@ private val KEYWORD_TOKENS = mapOf(
     "switch" to Token.Switch,
     "extern" to Token.Extern,
     "static" to Token.Static,
-    "unsigned" to Token.Unsigned,
-    "signed" to Token.Signed,
+    "unsigned" to Token.UnsignedKeyword,
+    "signed" to Token.SignedKeyword,
+    "double" to Token.DoubleKeyword,
 )
 
 private val NUMBER_TOKENS = listOf(
+    """([0-9]*\.[0-9]+|[0-9]+\.|(([0-9]*\.[0-9]+|[0-9]+\.?)[Ee][+-]?[0-9]+))([^\w.]|$)""".toRegex() to { match: MatchResult, line: Int, current: Int ->
+        either {
+            val doubleValue = match.groupValues[1].toDoubleOrNull()
+            ensureNotNull(doubleValue) {
+                LexerError("invalid double literal: '${match.value}'", Location(line, current + 1))
+            }
+            TokenWithLocation(Token.DoubleLiteral(doubleValue), Location(line, current + 1))
+        }
+    },
     """(\d+)[lL]\b""".toRegex() to { match: MatchResult, line: Int, current: Int ->
         either {
             val longValue = match.groupValues[1].toLongOrNull()

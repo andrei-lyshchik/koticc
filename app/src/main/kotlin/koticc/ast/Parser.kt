@@ -141,8 +141,8 @@ private class Parser(
         when (token) {
             Token.IntKeyword -> DeclarationSpecifier.Type.Int
             Token.LongKeyword -> DeclarationSpecifier.Type.Long
-            Token.Signed -> DeclarationSpecifier.Type.Signed
-            Token.Unsigned -> DeclarationSpecifier.Type.Unsigned
+            Token.SignedKeyword -> DeclarationSpecifier.Type.Signed
+            Token.UnsignedKeyword -> DeclarationSpecifier.Type.Unsigned
             Token.Extern -> DeclarationSpecifier.StorageClass.Extern
             Token.Static -> DeclarationSpecifier.StorageClass.Static
             else -> null

@@ -24,6 +24,10 @@ sealed interface Token : Displayable {
         override fun toDisplayString(): String = value.toString() + "ul"
     }
 
+    data class DoubleLiteral(val value: kotlin.Double) : Token {
+        override fun toDisplayString(): String = value.toString()
+    }
+
     // keywords
     data object Void : Token {
         override fun toDisplayString(): String = "void"
@@ -94,12 +98,16 @@ sealed interface Token : Displayable {
         override fun toDisplayString(): String = "long"
     }
 
-    data object Signed : Token {
+    data object SignedKeyword : Token {
         override fun toDisplayString(): String = "signed"
     }
 
-    data object Unsigned : Token {
+    data object UnsignedKeyword : Token {
         override fun toDisplayString(): String = "unsigned"
+    }
+
+    data object DoubleKeyword : Token {
+        override fun toDisplayString(): String = "double"
     }
 
     // punctuation

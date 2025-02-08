@@ -2,7 +2,11 @@ package koticc.token
 
 import arrow.core.left
 import arrow.core.right
+import koticc.VarargArgumentsProvider
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ArgumentsSource
 import kotlin.test.Test
 
 class LexerKtTest {
@@ -40,7 +44,7 @@ int main(void) {
             """
             abc cde_fgh 123 void return int (){};=-+~*/%^&| << >> < > <= >= != && || ! += -=
             *= /= %= &= ^= |= <<= >>= ++ -- if else ifnot elsenot ? : goto _id
-            do while for break continue case default switch , extern static long unsigned signed
+            do while for break continue case default switch , extern static long unsigned signed double
             """.trimIndent()
 
         assertEquals(
@@ -108,8 +112,9 @@ int main(void) {
                 Token.Extern,
                 Token.Static,
                 Token.LongKeyword,
-                Token.Unsigned,
-                Token.Signed,
+                Token.UnsignedKeyword,
+                Token.SignedKeyword,
+                Token.DoubleKeyword,
             ).right(),
             lexer(input).map { tokens -> tokens.map { it.value } },
         )
@@ -142,6 +147,36 @@ int main(void) {
                 .right(),
             lexer(input).map { tokens -> tokens.map { it.value } },
         )
+    }
+
+    @Test
+    fun `double literals`() {
+        val input = "1.0 .9 3. 10e5 .05e-2"
+
+        assertEquals(
+            listOf(
+                Token.DoubleLiteral(1.0),
+                Token.DoubleLiteral(0.9),
+                Token.DoubleLiteral(3.0),
+                Token.DoubleLiteral(10e5),
+                Token.DoubleLiteral(0.05e-2),
+            ).right(),
+            lexer(input).map { tokens -> tokens.map { it.value } },
+        )
+    }
+
+    class ConstantTokenFollowedByAPeriod : VarargArgumentsProvider(
+        "1l.",
+        "1u.",
+        "1.0.",
+        "1.0.+x",
+    )
+
+    @ParameterizedTest
+    @ArgumentsSource(ConstantTokenFollowedByAPeriod::class)
+    fun `should return error if constant token is followed by a period`(input: String) {
+        val result = lexer(input)
+        assertTrue(result.isLeft())
     }
 
     @Test
