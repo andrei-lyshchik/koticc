@@ -19,6 +19,9 @@ fun writeAssemblyProgram(
             is Assembly.TopLevel.StaticVariable -> {
                 writeAssemblyStaticVariable(functionDefinition.value, writer).bind()
             }
+            is Assembly.TopLevel.StaticConstant -> {
+                writeAssemblyStaticConstant(functionDefinition.value, writer).bind()
+            }
         }
         if (index != assemblyProgram.topLevel.size - 1) {
             Either.catchOrThrow<IOException, Unit> {
@@ -71,49 +74,59 @@ private fun writeAssemblyStaticVariable(
             }
             write("    .balign ${staticVariable.alignment}\n")
             write("_${staticVariable.name}:\n")
-            when (staticVariable.initialValue) {
-                is InitialConstantValue.Int -> {
-                    if (staticVariable.initialValue.isZero()) {
-                        write("    .zero 4")
-                    } else {
-                        write("    .long ${staticVariable.initialValue.value}")
-                    }
-                }
-                is InitialConstantValue.UInt -> {
-                    if (staticVariable.initialValue.isZero()) {
-                        write("    .zero 4")
-                    } else {
-                        write("    .long ${staticVariable.initialValue.value}")
-                    }
-                }
-                is InitialConstantValue.Long -> {
-                    if (staticVariable.initialValue.isZero()) {
-                        write("    .zero 8")
-                    } else {
-                        write("    .quad ${staticVariable.initialValue.value}")
-                    }
-                }
-                is InitialConstantValue.ULong -> {
-                    if (staticVariable.initialValue.isZero()) {
-                        write("    .zero 8")
-                    } else {
-                        write("    .quad ${staticVariable.initialValue.value}")
-                    }
-                }
-
-                is InitialConstantValue.Double -> TODO()
+            if (staticVariable.initialValue is InitialConstantValue.Double || !staticVariable.initialValue.isZero()) {
+                write("    ${staticVariable.initialValue.toInitString()}")
+            } else {
+                write("    .zero ${staticVariable.alignment}")
             }
         }
     }
 
+private fun InitialConstantValue.toInitString() =
+    when (this) {
+        is InitialConstantValue.Int -> ".long $value"
+        is InitialConstantValue.Long -> ".quad $value"
+        is InitialConstantValue.UInt -> ".long $value"
+        is InitialConstantValue.ULong -> ".quad $value"
+        is InitialConstantValue.Double -> ".quad ${value.toRawBits()}"
+    }
+
+private fun writeAssemblyStaticConstant(
+    staticConstant: Assembly.StaticConstant,
+    writer: Writer,
+): Either<IOException, Unit> = Either.catchOrThrow {
+    with(writer) {
+        when (staticConstant.alignment) {
+            8 -> {
+                write("    .literal8\n")
+                write("    .balign 8\n")
+                write("_${staticConstant.name}:\n")
+                write("    ${staticConstant.value.toInitString()}")
+            }
+            16 -> {
+                write("    .literal16\n")
+                write("    .balign 16\n")
+                write("_${staticConstant.name}:\n")
+                write("    ${staticConstant.value.toInitString()}\n")
+                write("    .quad 0\n")
+            }
+            else -> {
+                error("Bug: unexpected alignment ${staticConstant.alignment}")
+            }
+        }
+    }
+}
+
 private fun Assembly.Type.instructionSuffix() = when (this) {
     Assembly.Type.LongWord -> 'l'
     Assembly.Type.QuadWord -> 'q'
+    Assembly.Type.Double -> "sd"
 }
 
 private fun Assembly.Type.toSize() = when (this) {
     Assembly.Type.LongWord -> Size.FourByte
     Assembly.Type.QuadWord -> Size.EightByte
+    Assembly.Type.Double -> Size.EightByte
 }
 
 private fun Assembly.Instruction.toOperatorString(): String =
@@ -124,8 +137,14 @@ private fun Assembly.Instruction.toOperatorString(): String =
         is Assembly.Instruction.Cdq -> when (type) {
             Assembly.Type.LongWord -> "cdq"
             Assembly.Type.QuadWord -> "cqo"
+            Assembly.Type.Double -> error("Bug: cdq should not be used with double")
         }
-        is Assembly.Instruction.Cmp -> "cmp${type.instructionSuffix()} ${src.toOperatorString(size = type.toSize())}, ${dst.toOperatorString(size = type.toSize())}"
+        is Assembly.Instruction.Cmp ->
+            if (type == Assembly.Type.Double) {
+                "comisd ${src.toOperatorString(size = Size.EightByte)}, ${dst.toOperatorString(size = Size.EightByte)}"
+            } else {
+                "cmp${type.instructionSuffix()} ${src.toOperatorString(size = type.toSize())}, ${dst.toOperatorString(size = type.toSize())}"
+            }
         is Assembly.Instruction.ConditionalJump -> "j${operator.toOperatorString()} ${target.toLocalOutputString()}"
         is Assembly.Instruction.Idiv -> "idiv${type.instructionSuffix()} ${operand.toOperatorString(size = type.toSize())}"
         is Assembly.Instruction.Div -> "div${type.instructionSuffix()} ${operand.toOperatorString(size = type.toSize())}"
@@ -140,9 +159,17 @@ private fun Assembly.Instruction.toOperatorString(): String =
         is Assembly.Instruction.Unary -> "${toOperatorString()} ${operand.toOperatorString(size = type.toSize())}"
         is Assembly.Instruction.Call -> "call _$name"
         is Assembly.Instruction.Push -> "pushq ${operand.toOperatorString(size = Size.EightByte)}"
+        is Assembly.Instruction.IntToDouble -> "cvtsi2sd${type.instructionSuffix()} ${src.toOperatorString(size = type.toSize())}, ${dst.toOperatorString(size = Size.EightByte)}"
+        is Assembly.Instruction.DoubleToInt -> "cvttsd2si${type.instructionSuffix()} ${src.toOperatorString(size = Size.EightByte)}, ${dst.toOperatorString(size = type.toSize())}"
     }
 
 private fun Assembly.Instruction.Binary.toOperatorString(): String {
+    if (operator == Assembly.BinaryOperator.Xor && type == Assembly.Type.Double) {
+        return "xorpd"
+    }
+    if (operator == Assembly.BinaryOperator.Mul && type == Assembly.Type.Double) {
+        return "mulsd"
+    }
     val operatorString = when (operator) {
         Assembly.BinaryOperator.Add -> "add"
         Assembly.BinaryOperator.Sub -> "sub"
@@ -150,6 +177,7 @@ private fun Assembly.Instruction.Binary.toOperatorString(): String {
         Assembly.BinaryOperator.And -> "and"
         Assembly.BinaryOperator.Or -> "or"
         Assembly.BinaryOperator.Xor -> "xor"
+        Assembly.BinaryOperator.DivDouble -> "div"
     }
     return "$operatorString${type.instructionSuffix()}"
 }
@@ -280,6 +308,17 @@ private fun Assembly.RegisterValue.toOutputString(size: Size): String =
                 Size.EightByte -> "%r11"
             }
         }
+
+        Assembly.RegisterValue.Xmm0 -> "%xmm0"
+        Assembly.RegisterValue.Xmm1 -> "%xmm1"
+        Assembly.RegisterValue.Xmm2 -> "%xmm2"
+        Assembly.RegisterValue.Xmm3 -> "%xmm3"
+        Assembly.RegisterValue.Xmm4 -> "%xmm4"
+        Assembly.RegisterValue.Xmm5 -> "%xmm5"
+        Assembly.RegisterValue.Xmm6 -> "%xmm6"
+        Assembly.RegisterValue.Xmm7 -> "%xmm7"
+        Assembly.RegisterValue.Xmm14 -> "%xmm14"
+        Assembly.RegisterValue.Xmm15 -> "%xmm15"
     }
 
 private fun LabelName.toLocalOutputString() = "L$value"

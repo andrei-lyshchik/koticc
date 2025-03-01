@@ -1,0 +1,3 @@
+double func(double d1, long l1, double d2, int i1, double d3, unsigned int u1, double d4, long l2, double d5, int i2, double d6, unsigned int u2, double d7, long l3, double d8, int i3, double d9, unsigned int u3, double d10, long l4, double d11, int i4, double d12, unsigned int u4, double d13, long l5, double d14, int i5) {
+    return d1 + l1 - d2 * i1 / d3 + u1 - d4 + l2 * d5 - i2 / d6 + u2 - d7 + l3 * d8 - i3 / d9 + u3 - d10 + l4 * d11 - i4 / d12 + u4 - d13 + l5 * d14 - i5;
+}

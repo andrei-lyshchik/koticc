@@ -7,6 +7,7 @@ object Assembly {
     enum class Type(val byteSize: Int) {
         LongWord(4),
         QuadWord(8),
+        Double(8),
     }
 
     data class Program(
@@ -16,6 +17,7 @@ object Assembly {
     sealed interface TopLevel {
         data class FunctionDefinition(val value: Assembly.FunctionDefinition) : TopLevel
         data class StaticVariable(val value: Assembly.StaticVariable) : TopLevel
+        data class StaticConstant(val value: Assembly.StaticConstant) : TopLevel
     }
 
     data class FunctionDefinition(
@@ -29,6 +31,12 @@ object Assembly {
         val global: Boolean,
         val initialValue: InitialConstantValue,
         val alignment: Int,
+    )
+
+    data class StaticConstant(
+        val name: String,
+        val alignment: Int,
+        val value: InitialConstantValue,
     )
 
     sealed interface Instruction {
@@ -114,6 +122,18 @@ object Assembly {
         ) : Instruction
 
         data object Ret : Instruction
+
+        data class DoubleToInt(
+            val type: Type,
+            val src: Operand,
+            val dst: Operand,
+        ) : Instruction
+
+        data class IntToDouble(
+            val type: Type,
+            val src: Operand,
+            val dst: Operand,
+        ) : Instruction
     }
 
     sealed interface Operand {
@@ -141,6 +161,17 @@ object Assembly {
         R9,
         R10,
         R11,
+
+        Xmm0,
+        Xmm1,
+        Xmm2,
+        Xmm3,
+        Xmm4,
+        Xmm5,
+        Xmm6,
+        Xmm7,
+        Xmm14,
+        Xmm15,
     }
 
     enum class UnaryOperator {
@@ -155,6 +186,7 @@ object Assembly {
         And,
         Or,
         Xor,
+        DivDouble,
     }
 
     enum class ShiftOperator {

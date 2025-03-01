@@ -3,13 +3,13 @@ package koticc.tacky
 import koticc.ast.AST
 import koticc.ast.LabelName
 import koticc.ast.Type
-import koticc.semantic.InitialConstantValue
 import koticc.semantic.InitialValue
 import koticc.semantic.Symbol
 import koticc.semantic.SymbolTable
 import koticc.semantic.ValidASTProgram
 import koticc.semantic.VariableAttributes
 import koticc.semantic.functionSymbol
+import koticc.semantic.toZeroInitialValue
 import koticc.semantic.variableSymbol
 
 fun programASTToTacky(validASTProgram: ValidASTProgram): Tacky.Program {
@@ -62,13 +62,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                             is VariableAttributes.Static -> {
                                 val initialValue = when (val initialValue = symbol.attributes.initialValue) {
                                     is InitialValue.Constant -> initialValue.value
-                                    InitialValue.Tentative -> when (symbol.type) {
-                                        is Type.Int -> InitialConstantValue.Int(0)
-                                        is Type.Long -> InitialConstantValue.Long(0L)
-                                        is Type.UInt -> InitialConstantValue.UInt(0u)
-                                        is Type.ULong -> InitialConstantValue.ULong(0uL)
-                                        Type.Double -> TODO()
-                                    }
+                                    InitialValue.Tentative -> symbol.type.toZeroInitialValue()
                                     InitialValue.NoInitializer -> return@mapNotNull null
                                 }
                                 Tacky.StaticVariable(name, global = symbol.attributes.global, initialValue = initialValue, type = symbol.type)

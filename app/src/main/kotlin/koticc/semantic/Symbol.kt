@@ -65,6 +65,14 @@ fun AST.Constant.toInitialValue(): InitialConstantValue = when (this) {
     is AST.DoubleConstant -> InitialConstantValue.Double(value)
 }
 
+fun Type.Data.toZeroInitialValue() = when (this) {
+    is Type.Int -> InitialConstantValue.Int(0)
+    is Type.UInt -> InitialConstantValue.UInt(0u)
+    is Type.Long -> InitialConstantValue.Long(0)
+    is Type.ULong -> InitialConstantValue.ULong(0uL)
+    is Type.Double -> InitialConstantValue.Double(0.0)
+}
+
 typealias SymbolTable = Map<String, Symbol>
 
 fun SymbolTable.functionSymbol(functionName: String): Symbol.Function =

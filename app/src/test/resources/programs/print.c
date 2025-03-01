@@ -11,3 +11,7 @@ int println_long(long l) {
 int println_ulong(unsigned long i) {
     return printf("%lu\n", i);
 }
+
+int println_double(double d) {
+    return printf("%f\n", d);
+}

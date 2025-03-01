@@ -268,17 +268,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                         ),
                     )
                 }
-                val initialConstantValue = if (convertedInitializer != null) {
-                    convertedInitializer.value.toInitialValue()
-                } else {
-                    when (variableDeclaration.type) {
-                        is Type.Int -> InitialConstantValue.Int(0)
-                        is Type.Long -> InitialConstantValue.Long(0)
-                        is Type.UInt -> InitialConstantValue.UInt(0u)
-                        is Type.ULong -> InitialConstantValue.ULong(0uL)
-                        Type.Double -> TODO()
-                    }
-                }
+                val initialConstantValue = convertedInitializer?.value?.toInitialValue()
+                    ?: variableDeclaration.type.toZeroInitialValue()
                 symbolTable[variableDeclaration.name] = SymbolWithLocation(
                     value = Symbol.Variable(
                         type = variableDeclaration.type,

@@ -80,6 +80,17 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
                         val operand = replace(instruction.operand)
                         Assembly.Instruction.Push(operand)
                     }
+
+                    is Assembly.Instruction.IntToDouble -> {
+                        val src = replace(instruction.src)
+                        val dst = replace(instruction.dst)
+                        Assembly.Instruction.IntToDouble(instruction.type, src, dst)
+                    }
+                    is Assembly.Instruction.DoubleToInt -> {
+                        val src = replace(instruction.src)
+                        val dst = replace(instruction.dst)
+                        Assembly.Instruction.DoubleToInt(instruction.type, src, dst)
+                    }
                 }
             result.add(replacedInstruction)
         }

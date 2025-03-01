@@ -44,6 +44,11 @@ class E2ETest {
         "/programs/long_logical_not.c",
         "/programs/unsigned_casts.c",
         "/programs/unsigned_shift_right.c",
+        "/programs/unsigned_division.c",
+        "/programs/double_to_int.c",
+        "/programs/int_to_double.c",
+        "/programs/double_logical_negate.c",
+        "/programs/double_comparisons.c",
     )
 
     @ParameterizedTest
@@ -86,6 +91,22 @@ class E2ETest {
         MultipleFilesTestCase(
             file1 = "/programs/fibonacci_unsigned.c",
             file2ForGccOnly = "/programs/print.c",
+        ),
+        MultipleFilesTestCase(
+            file1 = "/programs/binary_double.c",
+            file2ForGccOnly = "/programs/print.c",
+        ),
+        MultipleFilesTestCase(
+            file1 = "/programs/int_to_double.c",
+            file2ForGccOnly = "/programs/print.c",
+        ),
+        MultipleFilesTestCase(
+            file1 = "/programs/double_parameters_client.c",
+            file2ForGccOnly = "/programs/double_parameters_impl.c",
+        ),
+        MultipleFilesTestCase(
+            file1 = "/programs/double_parameters_impl.c",
+            file2ForGccOnly = "/programs/double_parameters_client.c",
         ),
     )
 
