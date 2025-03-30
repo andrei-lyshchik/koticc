@@ -49,6 +49,7 @@ class E2ETest {
         "/programs/int_to_double.c",
         "/programs/double_logical_negate.c",
         "/programs/double_comparisons.c",
+        "/programs/postfix_double.c",
     )
 
     @ParameterizedTest

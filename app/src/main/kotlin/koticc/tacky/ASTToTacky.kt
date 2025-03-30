@@ -3,6 +3,7 @@ package koticc.tacky
 import koticc.ast.AST
 import koticc.ast.LabelName
 import koticc.ast.Type
+import koticc.ast.convertTo
 import koticc.semantic.InitialValue
 import koticc.semantic.Symbol
 import koticc.semantic.SymbolTable
@@ -409,11 +410,13 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                         dst = tempValue,
                     ),
                 )
+                val constant = AST.IntConstant(1).convertTo(expression.resolvedType())
+                val right = Tacky.Value.Constant(constant)
                 instructions.add(
                     Tacky.Instruction.Binary(
                         operator = expression.operator.toTackyOperator(),
                         left = operand,
-                        right = Tacky.Value.Constant(AST.IntConstant(1)),
+                        right = right,
                         dst = operand,
                     ),
                 )
