@@ -194,6 +194,7 @@ private fun Assembly.ConditionalOperator.toOperatorString(): String =
         Assembly.ConditionalOperator.Above -> "a"
         Assembly.ConditionalOperator.BelowOrEqual -> "be"
         Assembly.ConditionalOperator.Below -> "b"
+        Assembly.ConditionalOperator.Parity -> "p"
     }
 
 private fun Assembly.Operand.toOperatorString(size: Size): String =

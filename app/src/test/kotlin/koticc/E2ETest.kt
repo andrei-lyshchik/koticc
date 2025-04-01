@@ -50,6 +50,7 @@ class E2ETest {
         "/programs/double_logical_negate.c",
         "/programs/double_comparisons.c",
         "/programs/postfix_double.c",
+        "/programs/nan.c",
     )
 
     @ParameterizedTest
@@ -155,16 +156,7 @@ class E2ETest {
 
     private fun getKtcProducedBinaryResult(inputFile: File) =
         either {
-            runCompilerDriver(
-                inputFile = inputFile.toPath(),
-                partialMode = PartialMode.EmitAssembly,
-                sharedLibraries = emptyList(),
-                outputFile = tempDir.resolve("ktc_output"),
-            ).mapLeft { "ktc failed to produce assembly: ${it.message()}" }.bind()
-            inputFile.resolveSibling(inputFile.nameWithoutExtension + ".s").readText()
-                .let { assembly ->
-                    println("Assembly produced by ktc:\n$assembly")
-                }
+            printKtcProducedAssembly(inputFile).bind()
             val outputFileName = "ktc_output_${UUID.randomUUID()}"
             runCompilerDriver(
                 inputFile = inputFile.toPath(),
@@ -182,6 +174,18 @@ class E2ETest {
                 fail(it)
             },
         ) { it }
+
+    private fun printKtcProducedAssembly(inputFile: File) = either {
+        runCompilerDriver(
+            inputFile = inputFile.toPath(),
+            partialMode = PartialMode.EmitAssembly,
+            sharedLibraries = emptyList(),
+            outputFile = tempDir.resolve("ktc_output"),
+        ).mapLeft { "ktc failed to produce assembly: ${it.message()}" }
+            .bind()
+        val assembly = inputFile.resolveSibling(inputFile.nameWithoutExtension + ".s").readText()
+        println("Assembly produced by ktc:\n$assembly")
+    }
 
     private fun getGccProducedObjectFile(inputFile: File) =
         either {
@@ -203,6 +207,7 @@ class E2ETest {
         either {
             val outputFileName = "ktc_object_file_${UUID.randomUUID()}.o"
             val outputFilePath = tempDir.resolve(outputFileName)
+            printKtcProducedAssembly(inputFile).bind()
             runCompilerDriver(
                 inputFile = inputFile.toPath(),
                 partialMode = PartialMode.ObjectFile,

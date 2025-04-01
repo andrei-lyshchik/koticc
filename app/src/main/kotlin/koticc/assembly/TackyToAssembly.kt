@@ -366,6 +366,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
 
             is Tacky.Instruction.JumpIfZero ->
                 if (tackyInstruction.src.assemblyType() == Assembly.Type.Double) {
+                    val nanLabel = nextLabel("jump_if_zero_nan")
                     listOf(
                         Assembly.Instruction.Binary(
                             operator = Assembly.BinaryOperator.Xor,
@@ -379,9 +380,14 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                             dst = tackyValueToOperand(tackyInstruction.src),
                         ),
                         Assembly.Instruction.ConditionalJump(
+                            operator = Assembly.ConditionalOperator.Parity,
+                            target = nanLabel,
+                        ),
+                        Assembly.Instruction.ConditionalJump(
                             operator = Assembly.ConditionalOperator.Equal,
                             target = tackyInstruction.target,
                         ),
+                        Assembly.Instruction.Label(nanLabel),
                     )
                 } else {
                     listOf(
@@ -410,6 +416,10 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                             type = Assembly.Type.Double,
                             src = Assembly.Operand.Register(Assembly.RegisterValue.Xmm0),
                             dst = tackyValueToOperand(tackyInstruction.src),
+                        ),
+                        Assembly.Instruction.ConditionalJump(
+                            operator = Assembly.ConditionalOperator.Parity,
+                            target = tackyInstruction.target,
                         ),
                         Assembly.Instruction.ConditionalJump(
                             operator = Assembly.ConditionalOperator.NotEqual,
@@ -740,6 +750,8 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
         dst: Tacky.Value,
     ): List<Assembly.Instruction> {
         val dstAssembly = tackyValueToOperand(dst)
+        val nanLabel = nextLabel("logical_not_nan")
+        val endLabel = nextLabel("logical_not_end")
         return listOf(
             Assembly.Instruction.Mov(
                 type = Assembly.Type.LongWord,
@@ -755,11 +767,29 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
             Assembly.Instruction.Cmp(
                 type = src.assemblyType(),
                 src = Assembly.Operand.Register(Assembly.RegisterValue.Xmm0),
-                dst = dstAssembly,
+                dst = tackyValueToOperand(src),
+            ),
+            Assembly.Instruction.ConditionalJump(
+                operator = Assembly.ConditionalOperator.Parity,
+                target = nanLabel,
             ),
             Assembly.Instruction.Set(
                 operator = Assembly.ConditionalOperator.Equal,
                 dst = dstAssembly,
+            ),
+            Assembly.Instruction.Jump(
+                target = endLabel,
+            ),
+            Assembly.Instruction.Label(
+                label = nanLabel,
+            ),
+            Assembly.Instruction.Mov(
+                type = Assembly.Type.LongWord,
+                src = Assembly.Operand.Immediate(0),
+                dst = dstAssembly,
+            ),
+            Assembly.Instruction.Label(
+                label = endLabel,
             ),
         )
     }
@@ -865,6 +895,32 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
         dst: Tacky.Value,
     ): List<Assembly.Instruction> {
         val dstAssembly = tackyValueToOperand(dst)
+        if (left.assemblyType() != Assembly.Type.Double) {
+            return listOf(
+                Assembly.Instruction.Mov(
+                    type = dst.assemblyType(),
+                    src = Assembly.Operand.Immediate(0),
+                    dst = dstAssembly,
+                ),
+                Assembly.Instruction.Cmp(
+                    type = left.assemblyType(),
+                    src = tackyValueToOperand(right),
+                    dst = tackyValueToOperand(left),
+                ),
+                Assembly.Instruction.Set(
+                    operator = conditionalOperator,
+                    dst = dstAssembly,
+                ),
+            )
+        }
+
+        val nanLabel = nextLabel("cmp_nan")
+        val endLabel = nextLabel("cmp_end")
+        val nanResult = if (conditionalOperator == Assembly.ConditionalOperator.NotEqual) {
+            Assembly.Operand.Immediate(1)
+        } else {
+            Assembly.Operand.Immediate(0)
+        }
         return listOf(
             Assembly.Instruction.Mov(
                 type = dst.assemblyType(),
@@ -876,10 +932,24 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                 src = tackyValueToOperand(right),
                 dst = tackyValueToOperand(left),
             ),
+            Assembly.Instruction.ConditionalJump(
+                operator = Assembly.ConditionalOperator.Parity,
+                target = nanLabel,
+            ),
             Assembly.Instruction.Set(
                 operator = conditionalOperator,
                 dst = dstAssembly,
             ),
+            Assembly.Instruction.Jump(
+                target = endLabel,
+            ),
+            Assembly.Instruction.Label(nanLabel),
+            Assembly.Instruction.Mov(
+                type = dst.assemblyType(),
+                src = nanResult,
+                dst = dstAssembly,
+            ),
+            Assembly.Instruction.Label(endLabel),
         )
     }
 

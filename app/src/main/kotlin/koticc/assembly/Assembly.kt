@@ -210,5 +210,6 @@ object Assembly {
         BelowOrEqual,
         Above,
         AboveOrEqual,
+        Parity,
     }
 }
