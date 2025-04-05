@@ -84,4 +84,6 @@ fun AST.Expression.withDummyLocations(): AST.Expression = when (this) {
     is AST.Expression.Postfix -> copy(operand = operand.withDummyLocations())
     is AST.Expression.FunctionCall -> copy(arguments = arguments.map { it.withDummyLocations() }, location = DUMMY_LOCATION)
     is AST.Expression.Cast -> copy(expression = expression.withDummyLocations(), location = DUMMY_LOCATION)
+    is AST.Expression.AddressOf -> copy(expression = expression.withDummyLocations(), location = DUMMY_LOCATION)
+    is AST.Expression.Dereference -> copy(expression = expression.withDummyLocations(), location = DUMMY_LOCATION)
 }

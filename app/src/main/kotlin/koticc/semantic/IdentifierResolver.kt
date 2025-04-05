@@ -347,6 +347,9 @@ internal class IdentifierResolver {
                         expression = resolveExpression(expression.expression, identifierMapping).bind(),
                     )
                 }
+
+                is AST.Expression.AddressOf -> TODO()
+                is AST.Expression.Dereference -> TODO()
             }
         }
 

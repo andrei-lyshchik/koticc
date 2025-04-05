@@ -43,5 +43,6 @@ fun AST.Constant.convertTo(type: Type.Data): AST.Constant {
             is AST.UIntConstant -> AST.DoubleConstant(value.toDouble())
             is AST.ULongConstant -> AST.DoubleConstant(value.toDouble())
         }
+        is Type.Pointer -> TODO()
     }
 }

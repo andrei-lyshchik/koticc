@@ -71,6 +71,7 @@ fun Type.Data.toZeroInitialValue() = when (this) {
     is Type.Long -> InitialConstantValue.Long(0)
     is Type.ULong -> InitialConstantValue.ULong(0uL)
     is Type.Double -> InitialConstantValue.Double(0.0)
+    is Type.Pointer -> TODO()
 }
 
 typealias SymbolTable = Map<String, Symbol>

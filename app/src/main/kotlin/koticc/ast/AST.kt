@@ -311,6 +311,26 @@ object AST {
 
             override fun ofType(type: Type.Data): Expression = copy(type = type)
         }
+
+        data class Dereference(
+            val expression: Expression,
+            override val type: Type.Data?,
+            override val location: Location,
+        ) : Expression {
+            override fun toDisplayString(): String = "*${expression.toDisplayString()}"
+
+            override fun ofType(type: Type.Data): Expression = copy(type = type)
+        }
+
+        data class AddressOf(
+            val expression: Expression,
+            override val type: Type.Data?,
+            override val location: Location,
+        ) : Expression {
+            override fun toDisplayString(): String = "&${expression.toDisplayString()}"
+
+            override fun ofType(type: Type.Data): Expression = copy(type = type)
+        }
     }
 
     sealed interface Constant : Displayable {

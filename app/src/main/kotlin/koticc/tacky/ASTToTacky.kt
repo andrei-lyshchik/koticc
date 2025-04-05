@@ -475,6 +475,9 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
             is AST.Expression.Cast -> {
                 generateCast(expression)
             }
+
+            is AST.Expression.AddressOf -> TODO()
+            is AST.Expression.Dereference -> TODO()
         }
 
     private fun generateIf(ifStatement: AST.Statement.If) {

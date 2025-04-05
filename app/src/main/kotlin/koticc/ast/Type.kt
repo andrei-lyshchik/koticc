@@ -48,6 +48,16 @@ sealed interface Type : Displayable {
         override fun size(): kotlin.Int = 8
     }
 
+    data class Pointer(
+        val referenced: Type,
+    ) : Data {
+        override fun signed(): Boolean = false
+
+        override fun size(): kotlin.Int = 8
+
+        override fun toDisplayString(): String = "${referenced.toDisplayString()} *"
+    }
+
     data class Function(
         val parameters: List<Data>,
         val returnType: Data,

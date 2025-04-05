@@ -519,6 +519,9 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             is AST.Expression.Cast -> expression.copy(
                 expression = typecheckExpression(expression.expression).bind(),
             ).ofType(expression.targetType)
+
+            is AST.Expression.AddressOf -> TODO()
+            is AST.Expression.Dereference -> TODO()
         }
     }
 
