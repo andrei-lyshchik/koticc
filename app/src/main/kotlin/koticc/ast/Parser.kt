@@ -68,49 +68,6 @@ private class Parser(
         }
     }
 
-    private fun expectFunctionParameter(): Either<ParserError, AST.FunctionParameter> =
-        either {
-            val nameToken = expectIdentifier().bind()
-            AST.FunctionParameter(nameToken.value.value, nameToken.location)
-        }
-
-    private fun parseFunctionDeclarationParameters() = either {
-        val paramOrVoidToken = peekToken()
-        when {
-            paramOrVoidToken?.value == Token.Void -> {
-                nextToken()
-                emptyList()
-            }
-            isDeclarationSpecifier(paramOrVoidToken?.value) -> {
-                val params = mutableListOf<FunctionParameterWithType>()
-                while (true) {
-                    val type = parseType().bind()
-                    params.add(FunctionParameterWithType(value = expectFunctionParameter().bind(), type = type))
-
-                    val peekToken = peekToken()
-                    when (peekToken?.value) {
-                        Token.Comma -> nextToken()
-                        Token.CloseParen -> break
-                        else -> raise(
-                            ParserError(
-                                "expected comma or close parenthesis in parameters list, " +
-                                    "got ${peekToken?.value.toDisplayString()}",
-                                peekToken?.location,
-                            ),
-                        )
-                    }
-                }
-                params
-            }
-            else -> raise(ParserError("expected 'void' or 'int', got ${paramOrVoidToken?.value.toDisplayString()}", paramOrVoidToken?.location))
-        }
-    }
-
-    private data class FunctionParameterWithType(
-        val value: AST.FunctionParameter,
-        val type: Type.Data,
-    )
-
     private fun parseBlock(): Either<ParserError, AST.Block> =
         either {
             expectToken(Token.OpenBrace).bind()
@@ -152,61 +109,154 @@ private class Parser(
     private fun parseDeclaration(): Either<ParserError, AST.Declaration> =
         either {
             val declarationSpecifiers = parseDeclarationSpecifiers().bind()
-            val nameToken = expectIdentifier().bind()
-            when (peekToken()?.value) {
-                Token.Semicolon -> {
-                    nextToken()
-                    AST.Declaration.Variable(
-                        nameToken.value.value,
-                        null,
-                        declarationSpecifiers.type,
-                        declarationSpecifiers.storageClass,
-                        declarationSpecifiers.location,
-                    )
-                }
-                Token.Equal -> {
-                    nextToken()
-                    val initializer = parseExpression(0).bind()
-                    expectToken(Token.Semicolon).bind()
-                    AST.Declaration.Variable(
-                        nameToken.value.value,
-                        initializer,
-                        declarationSpecifiers.type,
-                        declarationSpecifiers.storageClass,
-                        declarationSpecifiers.location,
-                    )
-                }
-                Token.OpenParen -> {
-                    nextToken()
-                    val parameters = parseFunctionDeclarationParameters().bind()
-                    expectToken(Token.CloseParen).bind()
-                    if (peekToken()?.value == Token.OpenBrace) {
-                        val body = parseBlock().bind()
-                        AST.Declaration.Function(
-                            nameToken.value.value,
-                            parameters.map { it.value },
-                            body,
-                            Type.Function(parameters = parameters.map { it.type }, returnType = declarationSpecifiers.type),
-                            declarationSpecifiers.storageClass,
-                            declarationSpecifiers.location,
-                        )
+            val declarator = parseDeclarator().bind()
+            val processedDeclarator = processDeclarator(declarator, declarationSpecifiers.type).bind()
+            when (processedDeclarator.type) {
+                is Type.Data -> {
+                    val initializer = if (peekToken()?.value == Token.Equal) {
+                        nextToken()
+                        val initializer = parseExpression(0).bind()
+                        expectToken(Token.Semicolon).bind()
+                        initializer
                     } else {
                         expectToken(Token.Semicolon).bind()
-                        AST.Declaration.Function(
-                            nameToken.value.value,
-                            parameters.map { it.value },
-                            null,
-                            Type.Function(parameters = parameters.map { it.type }, returnType = declarationSpecifiers.type),
-                            declarationSpecifiers.storageClass,
-                            declarationSpecifiers.location,
-                        )
+                        null
                     }
+                    AST.Declaration.Variable(
+                        processedDeclarator.identifier.value.value,
+                        initializer,
+                        processedDeclarator.type,
+                        declarationSpecifiers.storageClass,
+                        declarationSpecifiers.location,
+                    )
                 }
-                else -> {
-                    raise(ParserError("expected '=' or '(', got ${peekToken()?.value.toDisplayString()}", peekToken()?.location))
+                is Type.Function -> {
+                    val body = if (peekToken()?.value == Token.OpenBrace) {
+                        parseBlock().bind()
+                    } else {
+                        expectToken(Token.Semicolon).bind()
+                        null
+                    }
+                    AST.Declaration.Function(
+                        processedDeclarator.identifier.value.value,
+                        processedDeclarator.params,
+                        body,
+                        processedDeclarator.type,
+                        declarationSpecifiers.storageClass,
+                        declarationSpecifiers.location,
+                    )
                 }
             }
         }
+
+    private fun parseDeclarator(): Either<ParserError, Declarator> = either {
+        when (peekToken()?.value) {
+            Token.Asterisk -> {
+                val asterisk = expectToken(Token.Asterisk).bind()
+                val referenced = parseDeclarator().bind()
+                Declarator.Pointer(referenced, asterisk.location)
+            }
+            else -> parseDirectDeclarator().bind()
+        }
+    }
+
+    private fun parseDirectDeclarator(): Either<ParserError, Declarator> = either {
+        val simpleDeclarator = parseSimpleDeclarator().bind()
+        when (peekToken()?.value) {
+            Token.OpenParen -> {
+                val paren = expectToken(Token.OpenParen).bind()
+                val params = parseParams().bind()
+                Declarator.Function(params, simpleDeclarator, paren.location)
+            }
+            else -> simpleDeclarator
+        }
+    }
+
+    private fun parseParams(): Either<ParserError, List<Declarator.Param>> = either {
+        if (peekToken()?.value == Token.Void) {
+            nextToken()
+            expectToken(Token.CloseParen).bind()
+            return@either emptyList()
+        }
+        val params = mutableListOf<Declarator.Param>()
+        while (true) {
+            val type = parseType().bind()
+            val declarator = parseDeclarator().bind()
+            params.add(
+                Declarator.Param(type, declarator),
+            )
+            when (peekToken()?.value) {
+                Token.CloseParen -> {
+                    nextToken()
+                    break
+                }
+                else -> expectToken(Token.Comma).bind()
+            }
+        }
+        params
+    }
+
+    private fun parseSimpleDeclarator(): Either<ParserError, Declarator> = either {
+        when (peekToken()?.value) {
+            Token.OpenParen -> {
+                nextToken()
+                val declarator = parseDeclarator().bind()
+                expectToken(Token.CloseParen).bind()
+                declarator
+            }
+            else -> {
+                val identifier = expectIdentifier().bind()
+                Declarator.Identifier(identifier)
+            }
+        }
+    }
+
+    private fun processDeclarator(declarator: Declarator, baseType: Type): Either<ParserError, ProcessedDeclarator> = either {
+        when (declarator) {
+            is Declarator.Identifier -> ProcessedDeclarator(
+                identifier = declarator.value,
+                type = baseType,
+                params = emptyList(),
+            )
+            is Declarator.Pointer -> {
+                val derivedType = Type.Pointer(referenced = baseType)
+                processDeclarator(declarator.referenced, derivedType).bind()
+            }
+            is Declarator.Function -> {
+                val identifier = declarator.declarator
+                if (identifier !is Declarator.Identifier) {
+                    raise(ParserError("Unsupported declarator type: function pointers are not supported", identifier.location))
+                }
+
+                val astParams = mutableListOf<AST.FunctionParameter>()
+                val functionParamTypes = mutableListOf<Type.Data>()
+                declarator.params.forEach { param ->
+                    val processedParamDeclarator = processDeclarator(param.declarator, param.type).bind()
+                    val paramIdentifier = processedParamDeclarator.identifier
+                    val paramType = processedParamDeclarator.type
+                    if (paramType !is Type.Data) {
+                        raise(ParserError("Function parameter of type function is not supported", processedParamDeclarator.identifier.location))
+                    }
+
+                    astParams.add(AST.FunctionParameter(paramIdentifier.value.value, paramIdentifier.location))
+                    functionParamTypes.add(paramType)
+                }
+
+                if (baseType !is Type.Data) {
+                    raise(ParserError("Functions returning functions are not supported", declarator.location))
+                }
+
+                ProcessedDeclarator(
+                    identifier = identifier.value,
+                    type = Type.Function(
+                        parameters = functionParamTypes,
+                        returnType = baseType,
+                    ),
+                    params = astParams,
+                )
+            }
+        }
+    }
 
     private fun parseDeclarationSpecifiers(): Either<ParserError, DeclarationSpecifiers> = either {
         val specifiers = mutableListOf<DeclarationSpecifier>()
@@ -606,7 +656,7 @@ private class Parser(
             factor
         }
 
-    private fun parseFunctionCallArguments() = either<ParserError, List<AST.Expression>> {
+    private fun parseFunctionCallArguments() = either {
         val arguments = mutableListOf<AST.Expression>()
         if (peekToken()?.value == Token.CloseParen) {
             return@either emptyList()
@@ -852,4 +902,23 @@ private data class DeclarationSpecifiers(
     val type: Type.Data,
     val storageClass: AST.StorageClass?,
     val location: Location,
+)
+
+private sealed interface Declarator {
+    val location: Location
+
+    data class Identifier(val value: TokenIdentifierWithLocation) : Declarator {
+        override val location: Location
+            get() = value.location
+    }
+    data class Pointer(val referenced: Declarator, override val location: Location) : Declarator
+    data class Function(val params: List<Param>, val declarator: Declarator, override val location: Location) : Declarator
+
+    data class Param(val type: Type.Data, val declarator: Declarator)
+}
+
+private data class ProcessedDeclarator(
+    val identifier: TokenIdentifierWithLocation,
+    val type: Type,
+    val params: List<AST.FunctionParameter>,
 )

@@ -24,7 +24,7 @@ class SemanticAnalysisKtForTest {
             function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 for_(
-                    initDecl("i", 0.e),
+                    initDecl("i", initializer = 0.e),
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
@@ -42,7 +42,7 @@ class SemanticAnalysisKtForTest {
                     function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                         int("a.0") assign 1.e.int()
                         for_(
-                            initDecl("i.1", 0.e.int()),
+                            initDecl("i.1", initializer = 0.e.int()),
                             ("i.1".e.int() lt 10.e.int()).int(),
                             ("i.1".e.int() plusAssign 1.e.int()).int(),
                             loopId = 0,
@@ -69,7 +69,7 @@ class SemanticAnalysisKtForTest {
             function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 for_(
-                    initDecl("i", 0.e),
+                    initDecl("i", initializer = 0.e),
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
@@ -82,7 +82,7 @@ class SemanticAnalysisKtForTest {
                     }
                 }
                 for_(
-                    initDecl("i", 0.e),
+                    initDecl("i", initializer = 0.e),
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
@@ -106,7 +106,7 @@ class SemanticAnalysisKtForTest {
                     function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                         int("a.0") assign 1.e.int()
                         for_(
-                            initDecl("i.1", 0.e.int()),
+                            initDecl("i.1", initializer = 0.e.int()),
                             ("i.1".e.int() lt 10.e.int()).int(),
                             ("i.1".e.int() plusAssign 1.e.int()).int(),
                             loopId = 0,
@@ -120,7 +120,7 @@ class SemanticAnalysisKtForTest {
                             }
                         }
                         for_(
-                            initDecl("i.2", 0.e.int()),
+                            initDecl("i.2", initializer = 0.e.int()),
                             ("i.2".e.int() lt 10.e.int()).int(),
                             ("i.2".e.int() plusAssign 1.e.int()).int(),
                             loopId = 1,
@@ -154,13 +154,13 @@ class SemanticAnalysisKtForTest {
             function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 int("a") assign 1.e
                 for_(
-                    initDecl("i", 0.e),
+                    initDecl("i", initializer = 0.e),
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
                     plusAssign("a".e, "i".e, rightSideType = Type.Int)
                     for_(
-                        initDecl("j", 0.e),
+                        initDecl("j", initializer = 0.e),
                         "j".e lt 10.e,
                         "j".e plusAssign 1.e,
                     ) {
@@ -191,14 +191,14 @@ class SemanticAnalysisKtForTest {
                     function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                         int("a.0") assign 1.e.int()
                         for_(
-                            initDecl("i.1", 0.e.int()),
+                            initDecl("i.1", initializer = 0.e.int()),
                             ("i.1".e.int() lt 10.e.int()).int(),
                             ("i.1".e.int() plusAssign 1.e.int()).int(),
                             loopId = 0,
                         ) {
                             plusAssign("a.0".e.int(), "i.1".e.int(), resultType = Type.Int, Type.Int)
                             for_(
-                                initDecl("j.2", 0.e.int()),
+                                initDecl("j.2", initializer = 0.e.int()),
                                 ("j.2".e.int() lt 10.e.int()).int(),
                                 ("j.2".e.int() plusAssign 1.e.int()).int(),
                                 loopId = 1,
@@ -241,7 +241,7 @@ class SemanticAnalysisKtForTest {
                 int("i") assign 2.e
                 for_(
                     // this is a different scope, so the variable i is different from the one outside
-                    initDecl("i", 3.e),
+                    initDecl("i", initializer = 3.e),
                     "i".e lt 10.e,
                     "i".e plusAssign 1.e,
                 ) {
@@ -263,7 +263,7 @@ class SemanticAnalysisKtForTest {
                         int("a.0") assign 1.e.int()
                         int("i.1") assign 2.e.int()
                         for_(
-                            initDecl("i.2", 3.e.int()),
+                            initDecl("i.2", initializer = 3.e.int()),
                             ("i.2".e.int() lt 10.e.int()).int(),
                             ("i.2".e.int() plusAssign 1.e.int()).int(),
                             loopId = 0,
@@ -293,7 +293,7 @@ class SemanticAnalysisKtForTest {
         val input = program {
             function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 for_(
-                    initDecl("i", 3.e).let {
+                    initDecl("i", initializer = 3.e).let {
                         it.copy(
                             declaration = it.declaration.copy(storageClass = storageClass),
                         )

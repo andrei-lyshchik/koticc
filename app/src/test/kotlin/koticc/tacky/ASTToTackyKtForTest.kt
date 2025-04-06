@@ -23,7 +23,7 @@ class ASTToTackyKtForTest {
             value = program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     int("a.0") assign 1.e.int()
-                    for_(initDecl("i.1", 0.e.int()), ("i.1".e.int() lt 10.e.int()).int(), ("i.1".e.int() plusAssign 1.e.int()).int(), loopId = 0) {
+                    for_(initDecl("i.1", initializer = 0.e.int()), ("i.1".e.int() lt 10.e.int()).int(), ("i.1".e.int() plusAssign 1.e.int()).int(), loopId = 0) {
                         plusAssign("a.0".e.int(), "i.1".e.int(), resultType = Type.Int, Type.Int)
                     }
                 }
@@ -222,7 +222,7 @@ class ASTToTackyKtForTest {
             value = program {
                 function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                     int("a.0") assign 1.e.int()
-                    for_(initDecl("i.1", 0.e.int()), ("i.1".e.int() lt 10.e.int()).int(), ("i.1".e.int() plusAssign 1.e.int()).int(), loopId = 0) {
+                    for_(initDecl("i.1", initializer = 0.e.int()), ("i.1".e.int() lt 10.e.int()).int(), ("i.1".e.int() plusAssign 1.e.int()).int(), loopId = 0) {
                         plusAssign("a.0".e.int(), "i.1".e.int(), resultType = Type.Int, Type.Int)
                         if_(("i.1".e.int() eq 5.e.int()).int()) {
                             continue_(0)

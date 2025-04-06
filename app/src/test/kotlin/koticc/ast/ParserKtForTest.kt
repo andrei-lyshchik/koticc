@@ -10,7 +10,7 @@ class ParserKtForTest {
     class TestCases : VarargArgumentsProvider(
         Arguments.of(
             "int i = 0; i < 10; i += 1",
-            initDecl("i", 0.e),
+            initDecl("i", initializer = 0.e),
             "i".e lt 10.e,
             "i".e plusAssign 1.e,
         ),

@@ -48,8 +48,8 @@ int main(void) {
                 ),
             "int {" to ParserError("expected identifier, got '{'", Location(1, 5)),
             "int main {" to
-                ParserError("expected '=' or '(', got '{'", Location(1, 10)),
-            "int test() {" to ParserError("expected 'void' or 'int', got ')'", Location(1, 10)),
+                ParserError("expected token ;, but got {", Location(1, 10)),
+            "int test() {" to ParserError("invalid type specifier: ''", Location(1, 10)),
             "int main(void) {}abc" to
                 ParserError("invalid type specifier: ''", Location(1, 18)),
         )

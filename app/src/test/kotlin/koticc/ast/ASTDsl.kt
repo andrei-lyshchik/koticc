@@ -76,6 +76,9 @@ class ProgramBuilder {
     fun double(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
         setCurrentVariableBuilder(VariableDeclarationBuilder(name, storageClass, Type.Double))
 
+    fun ptr(name: String, referenced: Type.Data, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
+        setCurrentVariableBuilder(VariableDeclarationBuilder(name, storageClass, Type.Pointer(referenced)))
+
     fun build(): AST.Program {
         currentVariableBuilder?.let {
             declarations.add(it.buildVariableDeclaration())
@@ -118,6 +121,9 @@ class BlockBuilder {
 
     fun double(name: String, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
         setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Double))
+
+    fun ptr(name: String, to: Type.Data, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder =
+        setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Pointer(to)))
 
     fun assign(left: AST.Expression, right: AST.Expression, type: Type.Data? = null) {
         addBlockItem(
@@ -489,8 +495,8 @@ class DoWhileBuilder(val body: AST.Block) : BlockItemBuilder {
     }
 }
 
-fun initDecl(name: String, initializer: AST.Expression? = null) =
-    AST.ForInitializer.Declaration(AST.Declaration.Variable(name, initializer, Type.Int, null, DUMMY_LOCATION))
+fun initDecl(name: String, type: Type.Data = Type.Int, initializer: AST.Expression? = null) =
+    AST.ForInitializer.Declaration(AST.Declaration.Variable(name, initializer, type, null, DUMMY_LOCATION))
 
 fun initExpr(expression: AST.Expression) =
     AST.ForInitializer.Expression(expression)
