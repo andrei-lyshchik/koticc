@@ -625,6 +625,8 @@ private class Parser(
                     is Token.Minus,
                     Token.Tilde,
                     Token.Exclamation,
+                    Token.Asterisk,
+                    Token.Ampersand,
                     -> {
                         parseUnary().bind()
                     }
@@ -755,14 +757,16 @@ private class Parser(
         type = null,
     )
 
-    private fun parseUnary(): Either<ParserError, AST.Expression.Unary> =
+    private fun parseUnary(): Either<ParserError, AST.Expression> =
         either {
             val peekToken = peekToken()
-            val unaryOperator =
+            val unaryOperatorLike =
                 when (peekToken?.value) {
-                    Token.Minus -> AST.UnaryOperator.Negate
-                    Token.Tilde -> AST.UnaryOperator.Complement
-                    Token.Exclamation -> AST.UnaryOperator.LogicalNegate
+                    Token.Minus -> UnaryOperatorLike.UnaryOperator(AST.UnaryOperator.Negate)
+                    Token.Tilde -> UnaryOperatorLike.UnaryOperator(AST.UnaryOperator.Complement)
+                    Token.Exclamation -> UnaryOperatorLike.UnaryOperator(AST.UnaryOperator.LogicalNegate)
+                    Token.Asterisk -> UnaryOperatorLike.Dereference
+                    Token.Ampersand -> UnaryOperatorLike.AddressOf
                     else ->
                         raise(
                             ParserError(
@@ -773,7 +777,11 @@ private class Parser(
                 }
             nextToken()
             val operand = parseFactor().bind()
-            AST.Expression.Unary(unaryOperator, operand, null, peekToken.location)
+            when (unaryOperatorLike) {
+                UnaryOperatorLike.AddressOf -> AST.Expression.AddressOf(operand, null, peekToken.location)
+                UnaryOperatorLike.Dereference -> AST.Expression.Dereference(operand, null, peekToken.location)
+                is UnaryOperatorLike.UnaryOperator -> AST.Expression.Unary(unaryOperatorLike.value, operand, null, peekToken.location)
+            }
         }
 
     private fun toBinaryOperatorLikeOrNull(token: TokenWithLocation): BinaryOperatorLike? {
@@ -915,6 +923,12 @@ private data class TokenIdentifierWithLocation(
     val value: Token.Identifier,
     val location: Location,
 )
+
+private sealed interface UnaryOperatorLike {
+    data class UnaryOperator(val value: AST.UnaryOperator) : UnaryOperatorLike
+    data object Dereference : UnaryOperatorLike
+    data object AddressOf : UnaryOperatorLike
+}
 
 private sealed interface BinaryOperatorLike {
     data class BinaryOperator(val value: AST.BinaryOperator, val location: Location) :

@@ -540,6 +540,14 @@ val String.e
 fun cast(type: Type.Data, expression: AST.Expression) =
     AST.Expression.Cast(expression, type, null, DUMMY_LOCATION)
 
+fun addressOf(expression: AST.Expression) = AST.Expression.AddressOf(
+    expression = expression,
+    type = null,
+    location = DUMMY_LOCATION,
+)
+
+fun AST.Expression.deref() = AST.Expression.Dereference(expression = this, type = null, location = DUMMY_LOCATION)
+
 operator fun String.invoke(vararg args: AST.Expression): AST.Expression {
     return AST.Expression.FunctionCall(
         name = this,
