@@ -28,6 +28,15 @@ class ProgramBuilder {
         return variableBuilder
     }
 
+    fun main(block: (BlockBuilder.() -> Unit)) = function(
+        name = "main",
+        type = Type.Function(
+            parameters = emptyList(),
+            returnType = Type.Int,
+        ),
+        block = block,
+    )
+
     fun function(name: String, type: Type.Function, vararg parameters: String, block: (BlockBuilder.() -> Unit)? = null) {
         val body = if (block != null) {
             BlockBuilder().apply(block).build()

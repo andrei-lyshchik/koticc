@@ -612,18 +612,10 @@ private class Parser(
                         }
                     }
                     is Token.OpenParen -> {
-                        val closeParen = expectToken(Token.OpenParen).bind()
+                        val openParen = expectToken(Token.OpenParen).bind()
                         val possibleTypeSpecifier = peekToken()
                         if (isDeclarationSpecifier(possibleTypeSpecifier?.value)) {
-                            val targetType = parseType().bind()
-                            expectToken(Token.CloseParen).bind()
-                            val expression = parseFactor().bind()
-                            AST.Expression.Cast(
-                                targetType = targetType,
-                                expression = expression,
-                                type = null,
-                                location = closeParen.location,
-                            )
+                            parseCast(openParen.location).bind()
                         } else {
                             val expression = parseExpression(0).bind()
                             expectToken(Token.CloseParen).bind()
@@ -655,6 +647,61 @@ private class Parser(
 
             factor
         }
+
+    private fun parseCast(location: Location) = either {
+        val baseType = parseType().bind()
+        val declarator = if (peekToken()?.value == Token.Asterisk || peekToken()?.value == Token.OpenParen) {
+            parseAbstractDeclarator().bind()
+        } else {
+            null
+        }
+        expectToken(Token.CloseParen).bind()
+        val targetType = processAbstractDeclarator(declarator, baseType)
+
+        val expression = parseFactor().bind()
+        AST.Expression.Cast(
+            targetType = targetType,
+            expression = expression,
+            type = null,
+            location = location,
+        )
+    }
+
+    private fun parseAbstractDeclarator(): Either<ParserError, AbstractDeclarator> = either {
+        val peekToken = peekToken()
+        when (peekToken?.value) {
+            Token.Asterisk -> {
+                nextToken()
+                if (peekToken()?.value == Token.CloseParen) {
+                    return@either AbstractDeclarator.AbstractBase
+                } else {
+                    val declarator = parseAbstractDeclarator().bind()
+                    return@either AbstractDeclarator.AbstractPointer(declarator)
+                }
+            }
+            Token.OpenParen -> {
+                nextToken()
+                val declarator = parseAbstractDeclarator().bind()
+                expectToken(Token.CloseParen).bind()
+                declarator
+            }
+            else -> raise(ParserError("Expected '*' or '(', got ${peekToken?.value}", peekToken?.location))
+        }
+    }
+
+    private fun processAbstractDeclarator(declarator: AbstractDeclarator?, baseType: Type.Data): Type.Data {
+        if (declarator == null) {
+            return baseType
+        }
+
+        return when (declarator) {
+            AbstractDeclarator.AbstractBase -> Type.Pointer(baseType)
+            is AbstractDeclarator.AbstractPointer -> {
+                val derivedType = Type.Pointer(baseType)
+                processAbstractDeclarator(declarator.referenced, derivedType)
+            }
+        }
+    }
 
     private fun parseFunctionCallArguments() = either {
         val arguments = mutableListOf<AST.Expression>()
@@ -922,3 +969,8 @@ private data class ProcessedDeclarator(
     val type: Type,
     val params: List<AST.FunctionParameter>,
 )
+
+private sealed interface AbstractDeclarator {
+    data object AbstractBase : AbstractDeclarator
+    data class AbstractPointer(val referenced: AbstractDeclarator) : AbstractDeclarator
+}

@@ -1,7 +1,10 @@
 package koticc.ast
 
+import arrow.core.left
 import koticc.parseInput
+import koticc.token.Location
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ParserKtPointersTest {
     @Test
@@ -34,7 +37,11 @@ class ParserKtPointersTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("func", type = Type.Function(parameters = listOf(Type.Int), returnType = Type.Pointer(Type.Double)), "a")
+                function(
+                    "func",
+                    type = Type.Function(parameters = listOf(Type.Int), returnType = Type.Pointer(Type.Double)),
+                    "a",
+                )
             },
             actual = actual,
         )
@@ -50,7 +57,11 @@ class ParserKtPointersTest {
 
         assertEqualsIgnoringLocations(
             expected = program {
-                function("func", type = Type.Function(parameters = listOf(Type.Pointer(Type.Long)), returnType = Type.Int), "ptr")
+                function(
+                    "func",
+                    type = Type.Function(parameters = listOf(Type.Pointer(Type.Long)), returnType = Type.Int),
+                    "ptr",
+                )
             },
             actual = actual,
         )
@@ -117,6 +128,80 @@ class ParserKtPointersTest {
                 )
             },
             actual = actual,
+        )
+    }
+
+    @Test
+    fun `function pointers are not supported`() {
+        val input = """
+            int (*func)(int a);
+        """.trimIndent()
+
+        val actual = parseInput(input)
+
+        assertEquals(
+            ParserError("Unsupported declarator type: function pointers are not supported", Location(1, 6)).left(),
+            actual,
+        )
+    }
+
+    @Test
+    fun `should parse pointer in casts`() {
+        val input = """
+            int main(void) {
+                int *a = (int *) 0;
+            }
+        """.trimIndent()
+
+        val actual = parseInput(input)
+
+        assertEqualsIgnoringLocations(
+            program {
+                main {
+                    ptr("a", Type.Int) assign cast(Type.Pointer(Type.Int), 0.e)
+                }
+            },
+            actual,
+        )
+    }
+
+    @Test
+    fun `should parse pointer to pointer in casts`() {
+        val input = """
+            int main(void) {
+                int *a = (int ***) 0;
+            }
+        """.trimIndent()
+
+        val actual = parseInput(input)
+
+        assertEqualsIgnoringLocations(
+            program {
+                main {
+                    ptr("a", Type.Int) assign cast(Type.Pointer(Type.Pointer(Type.Pointer(Type.Int))), 0.e)
+                }
+            },
+            actual,
+        )
+    }
+
+    @Test
+    fun `should parse grouped pointers in casts`() {
+        val input = """
+            int main(void) {
+                int *a = (int (*(*))) 0;
+            }
+        """.trimIndent()
+
+        val actual = parseInput(input)
+
+        assertEqualsIgnoringLocations(
+            program {
+                main {
+                    ptr("a", Type.Int) assign cast(Type.Pointer(Type.Pointer(Type.Int)), 0.e)
+                }
+            },
+            actual,
         )
     }
 }
