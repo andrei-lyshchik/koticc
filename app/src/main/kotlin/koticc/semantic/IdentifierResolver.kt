@@ -364,17 +364,7 @@ internal class IdentifierResolver {
 
     private fun resolvePostfix(postfix: AST.Expression.Postfix, identifierMapping: MutableMap<String, DeclaredIdentifier>): Either<SemanticAnalysisError, AST.Expression.Postfix> = either {
         val operand =
-            when (val result = resolveExpression(postfix.operand, identifierMapping = identifierMapping).bind()) {
-                is AST.Expression.Variable -> result
-                else ->
-                    raise(
-                        SemanticAnalysisError(
-                            "operand of postfix operator must be a left-value, " +
-                                "got '${postfix.operand.toDisplayString()}'",
-                            postfix.location,
-                        ),
-                    )
-            }
+            resolveExpression(postfix.operand, identifierMapping = identifierMapping).bind()
         AST.Expression.Postfix(postfix.operator, operand, null)
     }
 

@@ -3,6 +3,7 @@ package koticc.ast
 import arrow.core.Either
 import arrow.core.right
 import koticc.CompilerError
+import koticc.semantic.ValidASTProgram
 import koticc.token.Location
 import kotlin.test.assertEquals
 
@@ -13,6 +14,16 @@ fun assertEqualsIgnoringLocations(expected: AST.Program, actual: Either<Compiler
     val actualWithDummyLocations = actual.map { it.withDummyLocations() }
     assertEquals(expectedWithDummyLocations.right(), actualWithDummyLocations)
 }
+
+fun assertEqualsIgnoringLocations(expected: ValidASTProgram, actual: Either<CompilerError, ValidASTProgram>) {
+    val expectedWithDummyLocations = expected.withDummyLocations()
+    val actualWithDummyLocations = actual.map { it.withDummyLocations() }
+    assertEquals(expectedWithDummyLocations.right(), actualWithDummyLocations)
+}
+
+fun ValidASTProgram.withDummyLocations() = copy(
+    value = value.withDummyLocations(),
+)
 
 fun AST.Program.withDummyLocations() = copy(
     declarations = declarations.map {

@@ -8,7 +8,9 @@ sealed interface Type : Displayable {
         fun size(): kotlin.Int
     }
 
-    data object Int : Data {
+    sealed interface Arithmetic : Data
+
+    data object Int : Arithmetic {
         override fun toDisplayString(): String = "int"
 
         override fun signed(): Boolean = true
@@ -16,7 +18,7 @@ sealed interface Type : Displayable {
         override fun size(): kotlin.Int = 4
     }
 
-    data object UInt : Data {
+    data object UInt : Arithmetic {
         override fun toDisplayString(): String = "unsigned int"
 
         override fun signed(): Boolean = false
@@ -24,7 +26,7 @@ sealed interface Type : Displayable {
         override fun size(): kotlin.Int = 4
     }
 
-    data object Long : Data {
+    data object Long : Arithmetic {
         override fun toDisplayString(): String = "long"
 
         override fun signed(): Boolean = true
@@ -32,7 +34,7 @@ sealed interface Type : Displayable {
         override fun size(): kotlin.Int = 8
     }
 
-    data object ULong : Data {
+    data object ULong : Arithmetic {
         override fun toDisplayString(): String = "unsigned long"
 
         override fun signed(): Boolean = false
@@ -40,7 +42,7 @@ sealed interface Type : Displayable {
         override fun size(): kotlin.Int = 8
     }
 
-    data object Double : Data {
+    data object Double : Arithmetic {
         override fun toDisplayString(): String = "double"
 
         override fun signed(): Boolean = true

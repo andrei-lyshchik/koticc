@@ -329,7 +329,7 @@ class SemanticAnalysisKtTest {
 
         val expected =
             SemanticAnalysisError(
-                "operand of postfix operator must be a left-value, got '1'",
+                "operand of postfix expression must be a lvalue, got 1",
                 Location(2, 5),
             )
 

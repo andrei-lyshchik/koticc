@@ -106,7 +106,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
 
         assertEquals(
             expected = SemanticAnalysisError(
-                message = "non-constant initializer for file-scope variable 'a'",
+                message = "non-constant initializer for variable 'a'",
                 location = DUMMY_LOCATION,
             ).left(),
             actual = actual,

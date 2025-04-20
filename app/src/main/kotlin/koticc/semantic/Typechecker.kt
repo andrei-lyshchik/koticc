@@ -108,16 +108,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     private fun typecheckFileScopeVariableDeclaration(
         declaration: AST.Declaration.Variable,
     ): Either<SemanticAnalysisError, AST.Declaration.Variable> = either {
-        val convertedInitializer = when (declaration.initializer) {
-            is AST.Expression.Constant -> declaration.initializer.convertTo(declaration.type)
-            null -> null
-            else -> raise(
-                SemanticAnalysisError(
-                    "non-constant initializer for file-scope variable '${originalIdentifierName(declaration.name)}'",
-                    declaration.location,
-                ),
-            )
-        }
+        val convertedInitializer = convertDeclarationInitializer(declaration).bind()
         var initialValue = if (convertedInitializer != null) {
             InitialValue.Constant(convertedInitializer.value.toInitialValue())
         } else {
@@ -258,16 +249,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 variableDeclaration
             }
             AST.StorageClass.Static -> {
-                val convertedInitializer = when (variableDeclaration.initializer) {
-                    is AST.Expression.Constant -> variableDeclaration.initializer.convertTo(variableDeclaration.type)
-                    null -> null
-                    else -> raise(
-                        SemanticAnalysisError(
-                            "non-constant initializer for local static variable '${originalIdentifierName(variableDeclaration.name)}'",
-                            variableDeclaration.location,
-                        ),
-                    )
-                }
+                val convertedInitializer = convertDeclarationInitializer(variableDeclaration).bind()
                 val initialConstantValue = convertedInitializer?.value?.toInitialValue()
                     ?: variableDeclaration.type.toZeroInitialValue()
                 symbolTable[variableDeclaration.name] = SymbolWithLocation(
@@ -290,9 +272,29 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     location = variableDeclaration.location,
                 )
                 variableDeclaration.copy(
-                    initializer = variableDeclaration.initializer?.let { typecheckExpression(it).bind().castTo(variableDeclaration.type) },
+                    initializer = variableDeclaration.initializer?.let { typecheckExpression(it).bind().convertByAssignmentTo(variableDeclaration.type).bind() },
                 )
             }
+        }
+    }
+
+    private fun convertDeclarationInitializer(variableDeclaration: AST.Declaration.Variable): Either<SemanticAnalysisError, AST.Expression.Constant?> = either {
+        when (variableDeclaration.initializer) {
+            is AST.Expression.Constant -> {
+                if (variableDeclaration.type is Type.Pointer && !variableDeclaration.initializer.isNullPointerConstant()) {
+                    raise(
+                        SemanticAnalysisError("invalid initializer '${variableDeclaration.initializer.toDisplayString()}' for variable '${originalIdentifierName(variableDeclaration.name)}'", variableDeclaration.location),
+                    )
+                }
+                variableDeclaration.initializer.convertTo(variableDeclaration.type)
+            }
+            null -> null
+            else -> raise(
+                SemanticAnalysisError(
+                    "non-constant initializer for variable '${originalIdentifierName(variableDeclaration.name)}'",
+                    variableDeclaration.location,
+                ),
+            )
         }
     }
 
@@ -358,10 +360,16 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             is AST.Statement.Null -> statement
             is AST.Statement.Return -> {
                 statement.copy(
-                    expression = typecheckExpression(statement.expression).bind().castTo(currentFunctionType.returnType),
+                    expression = typecheckExpression(statement.expression).bind().convertByAssignmentTo(currentFunctionType.returnType).bind(),
                 )
             }
             is AST.Statement.Switch -> {
+                val expression = typecheckExpression(statement.expression).bind()
+                if (expression.resolvedType() is Type.Pointer) {
+                    raise(
+                        SemanticAnalysisError("invalid type ${expression.resolvedType().toDisplayString()} for switch controlling expression", expression.location),
+                    )
+                }
                 statement.copy(
                     expression = typecheckExpression(statement.expression).bind(),
                     body = typecheckStatement(statement.body, currentFunctionType).bind(),
@@ -384,7 +392,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 if (!left.isLValue()) {
                     raise(SemanticAnalysisError("left side of assignment must be a left-value, got '${left.toDisplayString()}'", left.location))
                 }
-                val right = typecheckExpression(expression.right).bind().castTo(left.resolvedType())
+                val right = typecheckExpression(expression.right).bind().convertByAssignmentTo(left.resolvedType()).bind()
                 expression.copy(
                     left = left,
                     right = right,
@@ -405,6 +413,17 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     )
                 }
 
+                if (expression.operator !in operatorsAllowedForPointers &&
+                    (left.resolvedType() is Type.Pointer || right.resolvedType() is Type.Pointer)
+                ) {
+                    raise(
+                        SemanticAnalysisError(
+                            "invalid pointer type for '${expression.operator.toDisplayString()}'",
+                            expression.location,
+                        ),
+                    )
+                }
+
                 if (expression.operator == AST.BinaryOperator.LogicalAnd || expression.operator == AST.BinaryOperator.LogicalOr) {
                     return@either expression.copy(
                         left = left,
@@ -419,7 +438,11 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     ).ofType(left.resolvedType())
                 }
 
-                val commonType = getCommonType(left.resolvedType(), right.resolvedType())
+                val commonType = if (left.resolvedType() is Type.Pointer || right.resolvedType() is Type.Pointer) {
+                    getCommonPointerType(left, right).bind()
+                } else {
+                    getCommonType(left.resolvedType(), right.resolvedType())
+                }
                 val resultType = when (expression.operator) {
                     AST.BinaryOperator.Add,
                     AST.BinaryOperator.Subtract,
@@ -477,7 +500,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 }
                 val typecheckedArguments = expression.arguments.zip(functionType.parameters)
                     .map { (argument, parameterType) ->
-                        typecheckExpression(argument).bind().castTo(parameterType)
+                        typecheckExpression(argument).bind().convertByAssignmentTo(parameterType).bind()
                     }
                 expression.copy(
                     arguments = typecheckedArguments,
@@ -488,12 +511,20 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             }
             is AST.Expression.Postfix -> {
                 val operand = typecheckExpression(expression.operand).bind()
+                if (!operand.isLValue()) {
+                    raise(
+                        SemanticAnalysisError("operand of postfix expression must be a lvalue, got ${operand.toDisplayString()}", expression.location),
+                    )
+                }
                 expression.copy(
                     operand = operand,
                 ).ofType(operand.resolvedType())
             }
             is AST.Expression.Unary -> {
                 val operand = typecheckExpression(expression.operand).bind()
+                if (expression.operator != AST.UnaryOperator.LogicalNegate && operand.resolvedType() is Type.Pointer) {
+                    raise(SemanticAnalysisError("invalid operand type for '${expression.operator.toDisplayString()}': ${operand.resolvedType().toDisplayString()}", expression.location))
+                }
                 val type = when (expression.operator) {
                     AST.UnaryOperator.Negate -> operand.resolvedType()
                     AST.UnaryOperator.Complement -> {
@@ -519,9 +550,21 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 expression.ofType(symbol.value.type)
             }
 
-            is AST.Expression.Cast -> expression.copy(
-                expression = typecheckExpression(expression.expression).bind(),
-            ).ofType(expression.targetType)
+            is AST.Expression.Cast -> {
+                val inner = typecheckExpression(expression.expression).bind()
+                if (inner.resolvedType() is Type.Double &&
+                    expression.targetType is Type.Pointer ||
+                    inner.resolvedType() is Type.Pointer &&
+                    expression.targetType is Type.Double
+                ) {
+                    raise(
+                        SemanticAnalysisError("can't cast expression of type ${inner.resolvedType().toDisplayString()} to ${expression.targetType.toDisplayString()}", expression.location),
+                    )
+                }
+                expression.copy(
+                    expression = typecheckExpression(expression.expression).bind(),
+                ).ofType(expression.targetType)
+            }
 
             is AST.Expression.AddressOf -> {
                 val typedInnerExpression = typecheckExpression(expression.expression).bind()
@@ -573,6 +616,51 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         else -> type2
     }
 
+    private fun getCommonPointerType(e1: AST.Expression, e2: AST.Expression): Either<SemanticAnalysisError, Type.Data> = either {
+        val type1 = e1.resolvedType()
+        val type2 = e2.resolvedType()
+
+        when {
+            type1 == type2 -> type1
+            e1.isNullPointerConstant() -> type2
+            e2.isNullPointerConstant() -> type1
+            else -> raise(SemanticAnalysisError("incompatible types: ${type1.toDisplayString()}, ${type2.toDisplayString()}", e1.location))
+        }
+    }
+
+    private fun AST.Expression.isNullPointerConstant() = when (this) {
+        is AST.Expression.Constant -> when (this.value) {
+            AST.IntConstant(0) -> true
+            AST.LongConstant(0L) -> true
+            AST.UIntConstant(0u) -> true
+            AST.ULongConstant(0uL) -> true
+            else -> false
+        }
+        else -> false
+    }
+
+    private fun AST.Expression.convertByAssignmentTo(targetType: Type.Data): Either<SemanticAnalysisError, AST.Expression> = either {
+        when {
+            resolvedType() == targetType -> {
+                this@convertByAssignmentTo
+            }
+            resolvedType() is Type.Arithmetic && targetType is Type.Arithmetic -> {
+                castTo(targetType)
+            }
+            this@convertByAssignmentTo.isNullPointerConstant() && targetType is Type.Pointer -> {
+                castTo(targetType)
+            }
+            else -> {
+                raise(
+                    SemanticAnalysisError(
+                        "Cannot convert ${this@convertByAssignmentTo.toDisplayString()} to type ${targetType.toDisplayString()}",
+                        this@convertByAssignmentTo.location,
+                    ),
+                )
+            }
+        }
+    }
+
     private fun AST.Expression.castTo(targetType: Type.Data): AST.Expression {
         if (resolvedType() == targetType) {
             return this
@@ -599,6 +687,15 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             AST.BinaryOperator.BitwiseOr,
             AST.BinaryOperator.ShiftLeft,
             AST.BinaryOperator.ShiftRight,
+        )
+
+        private val operatorsAllowedForPointers = setOf(
+            AST.BinaryOperator.Add,
+            AST.BinaryOperator.Subtract,
+            AST.BinaryOperator.Equal,
+            AST.BinaryOperator.NotEqual,
+            AST.BinaryOperator.LogicalAnd,
+            AST.BinaryOperator.LogicalOr,
         )
     }
 }

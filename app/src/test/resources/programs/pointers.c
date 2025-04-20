@@ -74,5 +74,18 @@ int main(void) {
         return 13;
     }
 
+    if (123 && null_ptr) {
+        return 14;
+    }
+
+    *p = 1;
+    int r = (*p)++;
+    if (r != 1) {
+        return 15;
+    }
+    if (*p != 2) {
+        return 16;
+    }
+
     return 0;
 }

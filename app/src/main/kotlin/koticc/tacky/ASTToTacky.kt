@@ -409,24 +409,58 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
             }
         }
         is AST.Expression.Postfix -> {
-            val operand = generateExpressionAndConvert(expression.operand)
+            val operand = generateExpression(expression.operand)
             val tempValue = nextVariable(expression.resolvedType())
-            instructions.add(
-                Tacky.Instruction.Copy(
-                    src = operand,
-                    dst = tempValue,
-                ),
-            )
+            when (operand) {
+                is TackyExpressionResult.PlainOperand -> {
+                    instructions.add(
+                        Tacky.Instruction.Copy(
+                            src = operand.value,
+                            dst = tempValue,
+                        ),
+                    )
+                }
+                is TackyExpressionResult.DereferencedPointer -> {
+                    instructions.add(
+                        Tacky.Instruction.Load(
+                            srcPtr = operand.ptr,
+                            dst = tempValue,
+                        ),
+                    )
+                }
+            }
+
             val constant = AST.IntConstant(1).convertTo(expression.resolvedType())
             val right = Tacky.Value.Constant(constant)
-            instructions.add(
-                Tacky.Instruction.Binary(
-                    operator = expression.operator.toTackyOperator(),
-                    left = operand,
-                    right = right,
-                    dst = operand,
-                ),
-            )
+            when (operand) {
+                is TackyExpressionResult.PlainOperand -> {
+                    instructions.add(
+                        Tacky.Instruction.Binary(
+                            operator = expression.operator.toTackyOperator(),
+                            left = operand.value,
+                            right = right,
+                            dst = operand.value,
+                        ),
+                    )
+                }
+                is TackyExpressionResult.DereferencedPointer -> {
+                    val tempValue2 = nextVariable(expression.resolvedType())
+                    instructions.add(
+                        Tacky.Instruction.Binary(
+                            operator = expression.operator.toTackyOperator(),
+                            left = tempValue,
+                            right = right,
+                            dst = tempValue2,
+                        ),
+                    )
+                    instructions.add(
+                        Tacky.Instruction.Store(
+                            src = tempValue2,
+                            dstPtr = operand.ptr,
+                        ),
+                    )
+                }
+            }
 
             tempValue.toPlainOperand()
         }

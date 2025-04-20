@@ -206,7 +206,7 @@ class SemanticAnalysisKtStaticVariables {
 
         assertEquals(
             expected = SemanticAnalysisError(
-                message = "non-constant initializer for local static variable 'i'",
+                message = "non-constant initializer for variable 'i'",
                 location = DUMMY_LOCATION,
             ).left(),
             actual = actual,
