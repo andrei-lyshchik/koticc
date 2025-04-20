@@ -87,7 +87,7 @@ class CompilerCommand : CliktCommand(name = "ktc") {
         runCompilerDriver(inputFile, partialMode, sharedLibraries, outputFile)
             .fold(
                 ifLeft = { error ->
-                    echo("Error: ${error.message()}")
+                    echo("Error: ${error.message()}", err = true)
                     exitProcess(1)
                 },
                 ifRight = {},
