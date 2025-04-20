@@ -714,13 +714,11 @@ fun compoundAssignment(
     operator: AST.BinaryOperator,
     resultType: Type.Data? = null,
     rightSideType: Type.Data? = null,
-) = AST.Expression.Assignment(
+) = AST.Expression.CompoundAssignment(
     left = left,
-    right = AST.Expression.Binary(
-        operator = operator,
-        left = left,
-        right = right,
-        type = rightSideType,
-    ),
+    right = right,
+    operator = operator,
     type = resultType,
+    intermediateLeftType = left.type,
+    intermediateResultType = rightSideType,
 )

@@ -269,6 +269,25 @@ object AST {
             override fun ofType(type: Type.Data): Assignment = copy(type = type)
         }
 
+        data class CompoundAssignment(
+            val left: Expression,
+            val operator: BinaryOperator,
+            val right: Expression,
+            override val type: Type.Data?,
+            val intermediateLeftType: Type.Data?,
+            val intermediateResultType: Type.Data?,
+        ) : Expression {
+            override val location: Location
+                get() = left.location
+
+            override fun toDisplayString(): String = "${left.toDisplayString()} ${operator.toDisplayString()}= ${right.toDisplayString()}"
+
+            override fun ofType(type: Type.Data): Expression = copy(type = type)
+
+            fun resolvedIntermediateLeftType(): Type.Data = intermediateLeftType ?: error("Bug: intermediateLeftType not resolved during semantic analysis in $this")
+            fun resolvedIntermediateResultType(): Type.Data = intermediateResultType ?: error("Bug: intermediateResultType not resolved during semantic analysis in $this")
+        }
+
         data class Postfix(
             val operator: PostfixOperator,
             val operand: Expression,

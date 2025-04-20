@@ -398,78 +398,31 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     right = right,
                 ).ofType(left.resolvedType())
             }
+            is AST.Expression.CompoundAssignment -> {
+                val left = typecheckExpression(expression.left).bind()
+                if (!left.isLValue()) {
+                    raise(SemanticAnalysisError("left side of assignment must be a left-value, got '${left.toDisplayString()}'", left.location))
+                }
+                val right = typecheckExpression(expression.right).bind()
+                val typecheckResult = typecheckBinary(left, right, expression.operator, expression.location).bind()
+                val intermediateExpression = expression.copy(
+                    left = left,
+                    right = typecheckResult.right,
+                    intermediateLeftType = typecheckResult.left.resolvedType(),
+                    intermediateResultType = typecheckResult.resultType,
+                ).ofType(typecheckResult.resultType)
+                // just to run the validations
+                intermediateExpression.convertByAssignmentTo(left.resolvedType())
+                intermediateExpression.ofType(left.resolvedType())
+            }
             is AST.Expression.Binary -> {
                 val left = typecheckExpression(expression.left).bind()
                 val right = typecheckExpression(expression.right).bind()
-
-                if (expression.operator in operatorsForbiddenForDouble &&
-                    (left.resolvedType() is Type.Double || right.resolvedType() is Type.Double)
-                ) {
-                    raise(
-                        SemanticAnalysisError(
-                            "invalid double operand type for '${expression.operator.toDisplayString()}'",
-                            expression.location,
-                        ),
-                    )
-                }
-
-                if (expression.operator !in operatorsAllowedForPointers &&
-                    (left.resolvedType() is Type.Pointer || right.resolvedType() is Type.Pointer)
-                ) {
-                    raise(
-                        SemanticAnalysisError(
-                            "invalid pointer type for '${expression.operator.toDisplayString()}'",
-                            expression.location,
-                        ),
-                    )
-                }
-
-                if (expression.operator == AST.BinaryOperator.LogicalAnd || expression.operator == AST.BinaryOperator.LogicalOr) {
-                    return@either expression.copy(
-                        left = left,
-                        right = right,
-                    ).ofType(Type.Int)
-                }
-
-                if (expression.operator == AST.BinaryOperator.ShiftLeft || expression.operator == AST.BinaryOperator.ShiftRight) {
-                    return@either expression.copy(
-                        left = left,
-                        right = right,
-                    ).ofType(left.resolvedType())
-                }
-
-                val commonType = if (left.resolvedType() is Type.Pointer || right.resolvedType() is Type.Pointer) {
-                    getCommonPointerType(left, right).bind()
-                } else {
-                    getCommonType(left.resolvedType(), right.resolvedType())
-                }
-                val resultType = when (expression.operator) {
-                    AST.BinaryOperator.Add,
-                    AST.BinaryOperator.Subtract,
-                    AST.BinaryOperator.Multiply,
-                    AST.BinaryOperator.Divide,
-                    AST.BinaryOperator.Modulo,
-                    AST.BinaryOperator.BitwiseAnd,
-                    AST.BinaryOperator.BitwiseOr,
-                    AST.BinaryOperator.BitwiseXor,
-                    -> commonType
-                    AST.BinaryOperator.Equal,
-                    AST.BinaryOperator.NotEqual,
-                    AST.BinaryOperator.LessThan,
-                    AST.BinaryOperator.LessThanOrEqual,
-                    AST.BinaryOperator.GreaterThan,
-                    AST.BinaryOperator.GreaterThanOrEqual,
-                    -> Type.Int
-                    AST.BinaryOperator.ShiftLeft,
-                    AST.BinaryOperator.ShiftRight,
-                    AST.BinaryOperator.LogicalAnd,
-                    AST.BinaryOperator.LogicalOr,
-                    -> error("unreachable")
-                }
+                val typecheckResult = typecheckBinary(left, right, expression.operator, expression.location).bind()
                 expression.copy(
-                    left = left.castTo(commonType),
-                    right = right.castTo(commonType),
-                ).ofType(resultType)
+                    left = typecheckResult.left,
+                    right = typecheckResult.right,
+                ).ofType(typecheckResult.resultType)
             }
             is AST.Expression.Conditional -> {
                 val thenExpression = typecheckExpression(expression.thenExpression).bind()
@@ -596,6 +549,78 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         }
     }
 
+    @Suppress("KotlinConstantConditions")
+    private fun typecheckBinary(
+        left: AST.Expression,
+        right: AST.Expression,
+        operator: AST.BinaryOperator,
+        location: Location,
+    ): Either<SemanticAnalysisError, BinaryTypecheckResult> = either {
+        if (operator in operatorsForbiddenForDouble &&
+            (left.resolvedType() is Type.Double || right.resolvedType() is Type.Double)
+        ) {
+            raise(
+                SemanticAnalysisError(
+                    "invalid double operand type for '${operator.toDisplayString()}'",
+                    location,
+                ),
+            )
+        }
+
+        if (operator !in operatorsAllowedForPointers &&
+            (left.resolvedType() is Type.Pointer || right.resolvedType() is Type.Pointer)
+        ) {
+            raise(
+                SemanticAnalysisError(
+                    "invalid pointer type for '${operator.toDisplayString()}'",
+                    location,
+                ),
+            )
+        }
+
+        if (operator == AST.BinaryOperator.LogicalAnd || operator == AST.BinaryOperator.LogicalOr) {
+            return@either BinaryTypecheckResult(left = left, right = right, resultType = Type.Int)
+        }
+
+        if (operator == AST.BinaryOperator.ShiftLeft || operator == AST.BinaryOperator.ShiftRight) {
+            return@either BinaryTypecheckResult(left = left, right = right, resultType = left.resolvedType())
+        }
+
+        val commonType = if (left.resolvedType() is Type.Pointer || right.resolvedType() is Type.Pointer) {
+            getCommonPointerType(left, right).bind()
+        } else {
+            getCommonType(left.resolvedType(), right.resolvedType())
+        }
+        val resultType = when (operator) {
+            AST.BinaryOperator.Add,
+            AST.BinaryOperator.Subtract,
+            AST.BinaryOperator.Multiply,
+            AST.BinaryOperator.Divide,
+            AST.BinaryOperator.Modulo,
+            AST.BinaryOperator.BitwiseAnd,
+            AST.BinaryOperator.BitwiseOr,
+            AST.BinaryOperator.BitwiseXor,
+            -> commonType
+            AST.BinaryOperator.Equal,
+            AST.BinaryOperator.NotEqual,
+            AST.BinaryOperator.LessThan,
+            AST.BinaryOperator.LessThanOrEqual,
+            AST.BinaryOperator.GreaterThan,
+            AST.BinaryOperator.GreaterThanOrEqual,
+            -> Type.Int
+            AST.BinaryOperator.ShiftLeft,
+            AST.BinaryOperator.ShiftRight,
+            AST.BinaryOperator.LogicalAnd,
+            AST.BinaryOperator.LogicalOr,
+            -> error("unreachable")
+        }
+        BinaryTypecheckResult(
+            left = left.castTo(commonType),
+            right = right.castTo(commonType),
+            resultType = resultType,
+        )
+    }
+
     private fun AST.Expression.isLValue() = when (this) {
         is AST.Expression.Variable -> true
         is AST.Expression.Dereference -> true
@@ -677,6 +702,12 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     private data class SymbolWithLocation(
         val value: Symbol,
         val location: Location,
+    )
+
+    private data class BinaryTypecheckResult(
+        val left: AST.Expression,
+        val right: AST.Expression,
+        val resultType: Type.Data,
     )
 
     companion object {

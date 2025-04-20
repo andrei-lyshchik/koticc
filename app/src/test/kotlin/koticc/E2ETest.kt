@@ -113,6 +113,10 @@ class E2ETest {
                 file1 = "/programs/double_parameters_impl.c",
                 file2ForGccOnly = "/programs/double_parameters_client.c",
             ),
+            MultipleFilesTestCase(
+                file1 = "/programs/pointers_compound.c",
+                file2ForGccOnly = "/programs/print.c",
+            ),
         )
 
     data class MultipleFilesTestCase(

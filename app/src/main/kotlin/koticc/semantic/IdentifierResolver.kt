@@ -309,6 +309,13 @@ internal class IdentifierResolver {
                 resolveAssignment(expression, identifierMapping).bind()
             }
 
+            is AST.Expression.CompoundAssignment -> {
+                val left = resolveExpression(expression.left, identifierMapping).bind()
+                val right = resolveExpression(expression.right, identifierMapping).bind()
+
+                expression.copy(left = left, right = right)
+            }
+
             is AST.Expression.Postfix -> {
                 resolvePostfix(expression, identifierMapping).bind()
             }

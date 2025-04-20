@@ -408,6 +408,63 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                 }
             }
         }
+        is AST.Expression.CompoundAssignment -> {
+            val tackyOperator = when (val operator = expression.operator.toTackyOperator()) {
+                is TackyBinaryOperator.NonShortCircuiting -> operator.operator
+                else -> error("Unexpected operator for compound assignment, there's a bug in parser?: $operator")
+            }
+            when (val left = generateExpression(expression.left)) {
+                is TackyExpressionResult.PlainOperand -> {
+                    val convertedLeft = generateCast(left.value, expression.left.resolvedType(), expression.resolvedIntermediateLeftType())
+                    val right = generateExpressionAndConvert(expression.right)
+                    val tmp = nextVariable(expression.resolvedIntermediateResultType())
+                    instructions.add(
+                        Tacky.Instruction.Binary(
+                            operator = tackyOperator,
+                            left = convertedLeft,
+                            right = right,
+                            dst = tmp,
+                        ),
+                    )
+                    val tmpConverted = generateCast(tmp, expression.resolvedIntermediateResultType(), expression.resolvedType())
+                    instructions.add(
+                        Tacky.Instruction.Copy(
+                            src = tmpConverted,
+                            dst = left.value,
+                        ),
+                    )
+                    left.value.toPlainOperand()
+                }
+                is TackyExpressionResult.DereferencedPointer -> {
+                    val loadedLeft = nextVariable(expression.left.resolvedType())
+                    instructions.add(
+                        Tacky.Instruction.Load(
+                            srcPtr = left.ptr,
+                            dst = loadedLeft,
+                        ),
+                    )
+                    val convertedLeft = generateCast(loadedLeft, expression.left.resolvedType(), expression.resolvedIntermediateLeftType())
+                    val right = generateExpressionAndConvert(expression.right)
+                    val tmp = nextVariable(expression.resolvedIntermediateResultType())
+                    instructions.add(
+                        Tacky.Instruction.Binary(
+                            operator = tackyOperator,
+                            left = convertedLeft,
+                            right = right,
+                            dst = tmp,
+                        ),
+                    )
+                    val result = generateCast(tmp, expression.resolvedIntermediateResultType(), expression.resolvedType())
+                    instructions.add(
+                        Tacky.Instruction.Store(
+                            src = result,
+                            dstPtr = left.ptr,
+                        ),
+                    )
+                    result.toPlainOperand()
+                }
+            }
+        }
         is AST.Expression.Postfix -> {
             val operand = generateExpression(expression.operand)
             val tempValue = nextVariable(expression.resolvedType())
@@ -514,7 +571,8 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         }
 
         is AST.Expression.Cast -> {
-            generateCast(expression).toPlainOperand()
+            val tackyExpression = generateExpressionAndConvert(expression.expression)
+            generateCast(tackyExpression, expression.expression.resolvedType(), expression.targetType).toPlainOperand()
         }
 
         is AST.Expression.AddressOf -> {
@@ -660,17 +718,14 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         AST.UnaryOperator.LogicalNegate -> Tacky.UnaryOperator.LogicalNegate
     }
 
-    private fun generateCast(expression: AST.Expression.Cast): Tacky.Value {
-        val tackyExpression = generateExpressionAndConvert(expression.expression)
-        val innerExpressionType = expression.expression.resolvedType()
-
-        if (expression.targetType == innerExpressionType) {
+    private fun generateCast(tackyExpression: Tacky.Value, innerExpressionType: Type.Data, targetType: Type.Data): Tacky.Value {
+        if (targetType == innerExpressionType) {
             return tackyExpression
         }
 
-        val dst = nextVariable(expression.resolvedType())
+        val dst = nextVariable(targetType)
         when {
-            expression.targetType is Type.Double -> {
+            targetType is Type.Double -> {
                 if (innerExpressionType.signed()) {
                     instructions.add(
                         Tacky.Instruction.IntToDouble(
@@ -688,7 +743,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                 }
             }
             innerExpressionType is Type.Double -> {
-                if (expression.targetType.signed()) {
+                if (targetType.signed()) {
                     instructions.add(
                         Tacky.Instruction.DoubleToInt(
                             src = tackyExpression,
@@ -704,13 +759,13 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                     )
                 }
             }
-            expression.targetType.size() == innerExpressionType.size() -> instructions.add(
+            targetType.size() == innerExpressionType.size() -> instructions.add(
                 Tacky.Instruction.Copy(
                     src = tackyExpression,
                     dst = dst,
                 ),
             )
-            expression.targetType.size() < innerExpressionType.size() -> instructions.add(
+            targetType.size() < innerExpressionType.size() -> instructions.add(
                 Tacky.Instruction.Truncate(
                     src = tackyExpression,
                     dst = dst,

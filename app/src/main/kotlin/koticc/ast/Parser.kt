@@ -534,11 +534,14 @@ private class Parser(
                             type = null,
                         )
                     is BinaryOperatorLike.CompoundAssignmentOperator ->
-                        compoundAssignment(
+                        AST.Expression.CompoundAssignment(
                             operator = binaryOperatorLike.value,
                             left = left,
                             // minPrecedence = precedence => right associative
                             right = parseExpression(precedence).bind(),
+                            type = null,
+                            intermediateLeftType = null,
+                            intermediateResultType = null,
                         )
                     is BinaryOperatorLike.Conditional -> {
                         // any expression can be between ? and : - even assignment
@@ -723,27 +726,15 @@ private class Parser(
             }
         nextToken()
         val operand = parseFactor().bind()
-        compoundAssignment(
+        AST.Expression.CompoundAssignment(
             operator = operator,
             left = operand,
             right = AST.Expression.Constant(AST.IntConstant(1), null, peekToken.location),
+            type = null,
+            intermediateLeftType = null,
+            intermediateResultType = null,
         )
     }
-
-    private fun compoundAssignment(
-        left: AST.Expression,
-        right: AST.Expression,
-        operator: AST.BinaryOperator,
-    ) = AST.Expression.Assignment(
-        left = left,
-        right = AST.Expression.Binary(
-            operator = operator,
-            left = left,
-            right = right,
-            type = null,
-        ),
-        type = null,
-    )
 
     private fun parseUnary(): Either<ParserError, AST.Expression> = either {
         val peekToken = peekToken()
