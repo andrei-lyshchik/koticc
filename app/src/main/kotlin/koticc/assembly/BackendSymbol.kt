@@ -19,13 +19,11 @@ sealed interface BackendSymbol {
     ) : BackendSymbol
 }
 
-fun BackendSymbolTable.functionSymbol(functionName: String): BackendSymbol.Function =
-    this[functionName] as? BackendSymbol.Function
-        ?: error("Bug: function $functionName should have been added to the symbol table during semantic analysis, got $this")
+fun BackendSymbolTable.functionSymbol(functionName: String): BackendSymbol.Function = this[functionName] as? BackendSymbol.Function
+    ?: error("Bug: function $functionName should have been added to the symbol table during semantic analysis, got $this")
 
-fun BackendSymbolTable.objectSymbol(variableName: String): BackendSymbol.Object =
-    this[variableName]?.let { it as BackendSymbol.Object }
-        ?: error("Bug: variable $variableName should have been added to the symbol table during semantic analysis, got $this")
+fun BackendSymbolTable.objectSymbol(variableName: String): BackendSymbol.Object = this[variableName]?.let { it as BackendSymbol.Object }
+    ?: error("Bug: variable $variableName should have been added to the symbol table during semantic analysis, got $this")
 
 fun SymbolTable.toBackendSymbolTable() = mapValues { (_, symbol) ->
     when (symbol) {

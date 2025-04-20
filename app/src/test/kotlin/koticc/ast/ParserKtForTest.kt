@@ -7,44 +7,45 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsSource
 
 class ParserKtForTest {
-    class TestCases : VarargArgumentsProvider(
-        Arguments.of(
-            "int i = 0; i < 10; i += 1",
-            initDecl("i", initializer = 0.e),
-            "i".e lt 10.e,
-            "i".e plusAssign 1.e,
-        ),
-        Arguments.of(
-            "i = 0; i < 10; i += 1",
-            initExpr("i".e assign 0.e),
-            "i".e lt 10.e,
-            "i".e plusAssign 1.e,
-        ),
-        Arguments.of(
-            "; i < 10; i += 1",
-            null,
-            "i".e lt 10.e,
-            "i".e plusAssign 1.e,
-        ),
-        Arguments.of(
-            ";; i += 1",
-            null,
-            null,
-            "i".e plusAssign 1.e,
-        ),
-        Arguments.of(
-            "i = 0; i < 10;",
-            initExpr("i".e assign 0.e),
-            "i".e lt 10.e,
-            null,
-        ),
-        Arguments.of(
-            ";;",
-            null,
-            null,
-            null,
-        ),
-    )
+    class TestCases :
+        VarargArgumentsProvider(
+            Arguments.of(
+                "int i = 0; i < 10; i += 1",
+                initDecl("i", initializer = 0.e),
+                "i".e lt 10.e,
+                "i".e plusAssign 1.e,
+            ),
+            Arguments.of(
+                "i = 0; i < 10; i += 1",
+                initExpr("i".e assign 0.e),
+                "i".e lt 10.e,
+                "i".e plusAssign 1.e,
+            ),
+            Arguments.of(
+                "; i < 10; i += 1",
+                null,
+                "i".e lt 10.e,
+                "i".e plusAssign 1.e,
+            ),
+            Arguments.of(
+                ";; i += 1",
+                null,
+                null,
+                "i".e plusAssign 1.e,
+            ),
+            Arguments.of(
+                "i = 0; i < 10;",
+                initExpr("i".e assign 0.e),
+                "i".e lt 10.e,
+                null,
+            ),
+            Arguments.of(
+                ";;",
+                null,
+                null,
+                null,
+            ),
+        )
 
     @ParameterizedTest
     @ArgumentsSource(TestCases::class)

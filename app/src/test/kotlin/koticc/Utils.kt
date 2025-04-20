@@ -1,25 +1,27 @@
 package koticc
 
 import arrow.core.Either
+import arrow.core.raise.either
 import koticc.assembly.Assembly
 import koticc.assembly.tackyProgramToAssembly
 import koticc.assembly.writeAssemblyProgram
 import koticc.ast.AST
-import koticc.ast.ParserError
 import koticc.ast.parse
+import koticc.semantic.ValidASTProgram
+import koticc.semantic.semanticAnalysis
 import koticc.tacky.Tacky
 import koticc.token.lexer
 import java.io.StringWriter
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
-fun parseInput(input: String): Either<ParserError, AST.Program> {
-    val tokens =
-        when (val lexerResult = lexer(input)) {
-            is Either.Left -> fail("lexer error: ${lexerResult.value.message()}")
-            is Either.Right -> lexerResult.value
-        }
-    return parse(tokens)
+fun parseInput(input: String): Either<CompilerError, AST.Program> = either {
+    val tokens = lexer(input).bind()
+    parse(tokens).bind()
+}
+
+fun parseAndAnalyze(input: String): Either<CompilerError, ValidASTProgram> = either {
+    val program = parseInput(input).bind()
+    semanticAnalysis(program).bind()
 }
 
 fun tackyProgramToAssemblyString(program: Tacky.Program): String {

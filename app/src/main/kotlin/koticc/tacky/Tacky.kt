@@ -112,6 +112,21 @@ object Tacky {
             val src: Value,
             val dst: Value,
         ) : Instruction
+
+        data class GetAddress(
+            val src: Value,
+            val dst: Value,
+        ) : Instruction
+
+        data class Load(
+            val srcPtr: Value,
+            val dst: Value,
+        ) : Instruction
+
+        data class Store(
+            val src: Value,
+            val dstPtr: Value,
+        ) : Instruction
     }
 
     sealed interface Value {

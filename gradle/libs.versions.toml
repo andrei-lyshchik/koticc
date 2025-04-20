@@ -3,7 +3,7 @@
 
 [versions]
 junit-jupiter-engine = "5.10.2"
-kotlin = "2.1.0"
+kotlin = "2.1.20"
 
 [libraries]
 clikt = { module = "com.github.ajalt.clikt:clikt", version = "5.0.1" }
@@ -13,4 +13,4 @@ junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", vers
 
 [plugins]
 jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-spotless = { id = "com.diffplug.spotless", version = "6.25.0" }
+spotless = { id = "com.diffplug.spotless", version = "7.0.3" }

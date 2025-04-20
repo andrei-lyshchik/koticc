@@ -9,33 +9,34 @@ import org.junit.jupiter.params.provider.ArgumentsSource
 import kotlin.test.assertEquals
 
 class ParserKtStorageClassSpecifiers {
-    class VariableStorageClassSpecifiersTestCases : VarargArgumentsProvider(
-        "int a = 1" to program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                int("a") assign 1.e
-            }
-        },
-        "static int a = 1" to program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                int("a", storageClass = AST.StorageClass.Static) assign 1.e
-            }
-        },
-        "int static a = 1" to program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                int("a", storageClass = AST.StorageClass.Static) assign 1.e
-            }
-        },
-        "int extern a = 1" to program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                int("a", storageClass = AST.StorageClass.Extern) assign 1.e
-            }
-        },
-        "extern int a = 1" to program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                int("a", storageClass = AST.StorageClass.Extern) assign 1.e
-            }
-        },
-    )
+    class VariableStorageClassSpecifiersTestCases :
+        VarargArgumentsProvider(
+            "int a = 1" to program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    int("a") assign 1.e
+                }
+            },
+            "static int a = 1" to program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    int("a", storageClass = AST.StorageClass.Static) assign 1.e
+                }
+            },
+            "int static a = 1" to program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    int("a", storageClass = AST.StorageClass.Static) assign 1.e
+                }
+            },
+            "int extern a = 1" to program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    int("a", storageClass = AST.StorageClass.Extern) assign 1.e
+                }
+            },
+            "extern int a = 1" to program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    int("a", storageClass = AST.StorageClass.Extern) assign 1.e
+                }
+            },
+        )
 
     @ParameterizedTest
     @ArgumentsSource(VariableStorageClassSpecifiersTestCases::class)
@@ -57,23 +58,24 @@ class ParserKtStorageClassSpecifiers {
         )
     }
 
-    class FunctionDeclarationStorageClassSpecifiersTestCases : VarargArgumentsProvider(
-        "int foo(void)" to program {
-            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int))
-        },
-        "static int foo(void)" to program {
-            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static)
-        },
-        "int static foo(void)" to program {
-            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static)
-        },
-        "int extern foo(void)" to program {
-            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Extern)
-        },
-        "extern int foo(void)" to program {
-            function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Extern)
-        },
-    )
+    class FunctionDeclarationStorageClassSpecifiersTestCases :
+        VarargArgumentsProvider(
+            "int foo(void)" to program {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int))
+            },
+            "static int foo(void)" to program {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static)
+            },
+            "int static foo(void)" to program {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Static)
+            },
+            "int extern foo(void)" to program {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Extern)
+            },
+            "extern int foo(void)" to program {
+                function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int), storageClass = AST.StorageClass.Extern)
+            },
+        )
 
     @ParameterizedTest
     @ArgumentsSource(FunctionDeclarationStorageClassSpecifiersTestCases::class)
@@ -93,13 +95,14 @@ class ParserKtStorageClassSpecifiers {
         )
     }
 
-    class InvalidDeclarationTestCases : VarargArgumentsProvider(
-        "static a = 1" to "invalid type specifier: ''",
-        "extern a = 1" to "invalid type specifier: ''",
-        "extern static int a" to "invalid storage class specifier",
-        "static a(void)" to "invalid type specifier: ''",
-        "extern a(void)" to "invalid type specifier: ''",
-    )
+    class InvalidDeclarationTestCases :
+        VarargArgumentsProvider(
+            "static a = 1" to "invalid type specifier: ''",
+            "extern a = 1" to "invalid type specifier: ''",
+            "extern static int a" to "invalid storage class specifier",
+            "static a(void)" to "invalid type specifier: ''",
+            "extern a(void)" to "invalid type specifier: ''",
+        )
 
     @ParameterizedTest
     @ArgumentsSource(InvalidDeclarationTestCases::class)

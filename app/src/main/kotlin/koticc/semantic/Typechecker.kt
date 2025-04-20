@@ -381,6 +381,9 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         when (expression) {
             is AST.Expression.Assignment -> {
                 val left = typecheckExpression(expression.left).bind()
+                if (!left.isLValue()) {
+                    raise(SemanticAnalysisError("left side of assignment must be a left-value, got '${left.toDisplayString()}'", left.location))
+                }
                 val right = typecheckExpression(expression.right).bind().castTo(left.resolvedType())
                 expression.copy(
                     left = left,
@@ -520,25 +523,54 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 expression = typecheckExpression(expression.expression).bind(),
             ).ofType(expression.targetType)
 
-            is AST.Expression.AddressOf -> TODO()
-            is AST.Expression.Dereference -> TODO()
+            is AST.Expression.AddressOf -> {
+                val typedInnerExpression = typecheckExpression(expression.expression).bind()
+                val type = if (typedInnerExpression.isLValue()) {
+                    Type.Pointer(referenced = typedInnerExpression.resolvedType())
+                } else {
+                    raise(SemanticAnalysisError("Can't take address of non lvalue, got ${typedInnerExpression.toDisplayString()}", typedInnerExpression.location))
+                }
+                expression.copy(
+                    expression = typedInnerExpression,
+                ).ofType(type)
+            }
+            is AST.Expression.Dereference -> {
+                val typedInnerExpression = typecheckExpression(expression.expression).bind()
+                val type = when (val innerType = typedInnerExpression.resolvedType()) {
+                    is Type.Pointer -> innerType.referenced
+                    else -> raise(
+                        SemanticAnalysisError(
+                            "Expected pointer for dereference, " +
+                                "got ${typedInnerExpression.toDisplayString()}",
+                            typedInnerExpression.location,
+                        ),
+                    )
+                }
+                expression.copy(
+                    expression = typedInnerExpression,
+                ).ofType(type)
+            }
         }
     }
 
-    private fun getCommonType(type1: Type.Data, type2: Type.Data): Type.Data {
-        return when {
-            type1 == type2 -> type1
-            type1 == Type.Double || type2 == Type.Double -> Type.Double
-            type1.size() == type2.size() -> {
-                if (type1.signed()) {
-                    type2
-                } else {
-                    type1
-                }
+    private fun AST.Expression.isLValue() = when (this) {
+        is AST.Expression.Variable -> true
+        is AST.Expression.Dereference -> true
+        else -> false
+    }
+
+    private fun getCommonType(type1: Type.Data, type2: Type.Data): Type.Data = when {
+        type1 == type2 -> type1
+        type1 == Type.Double || type2 == Type.Double -> Type.Double
+        type1.size() == type2.size() -> {
+            if (type1.signed()) {
+                type2
+            } else {
+                type1
             }
-            type1.size() > type2.size() -> type1
-            else -> type2
         }
+        type1.size() > type2.size() -> type1
+        else -> type2
     }
 
     private fun AST.Expression.castTo(targetType: Type.Data): AST.Expression {

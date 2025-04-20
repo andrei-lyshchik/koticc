@@ -134,6 +134,11 @@ object Assembly {
             val src: Operand,
             val dst: Operand,
         ) : Instruction
+
+        data class LoadEffectiveAddress(
+            val src: Operand,
+            val dst: Operand,
+        ) : Instruction
     }
 
     sealed interface Operand {
@@ -143,15 +148,16 @@ object Assembly {
             fun isInt(): Boolean = value >= Int.MIN_VALUE && value <= Int.MAX_VALUE
         }
 
-        data class Stack(val offset: Int) : Operand
-
         data class Data(val name: String) : Operand
+
+        data class Memory(val register: RegisterValue, val offset: Int) : Operand
 
         data class PseudoIdentifier(val name: String) : Operand
     }
 
     enum class RegisterValue {
         Ax,
+        Bp,
         Cx,
         Dx,
         Di,

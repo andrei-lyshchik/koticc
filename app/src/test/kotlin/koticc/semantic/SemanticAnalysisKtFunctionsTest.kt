@@ -65,16 +65,17 @@ class SemanticAnalysisKtFunctionsTest {
         )
     }
 
-    class ParamsWithSameName : VarargArgumentsProvider(
-        program {
-            function("test", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "a")
-        },
-        program {
-            function("test", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "a") {
-                return_("a".e)
-            }
-        },
-    )
+    class ParamsWithSameName :
+        VarargArgumentsProvider(
+            program {
+                function("test", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "a")
+            },
+            program {
+                function("test", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "a") {
+                    return_("a".e)
+                }
+            },
+        )
 
     @ParameterizedTest
     @ArgumentsSource(ParamsWithSameName::class)
@@ -187,20 +188,21 @@ class SemanticAnalysisKtFunctionsTest {
         )
     }
 
-    class ConflictingVariableAndFunctionDeclarations : VarargArgumentsProvider(
-        program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                int("a") assign 1.e
-                function("a", Type.Function(parameters = emptyList(), returnType = Type.Int))
-            }
-        },
-        program {
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                function("a", Type.Function(parameters = emptyList(), returnType = Type.Int))
-                int("a") assign 1.e
-            }
-        },
-    )
+    class ConflictingVariableAndFunctionDeclarations :
+        VarargArgumentsProvider(
+            program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    int("a") assign 1.e
+                    function("a", Type.Function(parameters = emptyList(), returnType = Type.Int))
+                }
+            },
+            program {
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    function("a", Type.Function(parameters = emptyList(), returnType = Type.Int))
+                    int("a") assign 1.e
+                }
+            },
+        )
 
     @ParameterizedTest
     @ArgumentsSource(ConflictingVariableAndFunctionDeclarations::class)
@@ -336,41 +338,42 @@ class SemanticAnalysisKtFunctionsTest {
         )
     }
 
-    class ConflictingFunctionDeclarations : VarargArgumentsProvider(
-        program {
-            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
-                return_("a".e)
-            }
-            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
-                return_("a".e)
-            }
-        },
-        program {
-            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
-                return_("a".e)
-            }
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+    class ConflictingFunctionDeclarations :
+        VarargArgumentsProvider(
+            program {
+                function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
+                    return_("a".e)
+                }
+                function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
+                    return_("a".e)
+                }
+            },
+            program {
+                function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
+                    return_("a".e)
+                }
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a")
+                    return_("test"(1.e))
+                }
+                function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
+                    return_("a".e)
+                }
+            },
+            program {
                 function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a")
-                return_("test"(1.e))
-            }
-            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
-                return_("a".e)
-            }
-        },
-        program {
-            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a")
-            function("test", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "b")
-        },
-        program {
-            function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
-                return_("a".e)
-            }
-            function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
                 function("test", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "b")
-                return_(1.e)
-            }
-        },
-    )
+            },
+            program {
+                function("test", Type.Function(parameters = listOf(Type.Int), returnType = Type.Int), "a") {
+                    return_("a".e)
+                }
+                function("main", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
+                    function("test", Type.Function(parameters = listOf(Type.Int, Type.Int), returnType = Type.Int), "a", "b")
+                    return_(1.e)
+                }
+            },
+        )
 
     @ParameterizedTest
     @ArgumentsSource(ConflictingFunctionDeclarations::class)

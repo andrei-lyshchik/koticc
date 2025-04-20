@@ -92,10 +92,11 @@ class TackyToAssemblyKtTest {
         )
     }
 
-    class SimpleUnaryTestCases : VarargArgumentsProvider(
-        Arguments.of(Tacky.UnaryOperator.Negate, "negl"),
-        Arguments.of(Tacky.UnaryOperator.Complement, "notl"),
-    )
+    class SimpleUnaryTestCases :
+        VarargArgumentsProvider(
+            Arguments.of(Tacky.UnaryOperator.Negate, "negl"),
+            Arguments.of(Tacky.UnaryOperator.Complement, "notl"),
+        )
 
     @ParameterizedTest
     @ArgumentsSource(SimpleUnaryTestCases::class)
@@ -166,13 +167,14 @@ class TackyToAssemblyKtTest {
         )
     }
 
-    class SimpleBinaryTestCases : VarargArgumentsProvider(
-        Arguments.of(Tacky.BinaryOperator.Add, "addl"),
-        Arguments.of(Tacky.BinaryOperator.Subtract, "subl"),
-        Arguments.of(Tacky.BinaryOperator.BitwiseAnd, "andl"),
-        Arguments.of(Tacky.BinaryOperator.BitwiseOr, "orl"),
-        Arguments.of(Tacky.BinaryOperator.BitwiseXor, "xorl"),
-    )
+    class SimpleBinaryTestCases :
+        VarargArgumentsProvider(
+            Arguments.of(Tacky.BinaryOperator.Add, "addl"),
+            Arguments.of(Tacky.BinaryOperator.Subtract, "subl"),
+            Arguments.of(Tacky.BinaryOperator.BitwiseAnd, "andl"),
+            Arguments.of(Tacky.BinaryOperator.BitwiseOr, "orl"),
+            Arguments.of(Tacky.BinaryOperator.BitwiseXor, "xorl"),
+        )
 
     @ParameterizedTest
     @ArgumentsSource(SimpleBinaryTestCases::class)
@@ -246,10 +248,11 @@ class TackyToAssemblyKtTest {
         )
     }
 
-    class IdivInstructionTestCases : VarargArgumentsProvider(
-        Arguments.of(Tacky.BinaryOperator.Divide, "eax"),
-        Arguments.of(Tacky.BinaryOperator.Modulo, "edx"),
-    )
+    class IdivInstructionTestCases :
+        VarargArgumentsProvider(
+            Arguments.of(Tacky.BinaryOperator.Divide, "eax"),
+            Arguments.of(Tacky.BinaryOperator.Modulo, "edx"),
+        )
 
     @ParameterizedTest
     @ArgumentsSource(IdivInstructionTestCases::class)
@@ -293,14 +296,15 @@ class TackyToAssemblyKtTest {
         )
     }
 
-    class ConditionalTestCases : VarargArgumentsProvider(
-        Arguments.of(Tacky.BinaryOperator.LessThan, "l"),
-        Arguments.of(Tacky.BinaryOperator.LessThanOrEqual, "le"),
-        Arguments.of(Tacky.BinaryOperator.GreaterThan, "g"),
-        Arguments.of(Tacky.BinaryOperator.GreaterThanOrEqual, "ge"),
-        Arguments.of(Tacky.BinaryOperator.Equal, "e"),
-        Arguments.of(Tacky.BinaryOperator.NotEqual, "ne"),
-    )
+    class ConditionalTestCases :
+        VarargArgumentsProvider(
+            Arguments.of(Tacky.BinaryOperator.LessThan, "l"),
+            Arguments.of(Tacky.BinaryOperator.LessThanOrEqual, "le"),
+            Arguments.of(Tacky.BinaryOperator.GreaterThan, "g"),
+            Arguments.of(Tacky.BinaryOperator.GreaterThanOrEqual, "ge"),
+            Arguments.of(Tacky.BinaryOperator.Equal, "e"),
+            Arguments.of(Tacky.BinaryOperator.NotEqual, "ne"),
+        )
 
     @ParameterizedTest
     @ArgumentsSource(ConditionalTestCases::class)
@@ -347,10 +351,11 @@ class TackyToAssemblyKtTest {
         )
     }
 
-    class ShiftTestCases : VarargArgumentsProvider(
-        Arguments.of(Tacky.BinaryOperator.ShiftLeft, "l"),
-        Arguments.of(Tacky.BinaryOperator.ShiftRight, "r"),
-    )
+    class ShiftTestCases :
+        VarargArgumentsProvider(
+            Arguments.of(Tacky.BinaryOperator.ShiftLeft, "l"),
+            Arguments.of(Tacky.BinaryOperator.ShiftRight, "r"),
+        )
 
     @ParameterizedTest
     @ArgumentsSource(ShiftTestCases::class)

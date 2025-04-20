@@ -167,12 +167,13 @@ int main(void) {
         )
     }
 
-    class ConstantTokenFollowedByAPeriod : VarargArgumentsProvider(
-        "1l.",
-        "1u.",
-        "1.0.",
-        "1.0.+x",
-    )
+    class ConstantTokenFollowedByAPeriod :
+        VarargArgumentsProvider(
+            "1l.",
+            "1u.",
+            "1.0.",
+            "1.0.+x",
+        )
 
     @ParameterizedTest
     @ArgumentsSource(ConstantTokenFollowedByAPeriod::class)

@@ -35,46 +35,42 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
 
     private fun nextLabelName(prefix: String): LabelName = LabelName("$prefix.${labelCount++}")
 
-    fun generateProgram(program: AST.Program): Tacky.Program {
-        return Tacky.Program(
-            topLevel =
-            generateFunctionDefinitions(program) + generateStaticVariables(symbolTable),
-            symbolTable = symbolTable + tempVariableSymbolTable,
-        )
-    }
+    fun generateProgram(program: AST.Program): Tacky.Program = Tacky.Program(
+        topLevel =
+        generateFunctionDefinitions(program) + generateStaticVariables(symbolTable),
+        symbolTable = symbolTable + tempVariableSymbolTable,
+    )
 
-    private fun generateFunctionDefinitions(program: AST.Program) =
-        program.declarations
-            .mapNotNull { declaration ->
-                when (declaration) {
-                    is AST.Declaration.Function -> {
-                        generateFunctionDefinition(declaration)
-                    }
-                    is AST.Declaration.Variable -> null
+    private fun generateFunctionDefinitions(program: AST.Program) = program.declarations
+        .mapNotNull { declaration ->
+            when (declaration) {
+                is AST.Declaration.Function -> {
+                    generateFunctionDefinition(declaration)
                 }
-            }.map(Tacky.TopLevel::FunctionDefinition)
-
-    private fun generateStaticVariables(symbolTable: SymbolTable) =
-        symbolTable
-            .mapNotNull { (name, symbol) ->
-                when (symbol) {
-                    is Symbol.Variable -> {
-                        when (symbol.attributes) {
-                            is VariableAttributes.Static -> {
-                                val initialValue = when (val initialValue = symbol.attributes.initialValue) {
-                                    is InitialValue.Constant -> initialValue.value
-                                    InitialValue.Tentative -> symbol.type.toZeroInitialValue()
-                                    InitialValue.NoInitializer -> return@mapNotNull null
-                                }
-                                Tacky.StaticVariable(name, global = symbol.attributes.global, initialValue = initialValue, type = symbol.type)
-                            }
-                            else -> null
-                        }
-                    }
-                    else -> null
-                }
+                is AST.Declaration.Variable -> null
             }
-            .map(Tacky.TopLevel::StaticVariable)
+        }.map(Tacky.TopLevel::FunctionDefinition)
+
+    private fun generateStaticVariables(symbolTable: SymbolTable) = symbolTable
+        .mapNotNull { (name, symbol) ->
+            when (symbol) {
+                is Symbol.Variable -> {
+                    when (symbol.attributes) {
+                        is VariableAttributes.Static -> {
+                            val initialValue = when (val initialValue = symbol.attributes.initialValue) {
+                                is InitialValue.Constant -> initialValue.value
+                                InitialValue.Tentative -> symbol.type.toZeroInitialValue()
+                                InitialValue.NoInitializer -> return@mapNotNull null
+                            }
+                            Tacky.StaticVariable(name, global = symbol.attributes.global, initialValue = initialValue, type = symbol.type)
+                        }
+                        else -> null
+                    }
+                }
+                else -> null
+            }
+        }
+        .map(Tacky.TopLevel::StaticVariable)
 
     private fun generateFunctionDefinition(functionDeclaration: AST.Declaration.Function): Tacky.FunctionDefinition? {
         val body = functionDeclaration.body ?: return null
@@ -108,7 +104,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         val variableType = symbolTable.variableSymbol(declaration.name)
         if (variableType.attributes is VariableAttributes.Static) return
 
-        val initialValue = declaration.initializer?.let { generateExpression(it) }
+        val initialValue = declaration.initializer?.let { generateExpressionAndConvert(it) }
         val variable = Tacky.Value.Variable(declaration.name)
         if (initialValue != null) {
             instructions.add(
@@ -162,7 +158,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
     private fun generateReturn(statement: AST.Statement.Return) {
         instructions.add(
             Tacky.Instruction.Return(
-                value = generateExpression(statement.expression),
+                value = generateExpressionAndConvert(statement.expression),
             ),
         )
     }
@@ -196,7 +192,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         )
         generateStatement(doWhile.body)
         instructions.add(Tacky.Instruction.Label(loopContinueLabel(loopId)))
-        val condition = generateExpression(doWhile.condition)
+        val condition = generateExpressionAndConvert(doWhile.condition)
         instructions.add(
             Tacky.Instruction.JumpIfNotZero(
                 src = condition,
@@ -216,7 +212,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         instructions.add(
             Tacky.Instruction.Label(startLabel),
         )
-        val condition = generateExpression(whileStatement.condition)
+        val condition = generateExpressionAndConvert(whileStatement.condition)
         instructions.add(
             Tacky.Instruction.JumpIfZero(
                 src = condition,
@@ -244,7 +240,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         instructions.add(
             Tacky.Instruction.Label(startLabel),
         )
-        val condition = forStatement.condition?.let { generateExpression(it) }
+        val condition = forStatement.condition?.let { generateExpressionAndConvert(it) }
         if (condition != null) {
             instructions.add(
                 Tacky.Instruction.JumpIfZero(
@@ -273,215 +269,253 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         }
     }
 
-    private fun generateExpression(expression: AST.Expression): Tacky.Value =
-        when (expression) {
-            is AST.Expression.Constant -> Tacky.Value.Constant(expression.value)
-            is AST.Expression.Variable -> Tacky.Value.Variable(expression.name)
-            is AST.Expression.Unary -> {
-                val src = generateExpression(expression.operand)
-                val dst = nextVariable(expression.resolvedType())
-                instructions.add(
-                    Tacky.Instruction.Unary(
-                        operator = expression.operator.toTackyOperator(),
-                        src = src,
-                        dst = dst,
-                    ),
-                )
-                dst
-            }
-            is AST.Expression.Binary -> {
-                when (val tackyOperator = expression.operator.toTackyOperator()) {
-                    is TackyBinaryOperator.NonShortCircuiting -> {
-                        val left = generateExpression(expression.left)
-                        val right = generateExpression(expression.right)
-                        val dst = nextVariable(expression.resolvedType())
-                        instructions.add(
-                            Tacky.Instruction.Binary(
-                                operator = tackyOperator.operator,
-                                left = left,
-                                right = right,
-                                dst = dst,
-                            ),
-                        )
-                        dst
-                    }
-                    TackyBinaryOperator.ShortCircuitingAnd -> {
-                        val left = generateExpression(expression.left)
-                        val falseLabel = nextLabelName("and_false")
-                        instructions.add(
-                            Tacky.Instruction.JumpIfZero(
-                                src = left,
-                                target = falseLabel,
-                            ),
-                        )
-                        val right = generateExpression(expression.right)
-                        instructions.add(
-                            Tacky.Instruction.JumpIfZero(
-                                src = right,
-                                target = falseLabel,
-                            ),
-                        )
-                        val dst = nextVariable(expression.resolvedType())
-                        instructions.add(
-                            Tacky.Instruction.Copy(
-                                src = Tacky.Value.Constant(AST.IntConstant(1)),
-                                dst = dst,
-                            ),
-                        )
-                        val endLabel = nextLabelName("and_end")
-                        instructions.add(
-                            Tacky.Instruction.Jump(endLabel),
-                        )
-                        instructions.add(
-                            Tacky.Instruction.Label(falseLabel),
-                        )
-                        instructions.add(
-                            Tacky.Instruction.Copy(
-                                src = Tacky.Value.Constant(AST.IntConstant(0)),
-                                dst = dst,
-                            ),
-                        )
-                        instructions.add(
-                            Tacky.Instruction.Label(endLabel),
-                        )
-                        dst
-                    }
-                    TackyBinaryOperator.ShortCircuitingOr -> {
-                        val left = generateExpression(expression.left)
-                        val trueLabel = nextLabelName("or_true")
-                        instructions.add(
-                            Tacky.Instruction.JumpIfNotZero(
-                                src = left,
-                                target = trueLabel,
-                            ),
-                        )
-                        val right = generateExpression(expression.right)
-                        instructions.add(
-                            Tacky.Instruction.JumpIfNotZero(
-                                src = right,
-                                target = trueLabel,
-                            ),
-                        )
-                        val dst = nextVariable(expression.resolvedType())
-                        instructions.add(
-                            Tacky.Instruction.Copy(
-                                src = Tacky.Value.Constant(AST.IntConstant(0)),
-                                dst = dst,
-                            ),
-                        )
-                        val endLabel = nextLabelName("or_end")
-                        instructions.add(
-                            Tacky.Instruction.Jump(endLabel),
-                        )
-                        instructions.add(
-                            Tacky.Instruction.Label(trueLabel),
-                        )
-                        instructions.add(
-                            Tacky.Instruction.Copy(
-                                src = Tacky.Value.Constant(AST.IntConstant(1)),
-                                dst = dst,
-                            ),
-                        )
-                        instructions.add(
-                            Tacky.Instruction.Label(endLabel),
-                        )
-                        dst
-                    }
+    private fun generateExpression(expression: AST.Expression): TackyExpressionResult = when (expression) {
+        is AST.Expression.Constant -> Tacky.Value.Constant(expression.value).toPlainOperand()
+        is AST.Expression.Variable -> Tacky.Value.Variable(expression.name).toPlainOperand()
+        is AST.Expression.Unary -> {
+            val src = generateExpressionAndConvert(expression.operand)
+            val dst = nextVariable(expression.resolvedType())
+            instructions.add(
+                Tacky.Instruction.Unary(
+                    operator = expression.operator.toTackyOperator(),
+                    src = src,
+                    dst = dst,
+                ),
+            )
+            dst.toPlainOperand()
+        }
+        is AST.Expression.Binary -> {
+            when (val tackyOperator = expression.operator.toTackyOperator()) {
+                is TackyBinaryOperator.NonShortCircuiting -> {
+                    val left = generateExpressionAndConvert(expression.left)
+                    val right = generateExpressionAndConvert(expression.right)
+                    val dst = nextVariable(expression.resolvedType())
+                    instructions.add(
+                        Tacky.Instruction.Binary(
+                            operator = tackyOperator.operator,
+                            left = left,
+                            right = right,
+                            dst = dst,
+                        ),
+                    )
+                    dst.toPlainOperand()
+                }
+                TackyBinaryOperator.ShortCircuitingAnd -> {
+                    val left = generateExpressionAndConvert(expression.left)
+                    val falseLabel = nextLabelName("and_false")
+                    instructions.add(
+                        Tacky.Instruction.JumpIfZero(
+                            src = left,
+                            target = falseLabel,
+                        ),
+                    )
+                    val right = generateExpressionAndConvert(expression.right)
+                    instructions.add(
+                        Tacky.Instruction.JumpIfZero(
+                            src = right,
+                            target = falseLabel,
+                        ),
+                    )
+                    val dst = nextVariable(expression.resolvedType())
+                    instructions.add(
+                        Tacky.Instruction.Copy(
+                            src = Tacky.Value.Constant(AST.IntConstant(1)),
+                            dst = dst,
+                        ),
+                    )
+                    val endLabel = nextLabelName("and_end")
+                    instructions.add(
+                        Tacky.Instruction.Jump(endLabel),
+                    )
+                    instructions.add(
+                        Tacky.Instruction.Label(falseLabel),
+                    )
+                    instructions.add(
+                        Tacky.Instruction.Copy(
+                            src = Tacky.Value.Constant(AST.IntConstant(0)),
+                            dst = dst,
+                        ),
+                    )
+                    instructions.add(
+                        Tacky.Instruction.Label(endLabel),
+                    )
+                    dst.toPlainOperand()
+                }
+                TackyBinaryOperator.ShortCircuitingOr -> {
+                    val left = generateExpressionAndConvert(expression.left)
+                    val trueLabel = nextLabelName("or_true")
+                    instructions.add(
+                        Tacky.Instruction.JumpIfNotZero(
+                            src = left,
+                            target = trueLabel,
+                        ),
+                    )
+                    val right = generateExpressionAndConvert(expression.right)
+                    instructions.add(
+                        Tacky.Instruction.JumpIfNotZero(
+                            src = right,
+                            target = trueLabel,
+                        ),
+                    )
+                    val dst = nextVariable(expression.resolvedType())
+                    instructions.add(
+                        Tacky.Instruction.Copy(
+                            src = Tacky.Value.Constant(AST.IntConstant(0)),
+                            dst = dst,
+                        ),
+                    )
+                    val endLabel = nextLabelName("or_end")
+                    instructions.add(
+                        Tacky.Instruction.Jump(endLabel),
+                    )
+                    instructions.add(
+                        Tacky.Instruction.Label(trueLabel),
+                    )
+                    instructions.add(
+                        Tacky.Instruction.Copy(
+                            src = Tacky.Value.Constant(AST.IntConstant(1)),
+                            dst = dst,
+                        ),
+                    )
+                    instructions.add(
+                        Tacky.Instruction.Label(endLabel),
+                    )
+                    dst.toPlainOperand()
                 }
             }
-
-            is AST.Expression.Assignment -> {
-                val right = generateExpression(expression.right)
-                val dst = generateExpression(expression.left)
-                instructions.add(
-                    Tacky.Instruction.Copy(
-                        src = right,
-                        dst = dst,
-                    ),
-                )
-                dst
-            }
-            is AST.Expression.Postfix -> {
-                val operand = generateExpression(expression.operand)
-                val tempValue = nextVariable(expression.resolvedType())
-                instructions.add(
-                    Tacky.Instruction.Copy(
-                        src = operand,
-                        dst = tempValue,
-                    ),
-                )
-                val constant = AST.IntConstant(1).convertTo(expression.resolvedType())
-                val right = Tacky.Value.Constant(constant)
-                instructions.add(
-                    Tacky.Instruction.Binary(
-                        operator = expression.operator.toTackyOperator(),
-                        left = operand,
-                        right = right,
-                        dst = operand,
-                    ),
-                )
-
-                tempValue
-            }
-            is AST.Expression.Conditional -> {
-                val condition = generateExpression(expression.condition)
-                val elseLabel = nextLabelName("cond_else")
-                instructions.add(
-                    Tacky.Instruction.JumpIfZero(
-                        src = condition,
-                        target = elseLabel,
-                    ),
-                )
-                val thenValue = generateExpression(expression.thenExpression)
-                val result = nextVariable(expression.resolvedType())
-                instructions.add(
-                    Tacky.Instruction.Copy(
-                        src = thenValue,
-                        dst = result,
-                    ),
-                )
-                val endLabel = nextLabelName("cond_end")
-                instructions.add(
-                    Tacky.Instruction.Jump(endLabel),
-                )
-                instructions.add(
-                    Tacky.Instruction.Label(elseLabel),
-                )
-                val elseValue = generateExpression(expression.elseExpression)
-                instructions.add(
-                    Tacky.Instruction.Copy(
-                        src = elseValue,
-                        dst = result,
-                    ),
-                )
-                instructions.add(
-                    Tacky.Instruction.Label(endLabel),
-                )
-                result
-            }
-            is AST.Expression.FunctionCall -> {
-                val arguments = expression.arguments.map { generateExpression(it) }
-                val dst = nextVariable(expression.resolvedType())
-                instructions.add(
-                    Tacky.Instruction.Call(
-                        name = expression.name,
-                        arguments = arguments,
-                        dst = dst,
-                    ),
-                )
-                dst
-            }
-
-            is AST.Expression.Cast -> {
-                generateCast(expression)
-            }
-
-            is AST.Expression.AddressOf -> TODO()
-            is AST.Expression.Dereference -> TODO()
         }
 
+        is AST.Expression.Assignment -> {
+            val right = generateExpressionAndConvert(expression.right)
+            when (val left = generateExpression(expression.left)) {
+                is TackyExpressionResult.PlainOperand -> {
+                    instructions.add(
+                        Tacky.Instruction.Copy(
+                            src = right,
+                            dst = left.value,
+                        ),
+                    )
+                    left
+                }
+                is TackyExpressionResult.DereferencedPointer -> {
+                    instructions.add(
+                        Tacky.Instruction.Store(
+                            src = right,
+                            dstPtr = left.ptr,
+                        ),
+                    )
+                    right.toPlainOperand()
+                }
+            }
+        }
+        is AST.Expression.Postfix -> {
+            val operand = generateExpressionAndConvert(expression.operand)
+            val tempValue = nextVariable(expression.resolvedType())
+            instructions.add(
+                Tacky.Instruction.Copy(
+                    src = operand,
+                    dst = tempValue,
+                ),
+            )
+            val constant = AST.IntConstant(1).convertTo(expression.resolvedType())
+            val right = Tacky.Value.Constant(constant)
+            instructions.add(
+                Tacky.Instruction.Binary(
+                    operator = expression.operator.toTackyOperator(),
+                    left = operand,
+                    right = right,
+                    dst = operand,
+                ),
+            )
+
+            tempValue.toPlainOperand()
+        }
+        is AST.Expression.Conditional -> {
+            val condition = generateExpressionAndConvert(expression.condition)
+            val elseLabel = nextLabelName("cond_else")
+            instructions.add(
+                Tacky.Instruction.JumpIfZero(
+                    src = condition,
+                    target = elseLabel,
+                ),
+            )
+            val thenValue = generateExpressionAndConvert(expression.thenExpression)
+            val result = nextVariable(expression.resolvedType())
+            instructions.add(
+                Tacky.Instruction.Copy(
+                    src = thenValue,
+                    dst = result,
+                ),
+            )
+            val endLabel = nextLabelName("cond_end")
+            instructions.add(
+                Tacky.Instruction.Jump(endLabel),
+            )
+            instructions.add(
+                Tacky.Instruction.Label(elseLabel),
+            )
+            val elseValue = generateExpressionAndConvert(expression.elseExpression)
+            instructions.add(
+                Tacky.Instruction.Copy(
+                    src = elseValue,
+                    dst = result,
+                ),
+            )
+            instructions.add(
+                Tacky.Instruction.Label(endLabel),
+            )
+            result.toPlainOperand()
+        }
+        is AST.Expression.FunctionCall -> {
+            val arguments = expression.arguments.map { generateExpressionAndConvert(it) }
+            val dst = nextVariable(expression.resolvedType())
+            instructions.add(
+                Tacky.Instruction.Call(
+                    name = expression.name,
+                    arguments = arguments,
+                    dst = dst,
+                ),
+            )
+            dst.toPlainOperand()
+        }
+
+        is AST.Expression.Cast -> {
+            generateCast(expression).toPlainOperand()
+        }
+
+        is AST.Expression.AddressOf -> {
+            when (val inner = generateExpression(expression.expression)) {
+                is TackyExpressionResult.PlainOperand -> {
+                    val dst = nextVariable(expression.resolvedType())
+                    instructions.add(
+                        Tacky.Instruction.GetAddress(inner.value, dst),
+                    )
+                    dst.toPlainOperand()
+                }
+                is TackyExpressionResult.DereferencedPointer -> {
+                    inner.ptr.toPlainOperand()
+                }
+            }
+        }
+        is AST.Expression.Dereference -> {
+            val inner = generateExpressionAndConvert(expression.expression)
+            TackyExpressionResult.DereferencedPointer(inner)
+        }
+    }
+
+    private fun generateExpressionAndConvert(expression: AST.Expression): Tacky.Value = when (val result = generateExpression(expression)) {
+        is TackyExpressionResult.PlainOperand -> result.value
+        is TackyExpressionResult.DereferencedPointer -> {
+            val dst = nextVariable(expression.resolvedType())
+            instructions.add(
+                Tacky.Instruction.Load(result.ptr, dst),
+            )
+            dst
+        }
+    }
+
     private fun generateIf(ifStatement: AST.Statement.If) {
-        val condition = generateExpression(ifStatement.condition)
+        val condition = generateExpressionAndConvert(ifStatement.condition)
         val elseLabel = nextLabelName("if_else")
         instructions.add(
             Tacky.Instruction.JumpIfZero(
@@ -508,7 +542,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
     }
 
     private fun generateSwitch(switch: AST.Statement.Switch) {
-        val expression = generateExpression(switch.expression)
+        val expression = generateExpressionAndConvert(switch.expression)
         requireNotNull(switch.switchId) {
             "switchId must be filled in during semantic analysis"
         }
@@ -586,15 +620,14 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
 
     private fun switchEndLabel(switchId: AST.SwitchId) = LabelName("switch.${switchId.value}.end")
 
-    private fun AST.UnaryOperator.toTackyOperator(): Tacky.UnaryOperator =
-        when (this) {
-            AST.UnaryOperator.Negate -> Tacky.UnaryOperator.Negate
-            AST.UnaryOperator.Complement -> Tacky.UnaryOperator.Complement
-            AST.UnaryOperator.LogicalNegate -> Tacky.UnaryOperator.LogicalNegate
-        }
+    private fun AST.UnaryOperator.toTackyOperator(): Tacky.UnaryOperator = when (this) {
+        AST.UnaryOperator.Negate -> Tacky.UnaryOperator.Negate
+        AST.UnaryOperator.Complement -> Tacky.UnaryOperator.Complement
+        AST.UnaryOperator.LogicalNegate -> Tacky.UnaryOperator.LogicalNegate
+    }
 
     private fun generateCast(expression: AST.Expression.Cast): Tacky.Value {
-        val tackyExpression = generateExpression(expression.expression)
+        val tackyExpression = generateExpressionAndConvert(expression.expression)
         val innerExpressionType = expression.expression.resolvedType()
 
         if (expression.targetType == innerExpressionType) {
@@ -666,34 +699,32 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         return dst
     }
 
-    private fun AST.BinaryOperator.toTackyOperator() =
-        when (this) {
-            AST.BinaryOperator.Add -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.Add)
-            AST.BinaryOperator.Subtract -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.Subtract)
-            AST.BinaryOperator.Multiply -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.Multiply)
-            AST.BinaryOperator.Divide -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.Divide)
-            AST.BinaryOperator.Modulo -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.Modulo)
-            AST.BinaryOperator.Equal -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.Equal)
-            AST.BinaryOperator.NotEqual -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.NotEqual)
-            AST.BinaryOperator.LessThan -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.LessThan)
-            AST.BinaryOperator.LessThanOrEqual -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.LessThanOrEqual)
-            AST.BinaryOperator.GreaterThan -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.GreaterThan)
-            AST.BinaryOperator.GreaterThanOrEqual -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.GreaterThanOrEqual)
-            AST.BinaryOperator.BitwiseAnd -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.BitwiseAnd)
-            AST.BinaryOperator.BitwiseOr -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.BitwiseOr)
-            AST.BinaryOperator.BitwiseXor -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.BitwiseXor)
-            AST.BinaryOperator.ShiftLeft -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.ShiftLeft)
-            AST.BinaryOperator.ShiftRight -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.ShiftRight)
+    private fun AST.BinaryOperator.toTackyOperator() = when (this) {
+        AST.BinaryOperator.Add -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.Add)
+        AST.BinaryOperator.Subtract -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.Subtract)
+        AST.BinaryOperator.Multiply -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.Multiply)
+        AST.BinaryOperator.Divide -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.Divide)
+        AST.BinaryOperator.Modulo -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.Modulo)
+        AST.BinaryOperator.Equal -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.Equal)
+        AST.BinaryOperator.NotEqual -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.NotEqual)
+        AST.BinaryOperator.LessThan -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.LessThan)
+        AST.BinaryOperator.LessThanOrEqual -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.LessThanOrEqual)
+        AST.BinaryOperator.GreaterThan -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.GreaterThan)
+        AST.BinaryOperator.GreaterThanOrEqual -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.GreaterThanOrEqual)
+        AST.BinaryOperator.BitwiseAnd -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.BitwiseAnd)
+        AST.BinaryOperator.BitwiseOr -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.BitwiseOr)
+        AST.BinaryOperator.BitwiseXor -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.BitwiseXor)
+        AST.BinaryOperator.ShiftLeft -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.ShiftLeft)
+        AST.BinaryOperator.ShiftRight -> TackyBinaryOperator.NonShortCircuiting(Tacky.BinaryOperator.ShiftRight)
 
-            AST.BinaryOperator.LogicalAnd -> TackyBinaryOperator.ShortCircuitingAnd
-            AST.BinaryOperator.LogicalOr -> TackyBinaryOperator.ShortCircuitingOr
-        }
+        AST.BinaryOperator.LogicalAnd -> TackyBinaryOperator.ShortCircuitingAnd
+        AST.BinaryOperator.LogicalOr -> TackyBinaryOperator.ShortCircuitingOr
+    }
 
-    private fun AST.PostfixOperator.toTackyOperator(): Tacky.BinaryOperator =
-        when (this) {
-            AST.PostfixOperator.Increment -> Tacky.BinaryOperator.Add
-            AST.PostfixOperator.Decrement -> Tacky.BinaryOperator.Subtract
-        }
+    private fun AST.PostfixOperator.toTackyOperator(): Tacky.BinaryOperator = when (this) {
+        AST.PostfixOperator.Increment -> Tacky.BinaryOperator.Add
+        AST.PostfixOperator.Decrement -> Tacky.BinaryOperator.Subtract
+    }
 }
 
 private sealed interface TackyBinaryOperator {
@@ -703,3 +734,10 @@ private sealed interface TackyBinaryOperator {
 
     data object ShortCircuitingOr : TackyBinaryOperator
 }
+
+private sealed interface TackyExpressionResult {
+    data class PlainOperand(val value: Tacky.Value) : TackyExpressionResult
+    data class DereferencedPointer(val ptr: Tacky.Value) : TackyExpressionResult
+}
+
+private fun Tacky.Value.toPlainOperand() = TackyExpressionResult.PlainOperand(this)

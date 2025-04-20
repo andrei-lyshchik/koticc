@@ -30,9 +30,7 @@ class TackyProgramBuilder {
         topLevel += Tacky.TopLevel.StaticVariable(Tacky.StaticVariable(name, global = global, initialValue = InitialConstantValue.Long(initialValue), type = Type.Long))
     }
 
-    fun build(): Tacky.Program {
-        return Tacky.Program(topLevel, symbolTable)
-    }
+    fun build(): Tacky.Program = Tacky.Program(topLevel, symbolTable)
 }
 
 val Int.t

@@ -19,11 +19,15 @@ object AST {
     }
 
     sealed interface BlockItem : LocationAware {
-        data class Declaration(val declaration: AST.Declaration) : BlockItem, LocationAware {
+        data class Declaration(val declaration: AST.Declaration) :
+            BlockItem,
+            LocationAware {
             override val location: Location = declaration.location
         }
 
-        data class Statement(val statement: AST.Statement) : BlockItem, LocationAware {
+        data class Statement(val statement: AST.Statement) :
+            BlockItem,
+            LocationAware {
             override val location: Location = statement.location
         }
     }
@@ -197,7 +201,9 @@ object AST {
         }
     }
 
-    sealed interface Expression : LocationAware, Displayable {
+    sealed interface Expression :
+        LocationAware,
+        Displayable {
         // at parse time this would be null, and would be filled in during semantic analysis
         val type: Type.Data?
 

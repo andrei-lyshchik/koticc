@@ -68,11 +68,10 @@ fun AST.Statement.withDummyLocations(): AST.Statement = when (this) {
     is AST.Statement.BreakSwitch -> copy(location = DUMMY_LOCATION)
 }
 
-fun AST.ForInitializer.withDummyLocations(): AST.ForInitializer =
-    when (this) {
-        is AST.ForInitializer.Expression -> copy(expression = expression.withDummyLocations())
-        is AST.ForInitializer.Declaration -> copy(declaration = declaration.withDummyLocations())
-    }
+fun AST.ForInitializer.withDummyLocations(): AST.ForInitializer = when (this) {
+    is AST.ForInitializer.Expression -> copy(expression = expression.withDummyLocations())
+    is AST.ForInitializer.Declaration -> copy(declaration = declaration.withDummyLocations())
+}
 
 fun AST.Expression.withDummyLocations(): AST.Expression = when (this) {
     is AST.Expression.Constant -> copy(location = DUMMY_LOCATION)

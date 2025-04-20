@@ -19,15 +19,14 @@ data class SemanticAnalysisError(
     override fun message(): String = "semantic analysis error, at ${location.toDisplayString()}: $message"
 }
 
-fun semanticAnalysis(program: AST.Program): Either<SemanticAnalysisError, ValidASTProgram> =
-    either {
-        val identifierResolverResult = IdentifierResolver().resolveProgram(program).bind()
-        val gotoLabelResolverResult = GotoLabelResolver().resolveLabels(identifierResolverResult.program).bind()
-        val typecheckedProgram = Typechecker(identifierResolverResult.nameMapping).typecheck(gotoLabelResolverResult).bind()
-        val programWithResolvedLoopsAndSwitches = LoopAndSwitchResolver().resolveLoopsAndSwitches(typecheckedProgram.value).bind()
-        ValidASTProgram(
-            value = programWithResolvedLoopsAndSwitches,
-            renamedVariableCount = identifierResolverResult.renamedVariableCount,
-            symbolTable = typecheckedProgram.symbolTable,
-        )
-    }
+fun semanticAnalysis(program: AST.Program): Either<SemanticAnalysisError, ValidASTProgram> = either {
+    val identifierResolverResult = IdentifierResolver().resolveProgram(program).bind()
+    val gotoLabelResolverResult = GotoLabelResolver().resolveLabels(identifierResolverResult.program).bind()
+    val typecheckedProgram = Typechecker(identifierResolverResult.nameMapping).typecheck(gotoLabelResolverResult).bind()
+    val programWithResolvedLoopsAndSwitches = LoopAndSwitchResolver().resolveLoopsAndSwitches(typecheckedProgram.value).bind()
+    ValidASTProgram(
+        value = programWithResolvedLoopsAndSwitches,
+        renamedVariableCount = identifierResolverResult.renamedVariableCount,
+        symbolTable = typecheckedProgram.symbolTable,
+    )
+}

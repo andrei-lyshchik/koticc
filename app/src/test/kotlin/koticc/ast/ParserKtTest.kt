@@ -756,79 +756,62 @@ int main(void) {
         assertEquals(expected, parseInput(input))
     }
 
-    class IfStatementTestCases : VarargArgumentsProvider(
-        "if (a == 1) b = 2;" to
-            AST.Statement.If(
-                condition =
-                AST.Expression.Binary(
-                    operator = AST.BinaryOperator.Equal,
-                    left = AST.Expression.Variable(name = "a", type = null, location = Location(2, 9)),
-                    right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 14)),
-                    type = null,
-                ),
-                thenStatement =
-                AST.Statement.Expression(
-                    AST.Expression.Assignment(
-                        left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 17)),
-                        right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 21)),
-                        type = null,
-                    ),
-                ),
-                elseStatement = null,
-            ),
-        "if (a) b = 1; else b = 2;" to
-            AST.Statement.If(
-                condition = AST.Expression.Variable(name = "a", type = null, location = Location(2, 9)),
-                thenStatement =
-                AST.Statement.Expression(
-                    AST.Expression.Assignment(
-                        left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 12)),
-                        right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 16)),
-                        type = null,
-                    ),
-                ),
-                elseStatement =
-                AST.Statement.Expression(
-                    AST.Expression.Assignment(
-                        left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 24)),
-                        right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 28)),
-                        type = null,
-                    ),
-                ),
-            ),
-        "if (a == 1) b = 1; else if (a == 2) b = 2; else if (a == 3) b = 3;" to
-            AST.Statement.If(
-                condition =
-                AST.Expression.Binary(
-                    operator = AST.BinaryOperator.Equal,
-                    left = AST.Expression.Variable(name = "a", type = null, location = Location(line = 2, column = 9)),
-                    right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(line = 2, column = 14)),
-                    type = null,
-                ),
-                thenStatement =
-                AST.Statement.Expression(
-                    expression =
-                    AST.Expression.Assignment(
-                        left = AST.Expression.Variable(name = "b", type = null, location = Location(line = 2, column = 17)),
-                        right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(line = 2, column = 21)),
-                        type = null,
-                    ),
-                ),
-                elseStatement =
+    class IfStatementTestCases :
+        VarargArgumentsProvider(
+            "if (a == 1) b = 2;" to
                 AST.Statement.If(
                     condition =
                     AST.Expression.Binary(
                         operator = AST.BinaryOperator.Equal,
-                        left = AST.Expression.Variable(name = "a", type = null, location = Location(line = 2, column = 33)),
-                        right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(line = 2, column = 38)),
+                        left = AST.Expression.Variable(name = "a", type = null, location = Location(2, 9)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 14)),
+                        type = null,
+                    ),
+                    thenStatement =
+                    AST.Statement.Expression(
+                        AST.Expression.Assignment(
+                            left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 17)),
+                            right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 21)),
+                            type = null,
+                        ),
+                    ),
+                    elseStatement = null,
+                ),
+            "if (a) b = 1; else b = 2;" to
+                AST.Statement.If(
+                    condition = AST.Expression.Variable(name = "a", type = null, location = Location(2, 9)),
+                    thenStatement =
+                    AST.Statement.Expression(
+                        AST.Expression.Assignment(
+                            left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 12)),
+                            right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 16)),
+                            type = null,
+                        ),
+                    ),
+                    elseStatement =
+                    AST.Statement.Expression(
+                        AST.Expression.Assignment(
+                            left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 24)),
+                            right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 28)),
+                            type = null,
+                        ),
+                    ),
+                ),
+            "if (a == 1) b = 1; else if (a == 2) b = 2; else if (a == 3) b = 3;" to
+                AST.Statement.If(
+                    condition =
+                    AST.Expression.Binary(
+                        operator = AST.BinaryOperator.Equal,
+                        left = AST.Expression.Variable(name = "a", type = null, location = Location(line = 2, column = 9)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(line = 2, column = 14)),
                         type = null,
                     ),
                     thenStatement =
                     AST.Statement.Expression(
                         expression =
                         AST.Expression.Assignment(
-                            left = AST.Expression.Variable(name = "b", type = null, location = Location(line = 2, column = 41)),
-                            right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(line = 2, column = 45)),
+                            left = AST.Expression.Variable(name = "b", type = null, location = Location(line = 2, column = 17)),
+                            right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(line = 2, column = 21)),
                             type = null,
                         ),
                     ),
@@ -837,86 +820,104 @@ int main(void) {
                         condition =
                         AST.Expression.Binary(
                             operator = AST.BinaryOperator.Equal,
-                            left = AST.Expression.Variable(name = "a", type = null, location = Location(line = 2, column = 57)),
-                            right = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(line = 2, column = 62)),
+                            left = AST.Expression.Variable(name = "a", type = null, location = Location(line = 2, column = 33)),
+                            right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(line = 2, column = 38)),
                             type = null,
                         ),
                         thenStatement =
                         AST.Statement.Expression(
                             expression =
                             AST.Expression.Assignment(
-                                left = AST.Expression.Variable(name = "b", type = null, location = Location(line = 2, column = 65)),
-                                right = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(line = 2, column = 69)),
+                                left = AST.Expression.Variable(name = "b", type = null, location = Location(line = 2, column = 41)),
+                                right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(line = 2, column = 45)),
                                 type = null,
                             ),
                         ),
-                        elseStatement = null,
-                    ),
-                ),
-            ),
-        "if (a == 1) { int c = 1; b = c + 1; } else { b = 2; }" to
-            AST.Statement.If(
-                condition =
-                AST.Expression.Binary(
-                    operator = AST.BinaryOperator.Equal,
-                    left = AST.Expression.Variable(name = "a", type = null, location = Location(2, 9)),
-                    right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 14)),
-                    type = null,
-                ),
-                thenStatement =
-                AST.Statement.Compound(
-                    block =
-                    AST.Block(
-                        blockItems =
-                        listOf(
-                            AST.BlockItem.Declaration(
-                                declaration =
-                                AST.Declaration.Variable(
-                                    name = "c",
-                                    initializer = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 27)),
-                                    type = Type.Int,
-                                    storageClass = null,
-                                    location = Location(2, 19),
+                        elseStatement =
+                        AST.Statement.If(
+                            condition =
+                            AST.Expression.Binary(
+                                operator = AST.BinaryOperator.Equal,
+                                left = AST.Expression.Variable(name = "a", type = null, location = Location(line = 2, column = 57)),
+                                right = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(line = 2, column = 62)),
+                                type = null,
+                            ),
+                            thenStatement =
+                            AST.Statement.Expression(
+                                expression =
+                                AST.Expression.Assignment(
+                                    left = AST.Expression.Variable(name = "b", type = null, location = Location(line = 2, column = 65)),
+                                    right = AST.Expression.Constant(value = AST.IntConstant(3), type = null, location = Location(line = 2, column = 69)),
+                                    type = null,
                                 ),
                             ),
-                            AST.BlockItem.Statement(
-                                AST.Statement.Expression(
-                                    AST.Expression.Assignment(
-                                        left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 30)),
-                                        right =
-                                        AST.Expression.Binary(
-                                            operator = AST.BinaryOperator.Add,
-                                            left = AST.Expression.Variable(name = "c", type = null, location = Location(2, 34)),
-                                            right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 38)),
+                            elseStatement = null,
+                        ),
+                    ),
+                ),
+            "if (a == 1) { int c = 1; b = c + 1; } else { b = 2; }" to
+                AST.Statement.If(
+                    condition =
+                    AST.Expression.Binary(
+                        operator = AST.BinaryOperator.Equal,
+                        left = AST.Expression.Variable(name = "a", type = null, location = Location(2, 9)),
+                        right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 14)),
+                        type = null,
+                    ),
+                    thenStatement =
+                    AST.Statement.Compound(
+                        block =
+                        AST.Block(
+                            blockItems =
+                            listOf(
+                                AST.BlockItem.Declaration(
+                                    declaration =
+                                    AST.Declaration.Variable(
+                                        name = "c",
+                                        initializer = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 27)),
+                                        type = Type.Int,
+                                        storageClass = null,
+                                        location = Location(2, 19),
+                                    ),
+                                ),
+                                AST.BlockItem.Statement(
+                                    AST.Statement.Expression(
+                                        AST.Expression.Assignment(
+                                            left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 30)),
+                                            right =
+                                            AST.Expression.Binary(
+                                                operator = AST.BinaryOperator.Add,
+                                                left = AST.Expression.Variable(name = "c", type = null, location = Location(2, 34)),
+                                                right = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 38)),
+                                                type = null,
+                                            ),
                                             type = null,
                                         ),
-                                        type = null,
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                    elseStatement =
+                    AST.Statement.Compound(
+                        block =
+                        AST.Block(
+                            blockItems =
+                            listOf(
+                                AST.BlockItem.Statement(
+                                    AST.Statement.Expression(
+                                        AST.Expression.Assignment(
+                                            left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 50)),
+                                            right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 54)),
+                                            type = null,
+                                        ),
                                     ),
                                 ),
                             ),
                         ),
                     ),
                 ),
-                elseStatement =
-                AST.Statement.Compound(
-                    block =
-                    AST.Block(
-                        blockItems =
-                        listOf(
-                            AST.BlockItem.Statement(
-                                AST.Statement.Expression(
-                                    AST.Expression.Assignment(
-                                        left = AST.Expression.Variable(name = "b", type = null, location = Location(2, 50)),
-                                        right = AST.Expression.Constant(value = AST.IntConstant(2), type = null, location = Location(2, 54)),
-                                        type = null,
-                                    ),
-                                ),
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-    )
+        )
 
     @ParameterizedTest
     @ArgumentsSource(IfStatementTestCases::class)

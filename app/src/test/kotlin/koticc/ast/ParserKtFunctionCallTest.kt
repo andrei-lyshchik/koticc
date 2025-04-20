@@ -10,12 +10,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ParserKtFunctionCallTest {
-    class FunctionCallArgumentsTestCases : VarargArgumentsProvider(
-        "" to emptyList<AST.Expression>(),
-        "1" to listOf(1.e),
-        "1, 2" to listOf(1.e, 2.e),
-        "1 + 2, 3 * 4" to listOf(1.e + 2.e, 3.e * 4.e),
-    )
+    class FunctionCallArgumentsTestCases :
+        VarargArgumentsProvider(
+            "" to emptyList<AST.Expression>(),
+            "1" to listOf(1.e),
+            "1, 2" to listOf(1.e, 2.e),
+            "1 + 2, 3 * 4" to listOf(1.e + 2.e, 3.e * 4.e),
+        )
 
     @ParameterizedTest
     @ArgumentsSource(FunctionCallArgumentsTestCases::class)

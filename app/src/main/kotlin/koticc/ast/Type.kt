@@ -49,7 +49,7 @@ sealed interface Type : Displayable {
     }
 
     data class Pointer(
-        val referenced: Type,
+        val referenced: Type.Data,
     ) : Data {
         override fun signed(): Boolean = false
 

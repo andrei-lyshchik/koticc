@@ -54,11 +54,12 @@ class ASTToTackyKtTest {
         )
     }
 
-    class UnaryOperatorTestCases : VarargArgumentsProvider(
-        AST.UnaryOperator.Negate to Tacky.UnaryOperator.Negate,
-        AST.UnaryOperator.Complement to Tacky.UnaryOperator.Complement,
-        AST.UnaryOperator.LogicalNegate to Tacky.UnaryOperator.LogicalNegate,
-    )
+    class UnaryOperatorTestCases :
+        VarargArgumentsProvider(
+            AST.UnaryOperator.Negate to Tacky.UnaryOperator.Negate,
+            AST.UnaryOperator.Complement to Tacky.UnaryOperator.Complement,
+            AST.UnaryOperator.LogicalNegate to Tacky.UnaryOperator.LogicalNegate,
+        )
 
     @ParameterizedTest
     @ArgumentsSource(UnaryOperatorTestCases::class)
@@ -130,24 +131,25 @@ class ASTToTackyKtTest {
         )
     }
 
-    class NonShortCircuitingBinaryExpressionTestCases : VarargArgumentsProvider(
-        AST.BinaryOperator.Add to Tacky.BinaryOperator.Add,
-        AST.BinaryOperator.Subtract to Tacky.BinaryOperator.Subtract,
-        AST.BinaryOperator.Multiply to Tacky.BinaryOperator.Multiply,
-        AST.BinaryOperator.Divide to Tacky.BinaryOperator.Divide,
-        AST.BinaryOperator.Modulo to Tacky.BinaryOperator.Modulo,
-        AST.BinaryOperator.LessThan to Tacky.BinaryOperator.LessThan,
-        AST.BinaryOperator.LessThanOrEqual to Tacky.BinaryOperator.LessThanOrEqual,
-        AST.BinaryOperator.Equal to Tacky.BinaryOperator.Equal,
-        AST.BinaryOperator.NotEqual to Tacky.BinaryOperator.NotEqual,
-        AST.BinaryOperator.GreaterThan to Tacky.BinaryOperator.GreaterThan,
-        AST.BinaryOperator.GreaterThanOrEqual to Tacky.BinaryOperator.GreaterThanOrEqual,
-        AST.BinaryOperator.BitwiseAnd to Tacky.BinaryOperator.BitwiseAnd,
-        AST.BinaryOperator.BitwiseOr to Tacky.BinaryOperator.BitwiseOr,
-        AST.BinaryOperator.BitwiseXor to Tacky.BinaryOperator.BitwiseXor,
-        AST.BinaryOperator.ShiftLeft to Tacky.BinaryOperator.ShiftLeft,
-        AST.BinaryOperator.ShiftRight to Tacky.BinaryOperator.ShiftRight,
-    )
+    class NonShortCircuitingBinaryExpressionTestCases :
+        VarargArgumentsProvider(
+            AST.BinaryOperator.Add to Tacky.BinaryOperator.Add,
+            AST.BinaryOperator.Subtract to Tacky.BinaryOperator.Subtract,
+            AST.BinaryOperator.Multiply to Tacky.BinaryOperator.Multiply,
+            AST.BinaryOperator.Divide to Tacky.BinaryOperator.Divide,
+            AST.BinaryOperator.Modulo to Tacky.BinaryOperator.Modulo,
+            AST.BinaryOperator.LessThan to Tacky.BinaryOperator.LessThan,
+            AST.BinaryOperator.LessThanOrEqual to Tacky.BinaryOperator.LessThanOrEqual,
+            AST.BinaryOperator.Equal to Tacky.BinaryOperator.Equal,
+            AST.BinaryOperator.NotEqual to Tacky.BinaryOperator.NotEqual,
+            AST.BinaryOperator.GreaterThan to Tacky.BinaryOperator.GreaterThan,
+            AST.BinaryOperator.GreaterThanOrEqual to Tacky.BinaryOperator.GreaterThanOrEqual,
+            AST.BinaryOperator.BitwiseAnd to Tacky.BinaryOperator.BitwiseAnd,
+            AST.BinaryOperator.BitwiseOr to Tacky.BinaryOperator.BitwiseOr,
+            AST.BinaryOperator.BitwiseXor to Tacky.BinaryOperator.BitwiseXor,
+            AST.BinaryOperator.ShiftLeft to Tacky.BinaryOperator.ShiftLeft,
+            AST.BinaryOperator.ShiftRight to Tacky.BinaryOperator.ShiftRight,
+        )
 
     @ParameterizedTest
     @ArgumentsSource(NonShortCircuitingBinaryExpressionTestCases::class)
@@ -449,10 +451,11 @@ class ASTToTackyKtTest {
         )
     }
 
-    class PostfixTestCases : VarargArgumentsProvider(
-        AST.PostfixOperator.Increment to Tacky.BinaryOperator.Add,
-        AST.PostfixOperator.Decrement to Tacky.BinaryOperator.Subtract,
-    )
+    class PostfixTestCases :
+        VarargArgumentsProvider(
+            AST.PostfixOperator.Increment to Tacky.BinaryOperator.Add,
+            AST.PostfixOperator.Decrement to Tacky.BinaryOperator.Subtract,
+        )
 
     @ParameterizedTest
     @ArgumentsSource(PostfixTestCases::class)

@@ -24,14 +24,13 @@ private class Parser(
 ) {
     var current = 0
 
-    fun parse(): Either<ParserError, AST.Program> =
-        either {
-            val declarations = mutableListOf<AST.Declaration>()
-            while (peekToken() != null) {
-                declarations.add(parseDeclaration().bind())
-            }
-            AST.Program(declarations)
+    fun parse(): Either<ParserError, AST.Program> = either {
+        val declarations = mutableListOf<AST.Declaration>()
+        while (peekToken() != null) {
+            declarations.add(parseDeclaration().bind())
         }
+        AST.Program(declarations)
+    }
 
     private fun peekToken(): TokenWithLocation? = tokens.getOrNull(current)
 
@@ -68,86 +67,81 @@ private class Parser(
         }
     }
 
-    private fun parseBlock(): Either<ParserError, AST.Block> =
-        either {
-            expectToken(Token.OpenBrace).bind()
-            val body = mutableListOf<AST.BlockItem>()
-            while (peekToken()?.value != Token.CloseBrace) {
-                body.add(parseBlockItem().bind())
-            }
-            expectToken(Token.CloseBrace).bind()
-            AST.Block(body)
+    private fun parseBlock(): Either<ParserError, AST.Block> = either {
+        expectToken(Token.OpenBrace).bind()
+        val body = mutableListOf<AST.BlockItem>()
+        while (peekToken()?.value != Token.CloseBrace) {
+            body.add(parseBlockItem().bind())
         }
+        expectToken(Token.CloseBrace).bind()
+        AST.Block(body)
+    }
 
-    private fun parseBlockItem(): Either<ParserError, AST.BlockItem> =
-        either {
-            when {
-                isDeclarationSpecifier(peekToken()?.value) -> {
-                    AST.BlockItem.Declaration(parseDeclaration().bind())
-                }
-                else -> {
-                    AST.BlockItem.Statement(parseStatement().bind())
-                }
+    private fun parseBlockItem(): Either<ParserError, AST.BlockItem> = either {
+        when {
+            isDeclarationSpecifier(peekToken()?.value) -> {
+                AST.BlockItem.Declaration(parseDeclaration().bind())
+            }
+            else -> {
+                AST.BlockItem.Statement(parseStatement().bind())
             }
         }
+    }
 
-    private fun isDeclarationSpecifier(token: Token?): Boolean =
-        token != null && toDeclarationSpecifierOrNull(token) != null
+    private fun isDeclarationSpecifier(token: Token?): Boolean = token != null && toDeclarationSpecifierOrNull(token) != null
 
-    private fun toDeclarationSpecifierOrNull(token: Token): DeclarationSpecifier? =
-        when (token) {
-            Token.IntKeyword -> DeclarationSpecifier.Type.Int
-            Token.LongKeyword -> DeclarationSpecifier.Type.Long
-            Token.SignedKeyword -> DeclarationSpecifier.Type.Signed
-            Token.UnsignedKeyword -> DeclarationSpecifier.Type.Unsigned
-            Token.DoubleKeyword -> DeclarationSpecifier.Type.Double
-            Token.Extern -> DeclarationSpecifier.StorageClass.Extern
-            Token.Static -> DeclarationSpecifier.StorageClass.Static
-            else -> null
-        }
+    private fun toDeclarationSpecifierOrNull(token: Token): DeclarationSpecifier? = when (token) {
+        Token.IntKeyword -> DeclarationSpecifier.Type.Int
+        Token.LongKeyword -> DeclarationSpecifier.Type.Long
+        Token.SignedKeyword -> DeclarationSpecifier.Type.Signed
+        Token.UnsignedKeyword -> DeclarationSpecifier.Type.Unsigned
+        Token.DoubleKeyword -> DeclarationSpecifier.Type.Double
+        Token.Extern -> DeclarationSpecifier.StorageClass.Extern
+        Token.Static -> DeclarationSpecifier.StorageClass.Static
+        else -> null
+    }
 
-    private fun parseDeclaration(): Either<ParserError, AST.Declaration> =
-        either {
-            val declarationSpecifiers = parseDeclarationSpecifiers().bind()
-            val declarator = parseDeclarator().bind()
-            val processedDeclarator = processDeclarator(declarator, declarationSpecifiers.type).bind()
-            when (processedDeclarator.type) {
-                is Type.Data -> {
-                    val initializer = if (peekToken()?.value == Token.Equal) {
-                        nextToken()
-                        val initializer = parseExpression(0).bind()
-                        expectToken(Token.Semicolon).bind()
-                        initializer
-                    } else {
-                        expectToken(Token.Semicolon).bind()
-                        null
-                    }
-                    AST.Declaration.Variable(
-                        processedDeclarator.identifier.value.value,
-                        initializer,
-                        processedDeclarator.type,
-                        declarationSpecifiers.storageClass,
-                        declarationSpecifiers.location,
-                    )
+    private fun parseDeclaration(): Either<ParserError, AST.Declaration> = either {
+        val declarationSpecifiers = parseDeclarationSpecifiers().bind()
+        val declarator = parseDeclarator().bind()
+        val processedDeclarator = processDeclarator(declarator, declarationSpecifiers.type).bind()
+        when (processedDeclarator.type) {
+            is Type.Data -> {
+                val initializer = if (peekToken()?.value == Token.Equal) {
+                    nextToken()
+                    val initializer = parseExpression(0).bind()
+                    expectToken(Token.Semicolon).bind()
+                    initializer
+                } else {
+                    expectToken(Token.Semicolon).bind()
+                    null
                 }
-                is Type.Function -> {
-                    val body = if (peekToken()?.value == Token.OpenBrace) {
-                        parseBlock().bind()
-                    } else {
-                        expectToken(Token.Semicolon).bind()
-                        null
-                    }
-                    AST.Declaration.Function(
-                        processedDeclarator.identifier.value.value,
-                        processedDeclarator.params,
-                        body,
-                        processedDeclarator.type,
-                        declarationSpecifiers.storageClass,
-                        declarationSpecifiers.location,
-                    )
+                AST.Declaration.Variable(
+                    processedDeclarator.identifier.value.value,
+                    initializer,
+                    processedDeclarator.type,
+                    declarationSpecifiers.storageClass,
+                    declarationSpecifiers.location,
+                )
+            }
+            is Type.Function -> {
+                val body = if (peekToken()?.value == Token.OpenBrace) {
+                    parseBlock().bind()
+                } else {
+                    expectToken(Token.Semicolon).bind()
+                    null
                 }
+                AST.Declaration.Function(
+                    processedDeclarator.identifier.value.value,
+                    processedDeclarator.params,
+                    body,
+                    processedDeclarator.type,
+                    declarationSpecifiers.storageClass,
+                    declarationSpecifiers.location,
+                )
             }
         }
+    }
 
     private fun parseDeclarator(): Either<ParserError, Declarator> = either {
         when (peekToken()?.value) {
@@ -211,7 +205,7 @@ private class Parser(
         }
     }
 
-    private fun processDeclarator(declarator: Declarator, baseType: Type): Either<ParserError, ProcessedDeclarator> = either {
+    private fun processDeclarator(declarator: Declarator, baseType: Type.Data): Either<ParserError, ProcessedDeclarator> = either {
         when (declarator) {
             is Declarator.Identifier -> ProcessedDeclarator(
                 identifier = declarator.value,
@@ -335,320 +329,315 @@ private class Parser(
         return ParserError("invalid type specifier: '$typeSpecifierString'", startLocation)
     }
 
-    private fun DeclarationSpecifier.StorageClass.toASTStorageClass() =
-        when (this) {
-            DeclarationSpecifier.StorageClass.Extern -> AST.StorageClass.Extern
-            DeclarationSpecifier.StorageClass.Static -> AST.StorageClass.Static
-        }
+    private fun DeclarationSpecifier.StorageClass.toASTStorageClass() = when (this) {
+        DeclarationSpecifier.StorageClass.Extern -> AST.StorageClass.Extern
+        DeclarationSpecifier.StorageClass.Static -> AST.StorageClass.Static
+    }
 
-    private fun parseStatement(): Either<ParserError, AST.Statement> =
-        either {
-            val peekToken = peekToken()
-            when (peekToken?.value) {
-                Token.Return -> {
-                    nextToken()
-                    val expression = parseExpression(0).bind()
-                    expectToken(Token.Semicolon).bind()
-                    AST.Statement.Return(expression, peekToken.location)
-                }
-                Token.Semicolon -> {
-                    nextToken()
-                    AST.Statement.Null(peekToken.location)
-                }
-                Token.If -> {
-                    nextToken()
-                    expectToken(Token.OpenParen).bind()
-                    val condition = parseExpression(0).bind()
-                    expectToken(Token.CloseParen).bind()
-                    val thenStatement = parseStatement().bind()
-                    val elseStatement =
-                        if (peekToken()?.value == Token.Else) {
-                            nextToken()
-                            parseStatement().bind()
-                        } else {
-                            null
-                        }
-                    AST.Statement.If(condition, thenStatement, elseStatement)
-                }
-                is Token.Identifier -> {
-                    if (peekTokenAfterPeek()?.value == Token.Colon) {
-                        val labelToken = expectIdentifier().bind()
-                        expectToken(Token.Colon).bind()
-                        val statement = parseStatement().bind()
-                        AST.Statement.Labeled(LabelName(labelToken.value.value), statement, labelToken.location)
+    private fun parseStatement(): Either<ParserError, AST.Statement> = either {
+        val peekToken = peekToken()
+        when (peekToken?.value) {
+            Token.Return -> {
+                nextToken()
+                val expression = parseExpression(0).bind()
+                expectToken(Token.Semicolon).bind()
+                AST.Statement.Return(expression, peekToken.location)
+            }
+            Token.Semicolon -> {
+                nextToken()
+                AST.Statement.Null(peekToken.location)
+            }
+            Token.If -> {
+                nextToken()
+                expectToken(Token.OpenParen).bind()
+                val condition = parseExpression(0).bind()
+                expectToken(Token.CloseParen).bind()
+                val thenStatement = parseStatement().bind()
+                val elseStatement =
+                    if (peekToken()?.value == Token.Else) {
+                        nextToken()
+                        parseStatement().bind()
                     } else {
-                        val expression = parseExpression(0).bind()
-                        expectToken(Token.Semicolon).bind()
-                        AST.Statement.Expression(expression)
+                        null
                     }
-                }
-                Token.Goto -> {
-                    val gotoToken = expectToken(Token.Goto).bind()
+                AST.Statement.If(condition, thenStatement, elseStatement)
+            }
+            is Token.Identifier -> {
+                if (peekTokenAfterPeek()?.value == Token.Colon) {
                     val labelToken = expectIdentifier().bind()
-                    expectToken(Token.Semicolon).bind()
-                    AST.Statement.Goto(LabelName(labelToken.value.value), gotoToken.location)
-                }
-                Token.OpenBrace -> {
-                    val block = parseBlock().bind()
-                    AST.Statement.Compound(block)
-                }
-                Token.Do -> {
-                    val doToken = expectToken(Token.Do).bind()
+                    expectToken(Token.Colon).bind()
                     val statement = parseStatement().bind()
-                    expectToken(Token.While).bind()
-                    expectToken(Token.OpenParen).bind()
-                    val condition = parseExpression(0).bind()
-                    expectToken(Token.CloseParen).bind()
-                    expectToken(Token.Semicolon).bind()
-                    AST.Statement.DoWhile(
-                        body = statement,
-                        condition = condition,
-                        loopId = null,
-                        location = doToken.location,
-                    )
-                }
-                Token.While -> {
-                    val whileToken = expectToken(Token.While).bind()
-                    expectToken(Token.OpenParen).bind()
-                    val condition = parseExpression(0).bind()
-                    expectToken(Token.CloseParen).bind()
-                    val body = parseStatement().bind()
-                    AST.Statement.While(
-                        condition = condition,
-                        body = body,
-                        loopId = null,
-                        location = whileToken.location,
-                    )
-                }
-                Token.For -> {
-                    val forToken = expectToken(Token.For).bind()
-                    expectToken(Token.OpenParen).bind()
-                    val initializer = when {
-                        isDeclarationSpecifier(peekToken()?.value) -> when (val declaration = parseDeclaration().bind()) {
-                            is AST.Declaration.Variable -> AST.ForInitializer.Declaration(declaration)
-                            is AST.Declaration.Function -> raise(
-                                ParserError(
-                                    "expected variable declaration in for initializer, got function declaration '${declaration.name}'",
-                                    declaration.location,
-                                ),
-                            )
-                        }
-                        else -> parseOptionalExpression(Token.Semicolon).bind()?.let(AST.ForInitializer::Expression)
-                    }
-                    val condition =
-                        parseOptionalExpression(Token.Semicolon).bind()
-                    val post =
-                        parseOptionalExpression(Token.CloseParen).bind()
-                    val body = parseStatement().bind()
-                    AST.Statement.For(
-                        initializer = initializer,
-                        condition = condition,
-                        post = post,
-                        body = body,
-                        loopId = null,
-                        location = forToken.location,
-                    )
-                }
-                Token.Break -> {
-                    val breakToken = expectToken(Token.Break).bind()
-                    expectToken(Token.Semicolon).bind()
-                    AST.Statement.Break(breakToken.location)
-                }
-                Token.Continue -> {
-                    val continueToken = expectToken(Token.Continue).bind()
-                    expectToken(Token.Semicolon).bind()
-                    AST.Statement.Continue(loopId = null, continueToken.location)
-                }
-                Token.Switch -> {
-                    val switchToken = expectToken(Token.Switch).bind()
-                    expectToken(Token.OpenParen).bind()
-                    val expression = parseExpression(0).bind()
-                    expectToken(Token.CloseParen).bind()
-                    val body = parseStatement().bind()
-                    AST.Statement.Switch(
-                        expression = expression,
-                        body = body,
-                        location = switchToken.location,
-                        switchId = null,
-                        caseExpressions = null,
-                        hasDefault = false,
-                    )
-                }
-                Token.Case -> {
-                    val caseToken = expectToken(Token.Case).bind()
-                    val expression = parseExpression(0).bind()
-                    expectToken(Token.Colon).bind()
-                    val body = parseStatement().bind()
-                    AST.Statement.Case(
-                        expression = expression,
-                        body = body,
-                        location = caseToken.location,
-                        switchId = null,
-                        caseId = null,
-                    )
-                }
-                Token.Default -> {
-                    val defaultToken = expectToken(Token.Default).bind()
-                    expectToken(Token.Colon).bind()
-                    val body = parseStatement().bind()
-                    AST.Statement.Default(
-                        body = body,
-                        location = defaultToken.location,
-                        switchId = null,
-                    )
-                }
-                else -> {
+                    AST.Statement.Labeled(LabelName(labelToken.value.value), statement, labelToken.location)
+                } else {
                     val expression = parseExpression(0).bind()
                     expectToken(Token.Semicolon).bind()
                     AST.Statement.Expression(expression)
                 }
             }
-        }
-
-    private fun parseOptionalExpression(endToken: Token): Either<ParserError, AST.Expression?> =
-        either {
-            val expression = if (peekToken()?.value == endToken) {
-                null
-            } else {
-                parseExpression(0).bind()
+            Token.Goto -> {
+                val gotoToken = expectToken(Token.Goto).bind()
+                val labelToken = expectIdentifier().bind()
+                expectToken(Token.Semicolon).bind()
+                AST.Statement.Goto(LabelName(labelToken.value.value), gotoToken.location)
             }
-            expectToken(endToken).bind()
-            expression
-        }
-
-    private fun parseExpression(minPrecedence: Int): Either<ParserError, AST.Expression> =
-        either {
-            var left = parseFactor().bind()
-            var binaryOperatorLike = peekToken()?.let(::toBinaryOperatorLikeOrNull)
-            while (binaryOperatorLike != null) {
-                val precedence = binaryOperatorLike.precedence()
-                if (precedence < minPrecedence) {
-                    break
+            Token.OpenBrace -> {
+                val block = parseBlock().bind()
+                AST.Statement.Compound(block)
+            }
+            Token.Do -> {
+                val doToken = expectToken(Token.Do).bind()
+                val statement = parseStatement().bind()
+                expectToken(Token.While).bind()
+                expectToken(Token.OpenParen).bind()
+                val condition = parseExpression(0).bind()
+                expectToken(Token.CloseParen).bind()
+                expectToken(Token.Semicolon).bind()
+                AST.Statement.DoWhile(
+                    body = statement,
+                    condition = condition,
+                    loopId = null,
+                    location = doToken.location,
+                )
+            }
+            Token.While -> {
+                val whileToken = expectToken(Token.While).bind()
+                expectToken(Token.OpenParen).bind()
+                val condition = parseExpression(0).bind()
+                expectToken(Token.CloseParen).bind()
+                val body = parseStatement().bind()
+                AST.Statement.While(
+                    condition = condition,
+                    body = body,
+                    loopId = null,
+                    location = whileToken.location,
+                )
+            }
+            Token.For -> {
+                val forToken = expectToken(Token.For).bind()
+                expectToken(Token.OpenParen).bind()
+                val initializer = when {
+                    isDeclarationSpecifier(peekToken()?.value) -> when (val declaration = parseDeclaration().bind()) {
+                        is AST.Declaration.Variable -> AST.ForInitializer.Declaration(declaration)
+                        is AST.Declaration.Function -> raise(
+                            ParserError(
+                                "expected variable declaration in for initializer, got function declaration '${declaration.name}'",
+                                declaration.location,
+                            ),
+                        )
+                    }
+                    else -> parseOptionalExpression(Token.Semicolon).bind()?.let(AST.ForInitializer::Expression)
                 }
-                nextToken()
-                left =
-                    when (binaryOperatorLike) {
-                        is BinaryOperatorLike.BinaryOperator ->
-                            AST.Expression.Binary(
-                                operator = binaryOperatorLike.value,
-                                left = left,
-                                // minPrecedence = precedence + 1 => left associative
-                                right = parseExpression(precedence + 1).bind(),
-                                type = null,
-                            )
-                        is BinaryOperatorLike.Assignment ->
-                            AST.Expression.Assignment(
-                                left = left,
-                                // minPrecedence = precedence => right associative
-                                right = parseExpression(precedence).bind(),
-                                type = null,
-                            )
-                        is BinaryOperatorLike.CompoundAssignmentOperator ->
-                            compoundAssignment(
-                                operator = binaryOperatorLike.value,
-                                left = left,
-                                // minPrecedence = precedence => right associative
-                                right = parseExpression(precedence).bind(),
-                            )
-                        is BinaryOperatorLike.Conditional -> {
-                            // any expression can be between ? and : - even assignment
-                            val thenExpression = parseExpression(0).bind()
-                            expectToken(Token.Colon).bind()
+                val condition =
+                    parseOptionalExpression(Token.Semicolon).bind()
+                val post =
+                    parseOptionalExpression(Token.CloseParen).bind()
+                val body = parseStatement().bind()
+                AST.Statement.For(
+                    initializer = initializer,
+                    condition = condition,
+                    post = post,
+                    body = body,
+                    loopId = null,
+                    location = forToken.location,
+                )
+            }
+            Token.Break -> {
+                val breakToken = expectToken(Token.Break).bind()
+                expectToken(Token.Semicolon).bind()
+                AST.Statement.Break(breakToken.location)
+            }
+            Token.Continue -> {
+                val continueToken = expectToken(Token.Continue).bind()
+                expectToken(Token.Semicolon).bind()
+                AST.Statement.Continue(loopId = null, continueToken.location)
+            }
+            Token.Switch -> {
+                val switchToken = expectToken(Token.Switch).bind()
+                expectToken(Token.OpenParen).bind()
+                val expression = parseExpression(0).bind()
+                expectToken(Token.CloseParen).bind()
+                val body = parseStatement().bind()
+                AST.Statement.Switch(
+                    expression = expression,
+                    body = body,
+                    location = switchToken.location,
+                    switchId = null,
+                    caseExpressions = null,
+                    hasDefault = false,
+                )
+            }
+            Token.Case -> {
+                val caseToken = expectToken(Token.Case).bind()
+                val expression = parseExpression(0).bind()
+                expectToken(Token.Colon).bind()
+                val body = parseStatement().bind()
+                AST.Statement.Case(
+                    expression = expression,
+                    body = body,
+                    location = caseToken.location,
+                    switchId = null,
+                    caseId = null,
+                )
+            }
+            Token.Default -> {
+                val defaultToken = expectToken(Token.Default).bind()
+                expectToken(Token.Colon).bind()
+                val body = parseStatement().bind()
+                AST.Statement.Default(
+                    body = body,
+                    location = defaultToken.location,
+                    switchId = null,
+                )
+            }
+            else -> {
+                val expression = parseExpression(0).bind()
+                expectToken(Token.Semicolon).bind()
+                AST.Statement.Expression(expression)
+            }
+        }
+    }
+
+    private fun parseOptionalExpression(endToken: Token): Either<ParserError, AST.Expression?> = either {
+        val expression = if (peekToken()?.value == endToken) {
+            null
+        } else {
+            parseExpression(0).bind()
+        }
+        expectToken(endToken).bind()
+        expression
+    }
+
+    private fun parseExpression(minPrecedence: Int): Either<ParserError, AST.Expression> = either {
+        var left = parseFactor().bind()
+        var binaryOperatorLike = peekToken()?.let(::toBinaryOperatorLikeOrNull)
+        while (binaryOperatorLike != null) {
+            val precedence = binaryOperatorLike.precedence()
+            if (precedence < minPrecedence) {
+                break
+            }
+            nextToken()
+            left =
+                when (binaryOperatorLike) {
+                    is BinaryOperatorLike.BinaryOperator ->
+                        AST.Expression.Binary(
+                            operator = binaryOperatorLike.value,
+                            left = left,
+                            // minPrecedence = precedence + 1 => left associative
+                            right = parseExpression(precedence + 1).bind(),
+                            type = null,
+                        )
+                    is BinaryOperatorLike.Assignment ->
+                        AST.Expression.Assignment(
+                            left = left,
                             // minPrecedence = precedence => right associative
-                            val elseExpression = parseExpression(precedence).bind()
-                            AST.Expression.Conditional(
-                                condition = left,
-                                thenExpression = thenExpression,
-                                elseExpression = elseExpression,
-                                type = null,
-                            )
-                        }
+                            right = parseExpression(precedence).bind(),
+                            type = null,
+                        )
+                    is BinaryOperatorLike.CompoundAssignmentOperator ->
+                        compoundAssignment(
+                            operator = binaryOperatorLike.value,
+                            left = left,
+                            // minPrecedence = precedence => right associative
+                            right = parseExpression(precedence).bind(),
+                        )
+                    is BinaryOperatorLike.Conditional -> {
+                        // any expression can be between ? and : - even assignment
+                        val thenExpression = parseExpression(0).bind()
+                        expectToken(Token.Colon).bind()
+                        // minPrecedence = precedence => right associative
+                        val elseExpression = parseExpression(precedence).bind()
+                        AST.Expression.Conditional(
+                            condition = left,
+                            thenExpression = thenExpression,
+                            elseExpression = elseExpression,
+                            type = null,
+                        )
                     }
-                binaryOperatorLike = peekToken()?.let(::toBinaryOperatorLikeOrNull)
-            }
-
-            left
-        }
-
-    private fun parseFactor(): Either<ParserError, AST.Expression> =
-        either {
-            val peekToken = peekToken()
-            var factor =
-                when (val peekTokenValue = peekToken?.value) {
-                    is Token.IntLiteral -> {
-                        nextToken()
-                        AST.Expression.Constant(AST.IntConstant(peekTokenValue.value), null, peekToken.location)
-                    }
-                    is Token.LongLiteral -> {
-                        nextToken()
-                        AST.Expression.Constant(AST.LongConstant(peekTokenValue.value), null, peekToken.location)
-                    }
-                    is Token.UIntLiteral -> {
-                        nextToken()
-                        AST.Expression.Constant(AST.UIntConstant(peekTokenValue.value), null, peekToken.location)
-                    }
-                    is Token.ULongLiteral -> {
-                        nextToken()
-                        AST.Expression.Constant(AST.ULongConstant(peekTokenValue.value), null, peekToken.location)
-                    }
-                    is Token.DoubleLiteral -> {
-                        nextToken()
-                        AST.Expression.Constant(AST.DoubleConstant(peekTokenValue.value), null, peekToken.location)
-                    }
-                    is Token.Identifier -> {
-                        nextToken()
-                        if (peekToken()?.value == Token.OpenParen) {
-                            nextToken()
-                            val arguments = parseFunctionCallArguments().bind()
-                            expectToken(Token.CloseParen).bind()
-                            AST.Expression.FunctionCall(
-                                name = peekTokenValue.value,
-                                arguments = arguments,
-                                location = peekToken.location,
-                                type = null,
-                            )
-                        } else {
-                            AST.Expression.Variable(peekTokenValue.value, null, peekToken.location)
-                        }
-                    }
-                    is Token.OpenParen -> {
-                        val openParen = expectToken(Token.OpenParen).bind()
-                        val possibleTypeSpecifier = peekToken()
-                        if (isDeclarationSpecifier(possibleTypeSpecifier?.value)) {
-                            parseCast(openParen.location).bind()
-                        } else {
-                            val expression = parseExpression(0).bind()
-                            expectToken(Token.CloseParen).bind()
-                            expression
-                        }
-                    }
-                    is Token.Minus,
-                    Token.Tilde,
-                    Token.Exclamation,
-                    Token.Asterisk,
-                    Token.Ampersand,
-                    -> {
-                        parseUnary().bind()
-                    }
-                    is Token.DoublePlus, Token.DoubleMinus -> {
-                        parseFactorWithPossiblePrefix().bind()
-                    }
-                    else -> raise(ParserError("expected factor, got ${peekTokenValue.toDisplayString()}", peekToken?.location))
                 }
-            var postfixOperator = peekToken()?.value?.toPostfixOperatorOrNull()
-            while (postfixOperator != null) {
-                nextToken()
-                factor =
-                    AST.Expression.Postfix(
-                        operator = postfixOperator,
-                        operand = factor,
-                        type = null,
-                    )
-                postfixOperator = peekToken()?.value?.toPostfixOperatorOrNull()
-            }
-
-            factor
+            binaryOperatorLike = peekToken()?.let(::toBinaryOperatorLikeOrNull)
         }
+
+        left
+    }
+
+    private fun parseFactor(): Either<ParserError, AST.Expression> = either {
+        val peekToken = peekToken()
+        var factor =
+            when (val peekTokenValue = peekToken?.value) {
+                is Token.IntLiteral -> {
+                    nextToken()
+                    AST.Expression.Constant(AST.IntConstant(peekTokenValue.value), null, peekToken.location)
+                }
+                is Token.LongLiteral -> {
+                    nextToken()
+                    AST.Expression.Constant(AST.LongConstant(peekTokenValue.value), null, peekToken.location)
+                }
+                is Token.UIntLiteral -> {
+                    nextToken()
+                    AST.Expression.Constant(AST.UIntConstant(peekTokenValue.value), null, peekToken.location)
+                }
+                is Token.ULongLiteral -> {
+                    nextToken()
+                    AST.Expression.Constant(AST.ULongConstant(peekTokenValue.value), null, peekToken.location)
+                }
+                is Token.DoubleLiteral -> {
+                    nextToken()
+                    AST.Expression.Constant(AST.DoubleConstant(peekTokenValue.value), null, peekToken.location)
+                }
+                is Token.Identifier -> {
+                    nextToken()
+                    if (peekToken()?.value == Token.OpenParen) {
+                        nextToken()
+                        val arguments = parseFunctionCallArguments().bind()
+                        expectToken(Token.CloseParen).bind()
+                        AST.Expression.FunctionCall(
+                            name = peekTokenValue.value,
+                            arguments = arguments,
+                            location = peekToken.location,
+                            type = null,
+                        )
+                    } else {
+                        AST.Expression.Variable(peekTokenValue.value, null, peekToken.location)
+                    }
+                }
+                is Token.OpenParen -> {
+                    val openParen = expectToken(Token.OpenParen).bind()
+                    val possibleTypeSpecifier = peekToken()
+                    if (isDeclarationSpecifier(possibleTypeSpecifier?.value)) {
+                        parseCast(openParen.location).bind()
+                    } else {
+                        val expression = parseExpression(0).bind()
+                        expectToken(Token.CloseParen).bind()
+                        expression
+                    }
+                }
+                is Token.Minus,
+                Token.Tilde,
+                Token.Exclamation,
+                Token.Asterisk,
+                Token.Ampersand,
+                -> {
+                    parseUnary().bind()
+                }
+                is Token.DoublePlus, Token.DoubleMinus -> {
+                    parseFactorWithPossiblePrefix().bind()
+                }
+                else -> raise(ParserError("expected factor, got ${peekTokenValue.toDisplayString()}", peekToken?.location))
+            }
+        var postfixOperator = peekToken()?.value?.toPostfixOperatorOrNull()
+        while (postfixOperator != null) {
+            nextToken()
+            factor =
+                AST.Expression.Postfix(
+                    operator = postfixOperator,
+                    operand = factor,
+                    type = null,
+                )
+            postfixOperator = peekToken()?.value?.toPostfixOperatorOrNull()
+        }
+
+        factor
+    }
 
     private fun parseCast(location: Location) = either {
         val baseType = parseType().bind()
@@ -718,29 +707,28 @@ private class Parser(
         arguments
     }
 
-    private fun parseFactorWithPossiblePrefix(): Either<ParserError, AST.Expression> =
-        either {
-            val peekToken = peekToken()
-            val operator =
-                when (peekToken?.value) {
-                    Token.DoublePlus -> AST.BinaryOperator.Add
-                    Token.DoubleMinus -> AST.BinaryOperator.Subtract
-                    else ->
-                        raise(
-                            ParserError(
-                                "expected prefix increment or decrement, got ${peekToken?.value.toDisplayString()}",
-                                peekToken?.location,
-                            ),
-                        )
-                }
-            nextToken()
-            val operand = parseFactor().bind()
-            compoundAssignment(
-                operator = operator,
-                left = operand,
-                right = AST.Expression.Constant(AST.IntConstant(1), null, peekToken.location),
-            )
-        }
+    private fun parseFactorWithPossiblePrefix(): Either<ParserError, AST.Expression> = either {
+        val peekToken = peekToken()
+        val operator =
+            when (peekToken?.value) {
+                Token.DoublePlus -> AST.BinaryOperator.Add
+                Token.DoubleMinus -> AST.BinaryOperator.Subtract
+                else ->
+                    raise(
+                        ParserError(
+                            "expected prefix increment or decrement, got ${peekToken?.value.toDisplayString()}",
+                            peekToken?.location,
+                        ),
+                    )
+            }
+        nextToken()
+        val operand = parseFactor().bind()
+        compoundAssignment(
+            operator = operator,
+            left = operand,
+            right = AST.Expression.Constant(AST.IntConstant(1), null, peekToken.location),
+        )
+    }
 
     private fun compoundAssignment(
         left: AST.Expression,
@@ -757,160 +745,155 @@ private class Parser(
         type = null,
     )
 
-    private fun parseUnary(): Either<ParserError, AST.Expression> =
-        either {
-            val peekToken = peekToken()
-            val unaryOperatorLike =
-                when (peekToken?.value) {
-                    Token.Minus -> UnaryOperatorLike.UnaryOperator(AST.UnaryOperator.Negate)
-                    Token.Tilde -> UnaryOperatorLike.UnaryOperator(AST.UnaryOperator.Complement)
-                    Token.Exclamation -> UnaryOperatorLike.UnaryOperator(AST.UnaryOperator.LogicalNegate)
-                    Token.Asterisk -> UnaryOperatorLike.Dereference
-                    Token.Ampersand -> UnaryOperatorLike.AddressOf
-                    else ->
-                        raise(
-                            ParserError(
-                                "expected unary operator, got ${peekToken?.value.toDisplayString()}",
-                                peekToken?.location,
-                            ),
-                        )
-                }
-            nextToken()
-            val operand = parseFactor().bind()
-            when (unaryOperatorLike) {
-                UnaryOperatorLike.AddressOf -> AST.Expression.AddressOf(operand, null, peekToken.location)
-                UnaryOperatorLike.Dereference -> AST.Expression.Dereference(operand, null, peekToken.location)
-                is UnaryOperatorLike.UnaryOperator -> AST.Expression.Unary(unaryOperatorLike.value, operand, null, peekToken.location)
+    private fun parseUnary(): Either<ParserError, AST.Expression> = either {
+        val peekToken = peekToken()
+        val unaryOperatorLike =
+            when (peekToken?.value) {
+                Token.Minus -> UnaryOperatorLike.UnaryOperator(AST.UnaryOperator.Negate)
+                Token.Tilde -> UnaryOperatorLike.UnaryOperator(AST.UnaryOperator.Complement)
+                Token.Exclamation -> UnaryOperatorLike.UnaryOperator(AST.UnaryOperator.LogicalNegate)
+                Token.Asterisk -> UnaryOperatorLike.Dereference
+                Token.Ampersand -> UnaryOperatorLike.AddressOf
+                else ->
+                    raise(
+                        ParserError(
+                            "expected unary operator, got ${peekToken?.value.toDisplayString()}",
+                            peekToken?.location,
+                        ),
+                    )
             }
-        }
-
-    private fun toBinaryOperatorLikeOrNull(token: TokenWithLocation): BinaryOperatorLike? {
-        return when (token.value) {
-            Token.Plus -> BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.Add, token.location)
-            Token.Minus -> BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.Subtract, token.location)
-            Token.Asterisk ->
-                BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.Multiply, token.location)
-            Token.Slash -> BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.Divide, token.location)
-            Token.Percent -> BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.Modulo, token.location)
-            Token.DoubleEqual ->
-                BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.Equal, token.location)
-            Token.ExclamationEqual ->
-                BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.NotEqual, token.location)
-            Token.LessThan ->
-                BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.LessThan, token.location)
-            Token.LessThanOrEqual ->
-                BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.LessThanOrEqual, token.location)
-            Token.GreaterThan ->
-                BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.GreaterThan, token.location)
-            Token.GreaterThanOrEqual ->
-                BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.GreaterThanOrEqual, token.location)
-            Token.DoubleAmpersand ->
-                BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.LogicalAnd, token.location)
-            Token.DoublePipe ->
-                BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.LogicalOr, token.location)
-            Token.Ampersand ->
-                BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.BitwiseAnd, token.location)
-            Token.Pipe -> BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.BitwiseOr, token.location)
-            Token.Caret -> BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.BitwiseXor, token.location)
-            Token.DoubleLessThan ->
-                BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.ShiftLeft, token.location)
-            Token.DoubleGreaterThan ->
-                BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.ShiftRight, token.location)
-            Token.Equal -> BinaryOperatorLike.Assignment(token.location)
-            Token.PlusEqual ->
-                BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.BinaryOperator.Add,
-                    token.location,
-                )
-            Token.MinusEqual ->
-                BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.BinaryOperator.Subtract,
-                    token.location,
-                )
-            Token.AsteriskEqual ->
-                BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.BinaryOperator.Multiply,
-                    token.location,
-                )
-            Token.SlashEqual ->
-                BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.BinaryOperator.Divide,
-                    token.location,
-                )
-            Token.PercentEqual ->
-                BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.BinaryOperator.Modulo,
-                    token.location,
-                )
-            Token.AmpersandEqual ->
-                BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.BinaryOperator.BitwiseAnd,
-                    token.location,
-                )
-            Token.CaretEqual ->
-                BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.BinaryOperator.BitwiseXor,
-                    token.location,
-                )
-            Token.PipeEqual ->
-                BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.BinaryOperator.BitwiseOr,
-                    token.location,
-                )
-            Token.DoubleLessThanEqual ->
-                BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.BinaryOperator.ShiftLeft,
-                    token.location,
-                )
-            Token.DoubleGreaterThanEqual ->
-                BinaryOperatorLike.CompoundAssignmentOperator(
-                    AST.BinaryOperator.ShiftRight,
-                    token.location,
-                )
-            Token.QuestionMark -> BinaryOperatorLike.Conditional
-            else -> null
+        nextToken()
+        val operand = parseFactor().bind()
+        when (unaryOperatorLike) {
+            UnaryOperatorLike.AddressOf -> AST.Expression.AddressOf(operand, null, peekToken.location)
+            UnaryOperatorLike.Dereference -> AST.Expression.Dereference(operand, null, peekToken.location)
+            is UnaryOperatorLike.UnaryOperator -> AST.Expression.Unary(unaryOperatorLike.value, operand, null, peekToken.location)
         }
     }
 
-    private fun BinaryOperatorLike.precedence() =
-        when (this) {
-            is BinaryOperatorLike.Assignment -> 1
-            is BinaryOperatorLike.CompoundAssignmentOperator -> 1
-            is BinaryOperatorLike.Conditional -> 2
-            is BinaryOperatorLike.BinaryOperator ->
-                when (value) {
-                    AST.BinaryOperator.LogicalOr -> 34
-                    AST.BinaryOperator.LogicalAnd -> 35
-                    AST.BinaryOperator.BitwiseOr -> 37
-                    AST.BinaryOperator.BitwiseXor -> 38
-                    AST.BinaryOperator.BitwiseAnd -> 39
-                    AST.BinaryOperator.Equal,
-                    AST.BinaryOperator.NotEqual,
-                    -> 40
-                    AST.BinaryOperator.LessThan,
-                    AST.BinaryOperator.LessThanOrEqual,
-                    AST.BinaryOperator.GreaterThan,
-                    AST.BinaryOperator.GreaterThanOrEqual,
-                    -> 41
-                    AST.BinaryOperator.ShiftLeft,
-                    AST.BinaryOperator.ShiftRight,
-                    -> 42
-                    AST.BinaryOperator.Add,
-                    AST.BinaryOperator.Subtract,
-                    -> 50
-                    AST.BinaryOperator.Multiply,
-                    AST.BinaryOperator.Divide,
-                    AST.BinaryOperator.Modulo,
-                    -> 60
-                }
-        }
+    private fun toBinaryOperatorLikeOrNull(token: TokenWithLocation): BinaryOperatorLike? = when (token.value) {
+        Token.Plus -> BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.Add, token.location)
+        Token.Minus -> BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.Subtract, token.location)
+        Token.Asterisk ->
+            BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.Multiply, token.location)
+        Token.Slash -> BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.Divide, token.location)
+        Token.Percent -> BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.Modulo, token.location)
+        Token.DoubleEqual ->
+            BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.Equal, token.location)
+        Token.ExclamationEqual ->
+            BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.NotEqual, token.location)
+        Token.LessThan ->
+            BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.LessThan, token.location)
+        Token.LessThanOrEqual ->
+            BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.LessThanOrEqual, token.location)
+        Token.GreaterThan ->
+            BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.GreaterThan, token.location)
+        Token.GreaterThanOrEqual ->
+            BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.GreaterThanOrEqual, token.location)
+        Token.DoubleAmpersand ->
+            BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.LogicalAnd, token.location)
+        Token.DoublePipe ->
+            BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.LogicalOr, token.location)
+        Token.Ampersand ->
+            BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.BitwiseAnd, token.location)
+        Token.Pipe -> BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.BitwiseOr, token.location)
+        Token.Caret -> BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.BitwiseXor, token.location)
+        Token.DoubleLessThan ->
+            BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.ShiftLeft, token.location)
+        Token.DoubleGreaterThan ->
+            BinaryOperatorLike.BinaryOperator(AST.BinaryOperator.ShiftRight, token.location)
+        Token.Equal -> BinaryOperatorLike.Assignment(token.location)
+        Token.PlusEqual ->
+            BinaryOperatorLike.CompoundAssignmentOperator(
+                AST.BinaryOperator.Add,
+                token.location,
+            )
+        Token.MinusEqual ->
+            BinaryOperatorLike.CompoundAssignmentOperator(
+                AST.BinaryOperator.Subtract,
+                token.location,
+            )
+        Token.AsteriskEqual ->
+            BinaryOperatorLike.CompoundAssignmentOperator(
+                AST.BinaryOperator.Multiply,
+                token.location,
+            )
+        Token.SlashEqual ->
+            BinaryOperatorLike.CompoundAssignmentOperator(
+                AST.BinaryOperator.Divide,
+                token.location,
+            )
+        Token.PercentEqual ->
+            BinaryOperatorLike.CompoundAssignmentOperator(
+                AST.BinaryOperator.Modulo,
+                token.location,
+            )
+        Token.AmpersandEqual ->
+            BinaryOperatorLike.CompoundAssignmentOperator(
+                AST.BinaryOperator.BitwiseAnd,
+                token.location,
+            )
+        Token.CaretEqual ->
+            BinaryOperatorLike.CompoundAssignmentOperator(
+                AST.BinaryOperator.BitwiseXor,
+                token.location,
+            )
+        Token.PipeEqual ->
+            BinaryOperatorLike.CompoundAssignmentOperator(
+                AST.BinaryOperator.BitwiseOr,
+                token.location,
+            )
+        Token.DoubleLessThanEqual ->
+            BinaryOperatorLike.CompoundAssignmentOperator(
+                AST.BinaryOperator.ShiftLeft,
+                token.location,
+            )
+        Token.DoubleGreaterThanEqual ->
+            BinaryOperatorLike.CompoundAssignmentOperator(
+                AST.BinaryOperator.ShiftRight,
+                token.location,
+            )
+        Token.QuestionMark -> BinaryOperatorLike.Conditional
+        else -> null
+    }
 
-    private fun Token.toPostfixOperatorOrNull() =
-        when (this) {
-            Token.DoublePlus -> AST.PostfixOperator.Increment
-            Token.DoubleMinus -> AST.PostfixOperator.Decrement
-            else -> null
-        }
+    private fun BinaryOperatorLike.precedence() = when (this) {
+        is BinaryOperatorLike.Assignment -> 1
+        is BinaryOperatorLike.CompoundAssignmentOperator -> 1
+        is BinaryOperatorLike.Conditional -> 2
+        is BinaryOperatorLike.BinaryOperator ->
+            when (value) {
+                AST.BinaryOperator.LogicalOr -> 34
+                AST.BinaryOperator.LogicalAnd -> 35
+                AST.BinaryOperator.BitwiseOr -> 37
+                AST.BinaryOperator.BitwiseXor -> 38
+                AST.BinaryOperator.BitwiseAnd -> 39
+                AST.BinaryOperator.Equal,
+                AST.BinaryOperator.NotEqual,
+                -> 40
+                AST.BinaryOperator.LessThan,
+                AST.BinaryOperator.LessThanOrEqual,
+                AST.BinaryOperator.GreaterThan,
+                AST.BinaryOperator.GreaterThanOrEqual,
+                -> 41
+                AST.BinaryOperator.ShiftLeft,
+                AST.BinaryOperator.ShiftRight,
+                -> 42
+                AST.BinaryOperator.Add,
+                AST.BinaryOperator.Subtract,
+                -> 50
+                AST.BinaryOperator.Multiply,
+                AST.BinaryOperator.Divide,
+                AST.BinaryOperator.Modulo,
+                -> 60
+            }
+    }
+
+    private fun Token.toPostfixOperatorOrNull() = when (this) {
+        Token.DoublePlus -> AST.PostfixOperator.Increment
+        Token.DoubleMinus -> AST.PostfixOperator.Decrement
+        else -> null
+    }
 
     private fun Token?.toDisplayString() = if (this != null) {
         "'${this.toDisplayString()}'"
@@ -931,8 +914,7 @@ private sealed interface UnaryOperatorLike {
 }
 
 private sealed interface BinaryOperatorLike {
-    data class BinaryOperator(val value: AST.BinaryOperator, val location: Location) :
-        BinaryOperatorLike
+    data class BinaryOperator(val value: AST.BinaryOperator, val location: Location) : BinaryOperatorLike
 
     data class Assignment(val location: Location) : BinaryOperatorLike
 

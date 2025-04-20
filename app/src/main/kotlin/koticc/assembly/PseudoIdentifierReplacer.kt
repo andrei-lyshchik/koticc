@@ -91,6 +91,12 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
                         val dst = replace(instruction.dst)
                         Assembly.Instruction.DoubleToInt(instruction.type, src, dst)
                     }
+
+                    is Assembly.Instruction.LoadEffectiveAddress -> {
+                        val src = replace(instruction.src)
+                        val dst = replace(instruction.dst)
+                        Assembly.Instruction.LoadEffectiveAddress(src, dst)
+                    }
                 }
             result.add(replacedInstruction)
         }
@@ -112,25 +118,24 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
 
     private fun replace(
         operand: Assembly.Operand,
-    ): Assembly.Operand =
-        when (operand) {
-            is Assembly.Operand.PseudoIdentifier -> {
-                val size = symbolTable.objectSymbol(operand.name).type.byteSize
-                val stackOffset = stackOffsets.getOrPut(operand.name) {
-                    currentStackBytes += size
-                    if (currentStackBytes % size != 0) {
-                        // f.ex. in case of quadwords - 8 bytes - we need to align their offset
-                        // so that the offset is divisible by 8
-                        currentStackBytes += size - currentStackBytes % size
-                    }
-                    -currentStackBytes
+    ): Assembly.Operand = when (operand) {
+        is Assembly.Operand.PseudoIdentifier -> {
+            val size = symbolTable.objectSymbol(operand.name).type.byteSize
+            val stackOffset = stackOffsets.getOrPut(operand.name) {
+                currentStackBytes += size
+                if (currentStackBytes % size != 0) {
+                    // f.ex. in case of quadwords - 8 bytes - we need to align their offset
+                    // so that the offset is divisible by 8
+                    currentStackBytes += size - currentStackBytes % size
                 }
-                Assembly.Operand.Stack(stackOffset)
+                -currentStackBytes
             }
-
-            is Assembly.Operand.Register -> operand
-            is Assembly.Operand.Immediate -> operand
-            is Assembly.Operand.Stack -> operand
-            is Assembly.Operand.Data -> operand
+            Assembly.Operand.Memory(Assembly.RegisterValue.Bp, stackOffset)
         }
+
+        is Assembly.Operand.Register -> operand
+        is Assembly.Operand.Immediate -> operand
+        is Assembly.Operand.Data -> operand
+        is Assembly.Operand.Memory -> operand
+    }
 }

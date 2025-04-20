@@ -20,38 +20,40 @@ class E2ETest {
         lateinit var tempDir: Path
     }
 
-    class TestCases : VarargArgumentsProvider(
-        "/programs/switch.c",
-        "/programs/binary.c",
-        "/programs/binary_long.c",
-        "/programs/bitwise.c",
-        "/programs/bitwise_long.c",
-        "/programs/comparisons.c",
-        "/programs/comparisons_long.c",
-        "/programs/compound_assignment.c",
-        "/programs/logical.c",
-        "/programs/simple_variables.c",
-        "/programs/unary.c",
-        "/programs/increments_decrements.c",
-        "/programs/if.c",
-        "/programs/conditional_ternary.c",
-        "/programs/labels.c",
-        "/programs/nested_blocks.c",
-        "/programs/loops.c",
-        "/programs/functions.c",
-        "/programs/sign_extend.c",
-        "/programs/sign_extend_in_assignment.c",
-        "/programs/long_logical_not.c",
-        "/programs/unsigned_casts.c",
-        "/programs/unsigned_shift_right.c",
-        "/programs/unsigned_division.c",
-        "/programs/double_to_int.c",
-        "/programs/int_to_double.c",
-        "/programs/double_logical_negate.c",
-        "/programs/double_comparisons.c",
-        "/programs/postfix_double.c",
-        "/programs/nan.c",
-    )
+    class TestCases :
+        VarargArgumentsProvider(
+            "/programs/switch.c",
+            "/programs/binary.c",
+            "/programs/binary_long.c",
+            "/programs/bitwise.c",
+            "/programs/bitwise_long.c",
+            "/programs/comparisons.c",
+            "/programs/comparisons_long.c",
+            "/programs/compound_assignment.c",
+            "/programs/logical.c",
+            "/programs/simple_variables.c",
+            "/programs/unary.c",
+            "/programs/increments_decrements.c",
+            "/programs/if.c",
+            "/programs/conditional_ternary.c",
+            "/programs/labels.c",
+            "/programs/nested_blocks.c",
+            "/programs/loops.c",
+            "/programs/functions.c",
+            "/programs/sign_extend.c",
+            "/programs/sign_extend_in_assignment.c",
+            "/programs/long_logical_not.c",
+            "/programs/unsigned_casts.c",
+            "/programs/unsigned_shift_right.c",
+            "/programs/unsigned_division.c",
+            "/programs/double_to_int.c",
+            "/programs/int_to_double.c",
+            "/programs/double_logical_negate.c",
+            "/programs/double_comparisons.c",
+            "/programs/postfix_double.c",
+            "/programs/nan.c",
+            "/programs/pointers.c",
+        )
 
     @ParameterizedTest
     @ArgumentsSource(TestCases::class)
@@ -65,52 +67,53 @@ class E2ETest {
         assertEquals(gccBinaryExitCode, ktcBinaryExitCode)
     }
 
-    class MultipleFilesTestCases : VarargArgumentsProvider(
-        MultipleFilesTestCase(
-            file1 = "/programs/functions_client.c",
-            file2ForGccOnly = "/programs/functions_impl.c",
-        ),
-        MultipleFilesTestCase(
-            file1 = "/programs/functions_impl.c",
-            file2ForGccOnly = "/programs/functions_client.c",
-        ),
-        MultipleFilesTestCase(
-            file1 = "/programs/hello_world.c",
-            file2ForGccOnly = "/programs/stdio.c",
-        ),
-        MultipleFilesTestCase(
-            file1 = "/programs/static_impl.c",
-            file2ForGccOnly = "/programs/static_client.c",
-        ),
-        MultipleFilesTestCase(
-            file1 = "/programs/static_client.c",
-            file2ForGccOnly = "/programs/static_impl.c",
-        ),
-        MultipleFilesTestCase(
-            file1 = "/programs/factorial_long.c",
-            file2ForGccOnly = "/programs/print.c",
-        ),
-        MultipleFilesTestCase(
-            file1 = "/programs/fibonacci_unsigned.c",
-            file2ForGccOnly = "/programs/print.c",
-        ),
-        MultipleFilesTestCase(
-            file1 = "/programs/binary_double.c",
-            file2ForGccOnly = "/programs/print.c",
-        ),
-        MultipleFilesTestCase(
-            file1 = "/programs/int_to_double.c",
-            file2ForGccOnly = "/programs/print.c",
-        ),
-        MultipleFilesTestCase(
-            file1 = "/programs/double_parameters_client.c",
-            file2ForGccOnly = "/programs/double_parameters_impl.c",
-        ),
-        MultipleFilesTestCase(
-            file1 = "/programs/double_parameters_impl.c",
-            file2ForGccOnly = "/programs/double_parameters_client.c",
-        ),
-    )
+    class MultipleFilesTestCases :
+        VarargArgumentsProvider(
+            MultipleFilesTestCase(
+                file1 = "/programs/functions_client.c",
+                file2ForGccOnly = "/programs/functions_impl.c",
+            ),
+            MultipleFilesTestCase(
+                file1 = "/programs/functions_impl.c",
+                file2ForGccOnly = "/programs/functions_client.c",
+            ),
+            MultipleFilesTestCase(
+                file1 = "/programs/hello_world.c",
+                file2ForGccOnly = "/programs/stdio.c",
+            ),
+            MultipleFilesTestCase(
+                file1 = "/programs/static_impl.c",
+                file2ForGccOnly = "/programs/static_client.c",
+            ),
+            MultipleFilesTestCase(
+                file1 = "/programs/static_client.c",
+                file2ForGccOnly = "/programs/static_impl.c",
+            ),
+            MultipleFilesTestCase(
+                file1 = "/programs/factorial_long.c",
+                file2ForGccOnly = "/programs/print.c",
+            ),
+            MultipleFilesTestCase(
+                file1 = "/programs/fibonacci_unsigned.c",
+                file2ForGccOnly = "/programs/print.c",
+            ),
+            MultipleFilesTestCase(
+                file1 = "/programs/binary_double.c",
+                file2ForGccOnly = "/programs/print.c",
+            ),
+            MultipleFilesTestCase(
+                file1 = "/programs/int_to_double.c",
+                file2ForGccOnly = "/programs/print.c",
+            ),
+            MultipleFilesTestCase(
+                file1 = "/programs/double_parameters_client.c",
+                file2ForGccOnly = "/programs/double_parameters_impl.c",
+            ),
+            MultipleFilesTestCase(
+                file1 = "/programs/double_parameters_impl.c",
+                file2ForGccOnly = "/programs/double_parameters_client.c",
+            ),
+        )
 
     data class MultipleFilesTestCase(
         val file1: String,
@@ -135,45 +138,43 @@ class E2ETest {
         assertEquals(gccOnlyResult, ktcAndGccResult)
     }
 
-    private fun getGccProducedBinaryResult(inputFile: File) =
-        either {
-            val outputFilePath = tempDir.resolve("gcc_output_${UUID.randomUUID()}").absolutePathString()
-            val gccResult =
-                runCommand("gcc", "-o", outputFilePath, inputFile.absolutePath)
-                    .mapLeft { "GCC failed: $it" }
-                    .bind()
-            ensure(gccResult.exitCode == 0) { "GCC failed with exit code ${gccResult.exitCode}: ${gccResult.stderr}" }
-            val gccBinaryResult =
-                runCommand(outputFilePath)
-                    .mapLeft { "GCC produced binary failed to run: $it" }
-                    .bind()
-            gccBinaryResult
-        }.fold(
-            ifLeft = {
-                fail(it)
-            },
-        ) { it }
+    private fun getGccProducedBinaryResult(inputFile: File) = either {
+        val outputFilePath = tempDir.resolve("gcc_output_${UUID.randomUUID()}").absolutePathString()
+        val gccResult =
+            runCommand("gcc", "-o", outputFilePath, inputFile.absolutePath)
+                .mapLeft { "GCC failed: $it" }
+                .bind()
+        ensure(gccResult.exitCode == 0) { "GCC failed with exit code ${gccResult.exitCode}: ${gccResult.stderr}" }
+        val gccBinaryResult =
+            runCommand(outputFilePath)
+                .mapLeft { "GCC produced binary failed to run: $it" }
+                .bind()
+        gccBinaryResult
+    }.fold(
+        ifLeft = {
+            fail(it)
+        },
+    ) { it }
 
-    private fun getKtcProducedBinaryResult(inputFile: File) =
-        either {
-            printKtcProducedAssembly(inputFile).bind()
-            val outputFileName = "ktc_output_${UUID.randomUUID()}"
-            runCompilerDriver(
-                inputFile = inputFile.toPath(),
-                partialMode = null,
-                sharedLibraries = emptyList(),
-                outputFile = tempDir.resolve(outputFileName),
-            ).mapLeft { "ktc failed: ${it.message()}" }.bind()
-            val ktcBinaryResult =
-                runCommand(tempDir.resolve(outputFileName).absolutePathString())
-                    .mapLeft { "ktc produced binary failed to run: $it" }
-                    .bind()
-            ktcBinaryResult
-        }.fold(
-            ifLeft = {
-                fail(it)
-            },
-        ) { it }
+    private fun getKtcProducedBinaryResult(inputFile: File) = either {
+        printKtcProducedAssembly(inputFile).bind()
+        val outputFileName = "ktc_output_${UUID.randomUUID()}"
+        runCompilerDriver(
+            inputFile = inputFile.toPath(),
+            partialMode = null,
+            sharedLibraries = emptyList(),
+            outputFile = tempDir.resolve(outputFileName),
+        ).mapLeft { "ktc failed: ${it.message()}" }.bind()
+        val ktcBinaryResult =
+            runCommand(tempDir.resolve(outputFileName).absolutePathString())
+                .mapLeft { "ktc produced binary failed to run: $it" }
+                .bind()
+        ktcBinaryResult
+    }.fold(
+        ifLeft = {
+            fail(it)
+        },
+    ) { it }
 
     private fun printKtcProducedAssembly(inputFile: File) = either {
         runCompilerDriver(
@@ -187,40 +188,38 @@ class E2ETest {
         println("Assembly produced by ktc:\n$assembly")
     }
 
-    private fun getGccProducedObjectFile(inputFile: File) =
-        either {
-            val outputFilePath = tempDir.resolve("gcc_object_file_${UUID.randomUUID()}.o").absolutePathString()
-            val gccResult =
-                runCommand("arch", "-x86_64", "gcc", "-c", inputFile.absolutePath, "-o", outputFilePath)
-                    .mapLeft { "GCC failed: $it" }
-                    .bind()
-            ensure(gccResult.exitCode == 0) { "GCC failed with exit code ${gccResult.exitCode}: ${gccResult.stderr}" }
-            val gccObjectFile = File(outputFilePath)
-            gccObjectFile
-        }.fold(
-            ifLeft = {
-                fail(it)
-            },
-        ) { it }
+    private fun getGccProducedObjectFile(inputFile: File) = either {
+        val outputFilePath = tempDir.resolve("gcc_object_file_${UUID.randomUUID()}.o").absolutePathString()
+        val gccResult =
+            runCommand("arch", "-x86_64", "gcc", "-c", inputFile.absolutePath, "-o", outputFilePath)
+                .mapLeft { "GCC failed: $it" }
+                .bind()
+        ensure(gccResult.exitCode == 0) { "GCC failed with exit code ${gccResult.exitCode}: ${gccResult.stderr}" }
+        val gccObjectFile = File(outputFilePath)
+        gccObjectFile
+    }.fold(
+        ifLeft = {
+            fail(it)
+        },
+    ) { it }
 
-    private fun getKtcProducedObjectFile(inputFile: File) =
-        either {
-            val outputFileName = "ktc_object_file_${UUID.randomUUID()}.o"
-            val outputFilePath = tempDir.resolve(outputFileName)
-            printKtcProducedAssembly(inputFile).bind()
-            runCompilerDriver(
-                inputFile = inputFile.toPath(),
-                partialMode = PartialMode.ObjectFile,
-                sharedLibraries = emptyList(),
-                outputFile = outputFilePath,
-            ).mapLeft { "ktc failed: ${it.message()}" }.bind()
-            val ktcObjectFile = outputFilePath.toFile()
-            ktcObjectFile
-        }.fold(
-            ifLeft = {
-                fail(it)
-            },
-        ) { it }
+    private fun getKtcProducedObjectFile(inputFile: File) = either {
+        val outputFileName = "ktc_object_file_${UUID.randomUUID()}.o"
+        val outputFilePath = tempDir.resolve(outputFileName)
+        printKtcProducedAssembly(inputFile).bind()
+        runCompilerDriver(
+            inputFile = inputFile.toPath(),
+            partialMode = PartialMode.ObjectFile,
+            sharedLibraries = emptyList(),
+            outputFile = outputFilePath,
+        ).mapLeft { "ktc failed: ${it.message()}" }.bind()
+        val ktcObjectFile = outputFilePath.toFile()
+        ktcObjectFile
+    }.fold(
+        ifLeft = {
+            fail(it)
+        },
+    ) { it }
 
     private fun createAndRunExecutableFile(
         vararg objectFiles: File,
