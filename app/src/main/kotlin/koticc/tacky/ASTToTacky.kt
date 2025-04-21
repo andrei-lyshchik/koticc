@@ -104,7 +104,12 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         val variableType = symbolTable.variableSymbol(declaration.name)
         if (variableType.attributes is VariableAttributes.Static) return
 
-        val initialValue = declaration.initializer?.let { generateExpressionAndConvert(it) }
+        val initialValue = declaration.initializer?.let { initializer ->
+            when (initializer) {
+                is AST.VariableInitializer.Compound -> TODO()
+                is AST.VariableInitializer.Single -> generateExpressionAndConvert(initializer.expression)
+            }
+        }
         val variable = Tacky.Value.Variable(declaration.name)
         if (initialValue != null) {
             instructions.add(
@@ -593,6 +598,8 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
             val inner = generateExpressionAndConvert(expression.expression)
             TackyExpressionResult.DereferencedPointer(inner)
         }
+
+        is AST.Expression.Subscript -> TODO()
     }
 
     private fun generateExpressionAndConvert(expression: AST.Expression): Tacky.Value = when (val result = generateExpression(expression)) {

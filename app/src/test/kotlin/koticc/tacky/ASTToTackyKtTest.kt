@@ -479,7 +479,7 @@ class ASTToTackyKtTest {
                                     AST.BlockItem.Declaration(
                                         AST.Declaration.Variable(
                                             name = "x",
-                                            initializer = AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(1, 0)),
+                                            initializer = AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(1, 0))),
                                             type = Type.Int,
                                             storageClass = null,
                                             location = Location(1, 0),
@@ -489,16 +489,18 @@ class ASTToTackyKtTest {
                                         AST.Declaration.Variable(
                                             name = "y",
                                             initializer =
-                                            AST.Expression.Binary(
-                                                operator = AST.BinaryOperator.Add,
-                                                left =
-                                                AST.Expression.Postfix(
-                                                    operator = postfixOperator,
-                                                    operand = AST.Expression.Variable("x", Type.Int, Location(1, 0)),
+                                            AST.VariableInitializer.Single(
+                                                AST.Expression.Binary(
+                                                    operator = AST.BinaryOperator.Add,
+                                                    left =
+                                                    AST.Expression.Postfix(
+                                                        operator = postfixOperator,
+                                                        operand = AST.Expression.Variable("x", Type.Int, Location(1, 0)),
+                                                        type = Type.Int,
+                                                    ),
+                                                    right = AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(1, 0)),
                                                     type = Type.Int,
                                                 ),
-                                                right = AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(1, 0)),
-                                                type = Type.Int,
                                             ),
                                             type = Type.Int,
                                             storageClass = null,

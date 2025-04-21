@@ -150,6 +150,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
             is Type.ULong -> 8
             is Type.Double -> 8
             is Type.Pointer -> 8
+            is Type.Array -> TODO()
         },
     )
 

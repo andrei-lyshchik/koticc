@@ -51,13 +51,24 @@ sealed interface Type : Displayable {
     }
 
     data class Pointer(
-        val referenced: Type.Data,
+        val referenced: Data,
     ) : Data {
         override fun signed(): Boolean = false
 
         override fun size(): kotlin.Int = 8
 
         override fun toDisplayString(): String = "${referenced.toDisplayString()} *"
+    }
+
+    data class Array(
+        val type: Data,
+        val size: kotlin.Int,
+    ) : Data {
+        override fun signed(): Boolean = false
+
+        override fun size(): kotlin.Int = type.size() * size
+
+        override fun toDisplayString(): String = "${type.toDisplayString()} [$size]"
     }
 
     data class Function(

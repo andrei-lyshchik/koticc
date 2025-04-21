@@ -118,7 +118,7 @@ private class Parser(
                 }
                 AST.Declaration.Variable(
                     processedDeclarator.identifier.value.value,
-                    initializer,
+                    initializer?.let { AST.VariableInitializer.Single(it) },
                     processedDeclarator.type,
                     declarationSpecifiers.storageClass,
                     declarationSpecifiers.location,

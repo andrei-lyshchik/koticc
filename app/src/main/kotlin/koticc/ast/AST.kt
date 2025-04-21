@@ -35,7 +35,7 @@ object AST {
     sealed interface Declaration : LocationAware {
         data class Variable(
             val name: String,
-            val initializer: Expression?,
+            val initializer: VariableInitializer?,
             val type: Type.Data,
             val storageClass: StorageClass?,
             override val location: Location,
@@ -55,6 +55,11 @@ object AST {
                 }
             }
         }
+    }
+
+    sealed interface VariableInitializer {
+        data class Single(val expression: Expression) : VariableInitializer
+        data class Compound(val initializers: List<VariableInitializer>) : VariableInitializer
     }
 
     enum class StorageClass : Displayable {
@@ -355,6 +360,17 @@ object AST {
             override fun toDisplayString(): String = "&${expression.toDisplayString()}"
 
             override fun ofType(type: Type.Data): Expression = copy(type = type)
+        }
+
+        data class Subscript(
+            val expression: Expression,
+            val index: Expression,
+            override val type: Type.Data?,
+            override val location: Location,
+        ) : Expression {
+            override fun ofType(type: Type.Data): Expression = copy(type = type)
+
+            override fun toDisplayString(): String = "${expression.toDisplayString()}[${index.toDisplayString()}]"
         }
     }
 

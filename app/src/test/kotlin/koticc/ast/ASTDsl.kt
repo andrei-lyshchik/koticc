@@ -432,12 +432,12 @@ class VariableDeclarationBuilder(private val name: String, private val storageCl
         this.initializer = initializer
     }
 
-    fun buildVariableDeclaration(): AST.Declaration.Variable = AST.Declaration.Variable(name, initializer, type, storageClass, DUMMY_LOCATION)
+    fun buildVariableDeclaration(): AST.Declaration.Variable = AST.Declaration.Variable(name, initializer?.let { AST.VariableInitializer.Single(it) }, type, storageClass, DUMMY_LOCATION)
 
     override fun build(): AST.BlockItem = AST.BlockItem.Declaration(
         AST.Declaration.Variable(
             name,
-            initializer,
+            initializer?.let { AST.VariableInitializer.Single(it) },
             type,
             storageClass,
             DUMMY_LOCATION,
@@ -483,7 +483,7 @@ class DoWhileBuilder(val body: AST.Block) : BlockItemBuilder {
     )
 }
 
-fun initDecl(name: String, type: Type.Data = Type.Int, initializer: AST.Expression? = null) = AST.ForInitializer.Declaration(AST.Declaration.Variable(name, initializer, type, null, DUMMY_LOCATION))
+fun initDecl(name: String, type: Type.Data = Type.Int, initializer: AST.Expression? = null) = AST.ForInitializer.Declaration(AST.Declaration.Variable(name, initializer?.let { AST.VariableInitializer.Single(it) }, type, null, DUMMY_LOCATION))
 
 fun initExpr(expression: AST.Expression) = AST.ForInitializer.Expression(expression)
 

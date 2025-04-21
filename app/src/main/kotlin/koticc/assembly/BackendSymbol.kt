@@ -46,4 +46,5 @@ fun Type.Data.toAssemblyType(): Assembly.Type = when (this) {
     Type.ULong -> Assembly.Type.QuadWord
     Type.Double -> Assembly.Type.Double
     is Type.Pointer -> Assembly.Type.QuadWord
+    is Type.Array -> TODO()
 }

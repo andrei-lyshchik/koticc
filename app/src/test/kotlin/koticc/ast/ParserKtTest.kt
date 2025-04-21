@@ -124,10 +124,12 @@ int main(void) {
                                 AST.BlockItem.Declaration(
                                     AST.Declaration.Variable(
                                         "a",
-                                        AST.Expression.Constant(
-                                            value = AST.IntConstant(1),
-                                            type = null,
-                                            location = Location(2, 13),
+                                        AST.VariableInitializer.Single(
+                                            AST.Expression.Constant(
+                                                value = AST.IntConstant(1),
+                                                type = null,
+                                                location = Location(2, 13),
+                                            ),
                                         ),
                                         Type.Int,
                                         null,
@@ -874,7 +876,7 @@ int main(void) {
                                     declaration =
                                     AST.Declaration.Variable(
                                         name = "c",
-                                        initializer = AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 27)),
+                                        initializer = AST.VariableInitializer.Single(AST.Expression.Constant(value = AST.IntConstant(1), type = null, location = Location(2, 27))),
                                         type = Type.Int,
                                         storageClass = null,
                                         location = Location(2, 19),
@@ -983,10 +985,12 @@ int main(void) {
                                                     AST.Declaration.Variable(
                                                         name = "a",
                                                         initializer =
-                                                        AST.Expression.Constant(
-                                                            value = AST.IntConstant(1),
-                                                            type = null,
-                                                            location = Location(3, 17),
+                                                        AST.VariableInitializer.Single(
+                                                            AST.Expression.Constant(
+                                                                value = AST.IntConstant(1),
+                                                                type = null,
+                                                                location = Location(3, 17),
+                                                            ),
                                                         ),
                                                         type = Type.Int,
                                                         storageClass = null,
@@ -997,10 +1001,12 @@ int main(void) {
                                                     AST.Declaration.Variable(
                                                         name = "b",
                                                         initializer =
-                                                        AST.Expression.Constant(
-                                                            value = AST.IntConstant(2),
-                                                            type = null,
-                                                            location = Location(4, 17),
+                                                        AST.VariableInitializer.Single(
+                                                            AST.Expression.Constant(
+                                                                value = AST.IntConstant(2),
+                                                                type = null,
+                                                                location = Location(4, 17),
+                                                            ),
                                                         ),
                                                         type = Type.Int,
                                                         storageClass = null,

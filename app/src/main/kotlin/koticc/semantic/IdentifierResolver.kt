@@ -111,7 +111,25 @@ internal class IdentifierResolver {
         identifierMapping: MutableMap<String, DeclaredIdentifier>,
     ): Either<SemanticAnalysisError, AST.Declaration.Variable> = either {
         val newName = declareVariable(declaration.name, declaration.location, declaration.storageClass, identifierMapping).bind()
-        declaration.copy(name = newName, initializer = declaration.initializer?.let { resolveExpression(it, identifierMapping).bind() })
+        declaration.copy(name = newName, initializer = declaration.initializer?.let { resolveVariableInitializer(it, identifierMapping).bind() })
+    }
+
+    private fun resolveVariableInitializer(
+        initializer: AST.VariableInitializer,
+        identifierMapping: MutableMap<String, DeclaredIdentifier>,
+    ): Either<SemanticAnalysisError, AST.VariableInitializer> = either {
+        when (initializer) {
+            is AST.VariableInitializer.Compound -> {
+                initializer.copy(
+                    initializers = initializer.initializers.map { initializer ->
+                        resolveVariableInitializer(initializer, identifierMapping).bind()
+                    },
+                )
+            }
+            is AST.VariableInitializer.Single -> {
+                initializer.copy(expression = resolveExpression(initializer.expression, identifierMapping).bind())
+            }
+        }
     }
 
     private fun declareVariable(
@@ -354,6 +372,12 @@ internal class IdentifierResolver {
             is AST.Expression.Dereference -> {
                 expression.copy(
                     expression = resolveExpression(expression.expression, identifierMapping).bind(),
+                )
+            }
+            is AST.Expression.Subscript -> {
+                expression.copy(
+                    expression = resolveExpression(expression.expression, identifierMapping).bind(),
+                    index = resolveExpression(expression.index, identifierMapping).bind(),
                 )
             }
         }

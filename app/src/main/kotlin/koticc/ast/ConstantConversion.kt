@@ -48,4 +48,5 @@ fun AST.Constant.convertTo(type: Type.Data): AST.Constant = when (type) {
         is AST.UIntConstant -> AST.ULongConstant(value.toULong())
         is AST.ULongConstant -> this
     }
+    is Type.Array -> TODO()
 }

@@ -108,9 +108,9 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     private fun typecheckFileScopeVariableDeclaration(
         declaration: AST.Declaration.Variable,
     ): Either<SemanticAnalysisError, AST.Declaration.Variable> = either {
-        val convertedInitializer = convertDeclarationInitializer(declaration).bind()
-        var initialValue = if (convertedInitializer != null) {
-            InitialValue.Constant(convertedInitializer.value.toInitialValue())
+        val convertedInitializerConstant = convertStaticDeclarationInitializer(declaration).bind()
+        var initialValue = if (convertedInitializerConstant != null) {
+            InitialValue.Constant(convertedInitializerConstant.value.toInitialValue())
         } else {
             when (declaration.storageClass) {
                 AST.StorageClass.Extern -> InitialValue.NoInitializer
@@ -183,7 +183,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             location = declaration.location,
         )
         declaration.copy(
-            initializer = convertedInitializer,
+            initializer = convertedInitializerConstant?.let { AST.VariableInitializer.Single(it) },
         )
     }
 
@@ -249,8 +249,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 variableDeclaration
             }
             AST.StorageClass.Static -> {
-                val convertedInitializer = convertDeclarationInitializer(variableDeclaration).bind()
-                val initialConstantValue = convertedInitializer?.value?.toInitialValue()
+                val convertedInitializerConstant = convertStaticDeclarationInitializer(variableDeclaration).bind()
+                val initialConstantValue = convertedInitializerConstant?.value?.toInitialValue()
                     ?: variableDeclaration.type.toZeroInitialValue()
                 symbolTable[variableDeclaration.name] = SymbolWithLocation(
                     value = Symbol.Variable(
@@ -263,7 +263,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     location = variableDeclaration.location,
                 )
                 variableDeclaration.copy(
-                    initializer = convertedInitializer,
+                    initializer = convertedInitializerConstant?.let { AST.VariableInitializer.Single(it) },
                 )
             }
             null -> {
@@ -272,29 +272,38 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     location = variableDeclaration.location,
                 )
                 variableDeclaration.copy(
-                    initializer = variableDeclaration.initializer?.let { typecheckExpression(it).bind().convertByAssignmentTo(variableDeclaration.type).bind() },
+                    initializer = when (variableDeclaration.initializer) {
+                        is AST.VariableInitializer.Compound -> TODO()
+                        is AST.VariableInitializer.Single -> AST.VariableInitializer.Single(
+                            typecheckExpression(variableDeclaration.initializer.expression).bind().convertByAssignmentTo(variableDeclaration.type).bind(),
+                        )
+                        null -> null
+                    },
                 )
             }
         }
     }
 
-    private fun convertDeclarationInitializer(variableDeclaration: AST.Declaration.Variable): Either<SemanticAnalysisError, AST.Expression.Constant?> = either {
+    private fun convertStaticDeclarationInitializer(variableDeclaration: AST.Declaration.Variable): Either<SemanticAnalysisError, AST.Expression.Constant?> = either {
         when (variableDeclaration.initializer) {
-            is AST.Expression.Constant -> {
-                if (variableDeclaration.type is Type.Pointer && !variableDeclaration.initializer.isNullPointerConstant()) {
-                    raise(
-                        SemanticAnalysisError("invalid initializer '${variableDeclaration.initializer.toDisplayString()}' for variable '${originalIdentifierName(variableDeclaration.name)}'", variableDeclaration.location),
-                    )
+            is AST.VariableInitializer.Compound -> TODO()
+            is AST.VariableInitializer.Single -> when (val expression = variableDeclaration.initializer.expression) {
+                is AST.Expression.Constant -> {
+                    if (variableDeclaration.type is Type.Pointer && !expression.isNullPointerConstant()) {
+                        raise(
+                            SemanticAnalysisError("invalid initializer '${expression.toDisplayString()}' for variable '${originalIdentifierName(variableDeclaration.name)}'", variableDeclaration.location),
+                        )
+                    }
+                    expression.convertTo(variableDeclaration.type)
                 }
-                variableDeclaration.initializer.convertTo(variableDeclaration.type)
+                else -> raise(
+                    SemanticAnalysisError(
+                        "non-constant initializer for variable '${originalIdentifierName(variableDeclaration.name)}'",
+                        variableDeclaration.location,
+                    ),
+                )
             }
             null -> null
-            else -> raise(
-                SemanticAnalysisError(
-                    "non-constant initializer for variable '${originalIdentifierName(variableDeclaration.name)}'",
-                    variableDeclaration.location,
-                ),
-            )
         }
     }
 
@@ -546,6 +555,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     expression = typedInnerExpression,
                 ).ofType(type)
             }
+
+            is AST.Expression.Subscript -> TODO()
         }
     }
 
