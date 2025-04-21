@@ -45,6 +45,7 @@ int main(void) {
             abc cde_fgh 123 void return int (){};=-+~*/%^&| << >> < > <= >= != && || ! += -=
             *= /= %= &= ^= |= <<= >>= ++ -- if else ifnot elsenot ? : goto _id
             do while for break continue case default switch , extern static long unsigned signed double
+            [ ]
             """.trimIndent()
 
         assertEquals(
@@ -115,6 +116,8 @@ int main(void) {
                 Token.UnsignedKeyword,
                 Token.SignedKeyword,
                 Token.DoubleKeyword,
+                Token.OpenBracket,
+                Token.CloseBracket,
             ).right(),
             lexer(input).map { tokens -> tokens.map { it.value } },
         )

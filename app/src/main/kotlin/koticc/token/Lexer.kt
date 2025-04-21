@@ -29,6 +29,8 @@ fun lexer(input: String): Either<LexerError, List<TokenWithLocation>> = either {
                 char == ')' -> result.add(TokenWithLocation(Token.CloseParen, Location(line, current + 1)))
                 char == '{' -> result.add(TokenWithLocation(Token.OpenBrace, Location(line, current + 1)))
                 char == '}' -> result.add(TokenWithLocation(Token.CloseBrace, Location(line, current + 1)))
+                char == '[' -> result.add(TokenWithLocation(Token.OpenBracket, Location(line, current + 1)))
+                char == ']' -> result.add(TokenWithLocation(Token.CloseBracket, Location(line, current + 1)))
                 char == ';' -> result.add(TokenWithLocation(Token.Semicolon, Location(line, current + 1)))
                 char == '~' -> result.add(TokenWithLocation(Token.Tilde, Location(line, current + 1)))
                 char == '+' -> {

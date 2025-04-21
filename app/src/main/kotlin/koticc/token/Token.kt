@@ -127,6 +127,14 @@ sealed interface Token : Displayable {
         override fun toDisplayString(): String = "}"
     }
 
+    data object OpenBracket : Token {
+        override fun toDisplayString(): String = "["
+    }
+
+    data object CloseBracket : Token {
+        override fun toDisplayString(): String = "]"
+    }
+
     data object Semicolon : Token {
         override fun toDisplayString(): String = ";"
     }
