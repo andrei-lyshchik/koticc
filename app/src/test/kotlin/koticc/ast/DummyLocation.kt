@@ -56,12 +56,17 @@ fun AST.BlockItem.withDummyLocations(): AST.BlockItem = when (this) {
 
 fun AST.Declaration.Variable.withDummyLocations() = copy(
     location = DUMMY_LOCATION,
-    initializer = when (val initializer = initializer) {
-        is AST.VariableInitializer.Compound -> TODO()
-        is AST.VariableInitializer.Single -> initializer.copy(expression = initializer.expression.withDummyLocations())
-        null -> null
-    },
+    initializer = initializer?.withDummyLocations(),
 )
+
+fun AST.VariableInitializer.withDummyLocations(): AST.VariableInitializer = when (this) {
+    is AST.VariableInitializer.Compound -> copy(
+        initializers = this.initializers.map { it.withDummyLocations() },
+    )
+    is AST.VariableInitializer.Single -> copy(
+        expression = expression.withDummyLocations(),
+    )
+}
 
 fun AST.Statement.withDummyLocations(): AST.Statement = when (this) {
     is AST.Statement.Return -> copy(expression = expression.withDummyLocations(), location = DUMMY_LOCATION)
@@ -101,5 +106,5 @@ fun AST.Expression.withDummyLocations(): AST.Expression = when (this) {
     is AST.Expression.Cast -> copy(expression = expression.withDummyLocations(), location = DUMMY_LOCATION)
     is AST.Expression.AddressOf -> copy(expression = expression.withDummyLocations(), location = DUMMY_LOCATION)
     is AST.Expression.Dereference -> copy(expression = expression.withDummyLocations(), location = DUMMY_LOCATION)
-    is AST.Expression.Subscript -> TODO()
+    is AST.Expression.Subscript -> copy(expression = expression.withDummyLocations(), index = index.withDummyLocations())
 }

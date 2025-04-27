@@ -366,11 +366,13 @@ object AST {
             val expression: Expression,
             val index: Expression,
             override val type: Type.Data?,
-            override val location: Location,
         ) : Expression {
             override fun ofType(type: Type.Data): Expression = copy(type = type)
 
             override fun toDisplayString(): String = "${expression.toDisplayString()}[${index.toDisplayString()}]"
+
+            override val location: Location
+                get() = index.location
         }
     }
 

@@ -5,7 +5,7 @@ import koticc.common.Displayable
 sealed interface Type : Displayable {
     sealed interface Data : Type {
         fun signed(): Boolean
-        fun size(): kotlin.Int
+        fun size(): kotlin.Long
     }
 
     sealed interface Arithmetic : Data
@@ -15,7 +15,7 @@ sealed interface Type : Displayable {
 
         override fun signed(): Boolean = true
 
-        override fun size(): kotlin.Int = 4
+        override fun size(): kotlin.Long = 4
     }
 
     data object UInt : Arithmetic {
@@ -23,7 +23,7 @@ sealed interface Type : Displayable {
 
         override fun signed(): Boolean = false
 
-        override fun size(): kotlin.Int = 4
+        override fun size(): kotlin.Long = 4
     }
 
     data object Long : Arithmetic {
@@ -31,7 +31,7 @@ sealed interface Type : Displayable {
 
         override fun signed(): Boolean = true
 
-        override fun size(): kotlin.Int = 8
+        override fun size(): kotlin.Long = 8
     }
 
     data object ULong : Arithmetic {
@@ -39,7 +39,7 @@ sealed interface Type : Displayable {
 
         override fun signed(): Boolean = false
 
-        override fun size(): kotlin.Int = 8
+        override fun size(): kotlin.Long = 8
     }
 
     data object Double : Arithmetic {
@@ -47,7 +47,7 @@ sealed interface Type : Displayable {
 
         override fun signed(): Boolean = true
 
-        override fun size(): kotlin.Int = 8
+        override fun size(): kotlin.Long = 8
     }
 
     data class Pointer(
@@ -55,18 +55,18 @@ sealed interface Type : Displayable {
     ) : Data {
         override fun signed(): Boolean = false
 
-        override fun size(): kotlin.Int = 8
+        override fun size(): kotlin.Long = 8
 
         override fun toDisplayString(): String = "${referenced.toDisplayString()} *"
     }
 
     data class Array(
         val type: Data,
-        val size: kotlin.Int,
+        val size: kotlin.Long,
     ) : Data {
         override fun signed(): Boolean = false
 
-        override fun size(): kotlin.Int = type.size() * size
+        override fun size(): kotlin.Long = type.size() * size
 
         override fun toDisplayString(): String = "${type.toDisplayString()} [$size]"
     }

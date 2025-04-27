@@ -123,7 +123,7 @@ class BlockBuilder {
 
     fun ptr(name: String, to: Type.Data, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder = setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Pointer(to)))
 
-    fun array(name: String, type: Type.Data, size: Int, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder = setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Array(type, size)))
+    fun array(name: String, type: Type.Data, size: Long, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder = setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Array(type, size)))
 
     fun assign(left: AST.Expression, right: AST.Expression, type: Type.Data? = null) {
         addBlockItem(
@@ -428,18 +428,32 @@ interface BlockItemBuilder {
 }
 
 class VariableDeclarationBuilder(private val name: String, private val storageClass: AST.StorageClass?, private val type: Type.Data) : BlockItemBuilder {
-    private var initializer: AST.Expression? = null
+    private var initializer: AST.VariableInitializer? = null
 
     infix fun assign(initializer: AST.Expression) {
-        this.initializer = initializer
+        this.initializer = AST.VariableInitializer.Single(initializer)
     }
 
-    fun buildVariableDeclaration(): AST.Declaration.Variable = AST.Declaration.Variable(name, initializer?.let { AST.VariableInitializer.Single(it) }, type, storageClass, DUMMY_LOCATION)
+    @JvmName("assignSingleInitializers")
+    infix fun assign(initializers: List<AST.Expression>) {
+        this.initializer = AST.VariableInitializer.Compound(
+            initializers.map { AST.VariableInitializer.Single(it) },
+        )
+    }
+
+    @JvmName("assignInitializers")
+    infix fun assign(initializers: List<AST.VariableInitializer>) {
+        this.initializer = AST.VariableInitializer.Compound(
+            initializers,
+        )
+    }
+
+    fun buildVariableDeclaration(): AST.Declaration.Variable = AST.Declaration.Variable(name, initializer, type, storageClass, DUMMY_LOCATION)
 
     override fun build(): AST.BlockItem = AST.BlockItem.Declaration(
         AST.Declaration.Variable(
             name,
-            initializer?.let { AST.VariableInitializer.Single(it) },
+            initializer,
             type,
             storageClass,
             DUMMY_LOCATION,
@@ -526,6 +540,8 @@ fun addressOf(expression: AST.Expression) = AST.Expression.AddressOf(
 
 fun AST.Expression.deref() = AST.Expression.Dereference(expression = this, type = null, location = DUMMY_LOCATION)
 
+operator fun AST.Expression.get(index: AST.Expression) = AST.Expression.Subscript(this, index, null)
+
 operator fun String.invoke(vararg args: AST.Expression): AST.Expression = AST.Expression.FunctionCall(
     name = this,
     arguments = args.toList(),
@@ -596,7 +612,7 @@ infix fun AST.Expression.eq(other: AST.Expression): AST.Expression = AST.Express
     type = null,
 )
 
-infix fun AST.Expression.minus(other: AST.Expression): AST.Expression = AST.Expression.Binary(
+infix operator fun AST.Expression.minus(other: AST.Expression): AST.Expression = AST.Expression.Binary(
     operator = AST.BinaryOperator.Subtract,
     left = this,
     right = other,

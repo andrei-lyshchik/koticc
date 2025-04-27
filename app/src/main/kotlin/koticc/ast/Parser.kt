@@ -109,7 +109,7 @@ private class Parser(
             is Type.Data -> {
                 val initializer = if (peekToken()?.value == Token.Equal) {
                     nextToken()
-                    val initializer = parseExpression(0).bind()
+                    val initializer = parseInitializer().bind()
                     expectToken(Token.Semicolon).bind()
                     initializer
                 } else {
@@ -118,7 +118,7 @@ private class Parser(
                 }
                 AST.Declaration.Variable(
                     processedDeclarator.identifier.value.value,
-                    initializer?.let { AST.VariableInitializer.Single(it) },
+                    initializer,
                     processedDeclarator.type,
                     declarationSpecifiers.storageClass,
                     declarationSpecifiers.location,
@@ -166,12 +166,7 @@ private class Parser(
                 var arrayDeclarator = simpleDeclarator
                 do {
                     val brace = expectToken(Token.OpenBracket).bind()
-                    val sizeToken = nextToken()
-                    val size = if (sizeToken != null && sizeToken.value is Token.IntLiteral) {
-                        sizeToken.value.value
-                    } else {
-                        raise(ParserError("Expected array size, got ${sizeToken?.value.toDisplayString()}", sizeToken?.location))
-                    }
+                    val size = parseArraySize().bind()
                     expectToken(Token.CloseBracket).bind()
                     arrayDeclarator = Declarator.Array(arrayDeclarator, size, brace.location)
                 } while (peekToken()?.value == Token.OpenBracket)
@@ -179,6 +174,19 @@ private class Parser(
                 arrayDeclarator
             }
             else -> simpleDeclarator
+        }
+    }
+
+    private fun parseArraySize(): Either<ParserError, Long> = either {
+        val sizeToken = nextToken()
+        when (val size = sizeToken?.value) {
+            is Token.IntLiteral -> size.value.toLong()
+            is Token.UIntLiteral -> size.value.toLong()
+            is Token.LongLiteral -> size.value
+            is Token.ULongLiteral -> size.value.toLong()
+            else -> {
+                raise(ParserError("Expected array size, got ${sizeToken?.value.toDisplayString()}", sizeToken?.location))
+            }
         }
     }
 
@@ -348,6 +356,36 @@ private class Parser(
     private fun DeclarationSpecifier.StorageClass.toASTStorageClass() = when (this) {
         DeclarationSpecifier.StorageClass.Extern -> AST.StorageClass.Extern
         DeclarationSpecifier.StorageClass.Static -> AST.StorageClass.Static
+    }
+
+    private fun parseInitializer(): Either<ParserError, AST.VariableInitializer> = either {
+        if (peekToken()?.value == Token.OpenBrace) {
+            nextToken()
+            val initializers = mutableListOf(parseInitializer().bind())
+            while (true) {
+                val nextToken = nextToken()
+                when (nextToken?.value) {
+                    Token.CloseBrace -> break
+                    Token.Comma -> {
+                        val peekToken = peekToken()
+                        if (peekToken?.value == Token.CloseBrace) {
+                            nextToken()
+                            break
+                        } else {
+                            val initializer = parseInitializer().bind()
+                            initializers.add(initializer)
+                        }
+                    }
+                    else -> {
+                        raise(ParserError("Expected ',' or '}', got '${nextToken?.value?.toDisplayString()}'", nextToken?.location))
+                    }
+                }
+            }
+            AST.VariableInitializer.Compound(initializers)
+        } else {
+            val expression = parseExpression(0).bind()
+            AST.VariableInitializer.Single(expression)
+        }
     }
 
     private fun parseStatement(): Either<ParserError, AST.Statement> = either {
@@ -643,24 +681,43 @@ private class Parser(
                 }
                 else -> raise(ParserError("expected factor, got ${peekTokenValue.toDisplayString()}", peekToken?.location))
             }
-        var postfixOperator = peekToken()?.value?.toPostfixOperatorOrNull()
-        while (postfixOperator != null) {
-            nextToken()
-            factor =
-                AST.Expression.Postfix(
-                    operator = postfixOperator,
-                    operand = factor,
-                    type = null,
-                )
-            postfixOperator = peekToken()?.value?.toPostfixOperatorOrNull()
-        }
 
-        factor
+        parsePostfixExpression(factor).bind()
+    }
+
+    private fun parsePostfixExpression(baseExpression: AST.Expression): Either<ParserError, AST.Expression> = either {
+        var expression = baseExpression
+        while (true) {
+            val peekToken = peekToken()
+            val postfixOperator = peekToken?.value?.toPostfixOperatorOrNull()
+            when {
+                postfixOperator != null -> {
+                    nextToken()
+                    expression =
+                        AST.Expression.Postfix(
+                            operator = postfixOperator,
+                            operand = expression,
+                            type = null,
+                        )
+                }
+                peekToken?.value == Token.OpenBracket -> {
+                    nextToken()
+                    val index = parseExpression(0).bind()
+                    expression = AST.Expression.Subscript(expression, index, null)
+                    expectToken(Token.CloseBracket).bind()
+                }
+                else -> break
+            }
+        }
+        expression
     }
 
     private fun parseCast(location: Location) = either {
         val baseType = parseType().bind()
-        val declarator = if (peekToken()?.value == Token.Asterisk || peekToken()?.value == Token.OpenParen) {
+        val declarator = if (peekToken()?.value == Token.Asterisk ||
+            peekToken()?.value == Token.OpenParen ||
+            peekToken()?.value == Token.OpenBracket
+        ) {
             parseAbstractDeclarator().bind()
         } else {
             null
@@ -691,9 +748,29 @@ private class Parser(
             }
             Token.OpenParen -> {
                 nextToken()
-                val declarator = parseAbstractDeclarator().bind()
+                var declarator = parseAbstractDeclarator().bind()
                 expectToken(Token.CloseParen).bind()
+
+                if (peekToken()?.value == Token.OpenBracket) {
+                    do {
+                        nextToken()
+                        val size = parseArraySize().bind()
+                        declarator = AbstractDeclarator.Array(declarator, size)
+                        expectToken(Token.CloseBracket)
+                    } while (peekToken()?.value == Token.OpenBracket)
+                }
+
                 declarator
+            }
+            Token.OpenBracket -> {
+                var declarator: AbstractDeclarator? = null
+                do {
+                    nextToken()
+                    val size = parseArraySize().bind()
+                    declarator = AbstractDeclarator.Array(declarator, size)
+                    expectToken(Token.CloseBracket)
+                } while (peekToken()?.value == Token.OpenBracket)
+                requireNotNull(declarator) { "Bug: can't be null" }
             }
             else -> raise(ParserError("Expected '*' or '(', got ${peekToken?.value}", peekToken?.location))
         }
@@ -706,6 +783,10 @@ private class Parser(
 
         return when (declarator) {
             AbstractDeclarator.AbstractBase -> Type.Pointer(baseType)
+            is AbstractDeclarator.Array -> {
+                val derivedType = Type.Array(baseType, declarator.size)
+                processAbstractDeclarator(declarator.referenced, derivedType)
+            }
             is AbstractDeclarator.AbstractPointer -> {
                 val derivedType = Type.Pointer(baseType)
                 processAbstractDeclarator(declarator.referenced, derivedType)
@@ -920,6 +1001,11 @@ private sealed interface UnaryOperatorLike {
     data object AddressOf : UnaryOperatorLike
 }
 
+private sealed interface PostfixExpression {
+    data class PostfixOperator(val value: AST.PostfixOperator) : PostfixExpression
+    data class Subscript(val index: AST.Expression) : PostfixExpression
+}
+
 private sealed interface BinaryOperatorLike {
     data class BinaryOperator(val value: AST.BinaryOperator, val location: Location) : BinaryOperatorLike
 
@@ -962,7 +1048,7 @@ private sealed interface Declarator {
             get() = value.location
     }
     data class Pointer(val referenced: Declarator, override val location: Location) : Declarator
-    data class Array(val referenced: Declarator, val size: Int, override val location: Location) : Declarator
+    data class Array(val referenced: Declarator, val size: Long, override val location: Location) : Declarator
     data class Function(val params: List<Param>, val declarator: Declarator, override val location: Location) : Declarator
 
     data class Param(val type: Type.Data, val declarator: Declarator)
@@ -977,4 +1063,5 @@ private data class ProcessedDeclarator(
 private sealed interface AbstractDeclarator {
     data object AbstractBase : AbstractDeclarator
     data class AbstractPointer(val referenced: AbstractDeclarator) : AbstractDeclarator
+    data class Array(val referenced: AbstractDeclarator?, val size: Long) : AbstractDeclarator
 }
