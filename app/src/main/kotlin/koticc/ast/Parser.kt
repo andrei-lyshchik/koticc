@@ -162,6 +162,22 @@ private class Parser(
                 val params = parseParams().bind()
                 Declarator.Function(params, simpleDeclarator, paren.location)
             }
+            Token.OpenBracket -> {
+                var arrayDeclarator = simpleDeclarator
+                do {
+                    val brace = expectToken(Token.OpenBracket).bind()
+                    val sizeToken = nextToken()
+                    val size = if (sizeToken != null && sizeToken.value is Token.IntLiteral) {
+                        sizeToken.value.value
+                    } else {
+                        raise(ParserError("Expected array size, got ${sizeToken?.value.toDisplayString()}", sizeToken?.location))
+                    }
+                    expectToken(Token.CloseBracket).bind()
+                    arrayDeclarator = Declarator.Array(arrayDeclarator, size, brace.location)
+                } while (peekToken()?.value == Token.OpenBracket)
+
+                arrayDeclarator
+            }
             else -> simpleDeclarator
         }
     }
@@ -216,6 +232,10 @@ private class Parser(
                 val derivedType = Type.Pointer(referenced = baseType)
                 processDeclarator(declarator.referenced, derivedType).bind()
             }
+            is Declarator.Array -> {
+                val derivedType = Type.Array(baseType, declarator.size)
+                processDeclarator(declarator.referenced, derivedType).bind()
+            }
             is Declarator.Function -> {
                 val identifier = declarator.declarator
                 if (identifier !is Declarator.Identifier) {
@@ -234,10 +254,6 @@ private class Parser(
 
                     astParams.add(AST.FunctionParameter(paramIdentifier.value.value, paramIdentifier.location))
                     functionParamTypes.add(paramType)
-                }
-
-                if (baseType !is Type.Data) {
-                    raise(ParserError("Functions returning functions are not supported", declarator.location))
                 }
 
                 ProcessedDeclarator(
@@ -946,6 +962,7 @@ private sealed interface Declarator {
             get() = value.location
     }
     data class Pointer(val referenced: Declarator, override val location: Location) : Declarator
+    data class Array(val referenced: Declarator, val size: Int, override val location: Location) : Declarator
     data class Function(val params: List<Param>, val declarator: Declarator, override val location: Location) : Declarator
 
     data class Param(val type: Type.Data, val declarator: Declarator)

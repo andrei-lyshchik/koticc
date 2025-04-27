@@ -123,6 +123,8 @@ class BlockBuilder {
 
     fun ptr(name: String, to: Type.Data, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder = setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Pointer(to)))
 
+    fun array(name: String, type: Type.Data, size: Int, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder = setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Array(type, size)))
+
     fun assign(left: AST.Expression, right: AST.Expression, type: Type.Data? = null) {
         addBlockItem(
             AST.BlockItem.Statement(
