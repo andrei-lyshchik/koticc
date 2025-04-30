@@ -619,7 +619,7 @@ private class Parser(
 
     private fun parseFactor(): Either<ParserError, AST.Expression> = either {
         val peekToken = peekToken()
-        var factor =
+        val factor =
             when (val peekTokenValue = peekToken?.value) {
                 is Token.IntLiteral -> {
                     nextToken()
