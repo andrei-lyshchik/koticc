@@ -127,6 +127,19 @@ object Tacky {
             val src: Value,
             val dstPtr: Value,
         ) : Instruction
+
+        data class AddToPtr(
+            val ptr: Value,
+            val index: Value,
+            val scale: Long,
+            val dst: Value,
+        ) : Instruction
+
+        data class CopyToOffset(
+            val src: Value,
+            val identifier: String,
+            val offset: Long,
+        ) : Instruction
     }
 
     sealed interface Value {

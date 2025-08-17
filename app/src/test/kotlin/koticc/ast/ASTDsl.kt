@@ -125,6 +125,16 @@ class BlockBuilder {
 
     fun array(name: String, type: Type.Data, size: Long, storageClass: AST.StorageClass? = null): VariableDeclarationBuilder = setCurrentBlockItemBuilder(VariableDeclarationBuilder(name, storageClass, Type.Array(type, size)))
 
+    fun exprStmt(expr: AST.Expression) {
+        addBlockItem(
+            AST.BlockItem.Statement(
+                AST.Statement.Expression(
+                    expr,
+                ),
+            ),
+        )
+    }
+
     fun assign(left: AST.Expression, right: AST.Expression, type: Type.Data? = null) {
         addBlockItem(
             AST.BlockItem.Statement(
@@ -431,7 +441,7 @@ class VariableDeclarationBuilder(private val name: String, private val storageCl
     private var initializer: AST.VariableInitializer? = null
 
     infix fun assign(initializer: AST.Expression) {
-        this.initializer = AST.VariableInitializer.Single(initializer)
+        this.initializer = AST.VariableInitializer.Single(initializer, type = initializer.type)
     }
 
     @JvmName("assignSingleInitializers")
@@ -499,7 +509,19 @@ class DoWhileBuilder(val body: AST.Block) : BlockItemBuilder {
     )
 }
 
-fun initDecl(name: String, type: Type.Data = Type.Int, initializer: AST.Expression? = null) = AST.ForInitializer.Declaration(AST.Declaration.Variable(name, initializer?.let { AST.VariableInitializer.Single(it) }, type, null, DUMMY_LOCATION))
+fun initDecl(
+    name: String,
+    type: Type.Data = Type.Int,
+    initializer: AST.Expression? = null,
+) = AST.ForInitializer.Declaration(
+    declaration = AST.Declaration.Variable(
+        name = name,
+        initializer = initializer?.let { AST.VariableInitializer.Single(it, initializer.type) },
+        type = type,
+        storageClass = null,
+        location = DUMMY_LOCATION,
+    ),
+)
 
 fun initExpr(expression: AST.Expression) = AST.ForInitializer.Expression(expression)
 

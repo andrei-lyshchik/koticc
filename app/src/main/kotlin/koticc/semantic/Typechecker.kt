@@ -272,15 +272,33 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     location = variableDeclaration.location,
                 )
                 variableDeclaration.copy(
-                    initializer = when (variableDeclaration.initializer) {
-                        is AST.VariableInitializer.Compound -> TODO()
-                        is AST.VariableInitializer.Single -> AST.VariableInitializer.Single(
-                            typecheckExpression(variableDeclaration.initializer.expression).bind().convertByAssignmentTo(variableDeclaration.type).bind(),
-                        )
-                        null -> null
+                    initializer = variableDeclaration.initializer?.let { initializer ->
+                        typecheckVariableInitializer(initializer, variableDeclaration.type, variableDeclaration.location).bind()
                     },
                 )
             }
+        }
+    }
+
+    private fun typecheckVariableInitializer(initializer: AST.VariableInitializer, targetType: Type.Data, location: Location): Either<SemanticAnalysisError, AST.VariableInitializer> = either {
+        when (initializer) {
+            is AST.VariableInitializer.Compound -> {
+                val elementType = when (targetType) {
+                    is Type.Array -> targetType.elementType
+                    else -> raise(SemanticAnalysisError("Can't initialize a scalar variable with a compound initializer", location))
+                }
+                // TODO: check the sizes, pad with zeros if less initializers than the array size, raise an error if more
+                AST.VariableInitializer.Compound(
+                    initializers = initializer.initializers.map { initializer ->
+                        typecheckVariableInitializer(initializer, elementType, location).bind()
+                    },
+                    type = targetType,
+                )
+            }
+            is AST.VariableInitializer.Single -> AST.VariableInitializer.Single(
+                expression = typecheckAndConvertExpression(initializer.expression).bind().convertByAssignmentTo(targetType).bind(),
+                type = targetType,
+            )
         }
     }
 
@@ -313,7 +331,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             is AST.Statement.BreakLoop -> statement
             is AST.Statement.BreakSwitch -> statement
             is AST.Statement.Case -> statement.copy(
-                expression = typecheckExpression(statement.expression).bind(),
+                expression = typecheckAndConvertExpression(statement.expression).bind(),
                 body = typecheckStatement(statement.body, currentFunctionType).bind(),
             )
             is AST.Statement.Compound -> statement.copy(block = typecheckBlock(statement.block, currentFunctionType).bind())
@@ -324,11 +342,11 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             is AST.Statement.DoWhile -> {
                 statement.copy(
                     body = typecheckStatement(statement.body, currentFunctionType).bind(),
-                    condition = typecheckExpression(statement.condition).bind(),
+                    condition = typecheckAndConvertExpression(statement.condition).bind(),
                 )
             }
             is AST.Statement.Expression -> statement.copy(
-                expression = typecheckExpression(statement.expression).bind(),
+                expression = typecheckAndConvertExpression(statement.expression).bind(),
             )
             is AST.Statement.For -> {
                 statement.copy(
@@ -346,19 +364,19 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                                 )
                             }
                             is AST.ForInitializer.Expression -> initializer.copy(
-                                expression = typecheckExpression(initializer.expression).bind(),
+                                expression = typecheckAndConvertExpression(initializer.expression).bind(),
                             )
                         }
                     },
-                    condition = statement.condition?.let { typecheckExpression(it).bind() },
-                    post = statement.post?.let { typecheckExpression(it).bind() },
+                    condition = statement.condition?.let { typecheckAndConvertExpression(it).bind() },
+                    post = statement.post?.let { typecheckAndConvertExpression(it).bind() },
                     body = typecheckStatement(statement.body, currentFunctionType).bind(),
                 )
             }
             is AST.Statement.Goto -> statement
             is AST.Statement.If -> {
                 statement.copy(
-                    condition = typecheckExpression(statement.condition).bind(),
+                    condition = typecheckAndConvertExpression(statement.condition).bind(),
                     thenStatement = typecheckStatement(statement.thenStatement, currentFunctionType).bind(),
                     elseStatement = statement.elseStatement?.let { typecheckStatement(it, currentFunctionType).bind() },
                 )
@@ -369,50 +387,63 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             is AST.Statement.Null -> statement
             is AST.Statement.Return -> {
                 statement.copy(
-                    expression = typecheckExpression(statement.expression).bind().convertByAssignmentTo(currentFunctionType.returnType).bind(),
+                    expression = typecheckAndConvertExpression(statement.expression).bind().convertByAssignmentTo(currentFunctionType.returnType).bind(),
                 )
             }
             is AST.Statement.Switch -> {
-                val expression = typecheckExpression(statement.expression).bind()
+                val expression = typecheckAndConvertExpression(statement.expression).bind()
                 if (expression.resolvedType() is Type.Pointer) {
                     raise(
                         SemanticAnalysisError("invalid type ${expression.resolvedType().toDisplayString()} for switch controlling expression", expression.location),
                     )
                 }
                 statement.copy(
-                    expression = typecheckExpression(statement.expression).bind(),
+                    expression = typecheckAndConvertExpression(statement.expression).bind(),
                     body = typecheckStatement(statement.body, currentFunctionType).bind(),
                 )
             }
             is AST.Statement.While -> {
                 statement.copy(
-                    condition = typecheckExpression(statement.condition).bind(),
+                    condition = typecheckAndConvertExpression(statement.condition).bind(),
                     body = typecheckStatement(statement.body, currentFunctionType).bind(),
                 )
             }
         }
     }
 
-    @Suppress("KotlinConstantConditions")
+    private fun typecheckAndConvertExpression(expression: AST.Expression): Either<SemanticAnalysisError, AST.Expression> = either {
+        val result = typecheckExpression(expression).bind()
+        when (val type = result.resolvedType()) {
+            is Type.Array -> {
+                AST.Expression.AddressOf(
+                    expression = result,
+                    type = Type.Pointer(type.elementType),
+                    location = result.location,
+                )
+            }
+            else -> result
+        }
+    }
+
     private fun typecheckExpression(expression: AST.Expression): Either<SemanticAnalysisError, AST.Expression> = either {
         when (expression) {
             is AST.Expression.Assignment -> {
-                val left = typecheckExpression(expression.left).bind()
+                val left = typecheckAndConvertExpression(expression.left).bind()
                 if (!left.isLValue()) {
                     raise(SemanticAnalysisError("left side of assignment must be a left-value, got '${left.toDisplayString()}'", left.location))
                 }
-                val right = typecheckExpression(expression.right).bind().convertByAssignmentTo(left.resolvedType()).bind()
+                val right = typecheckAndConvertExpression(expression.right).bind().convertByAssignmentTo(left.resolvedType()).bind()
                 expression.copy(
                     left = left,
                     right = right,
                 ).ofType(left.resolvedType())
             }
             is AST.Expression.CompoundAssignment -> {
-                val left = typecheckExpression(expression.left).bind()
+                val left = typecheckAndConvertExpression(expression.left).bind()
                 if (!left.isLValue()) {
                     raise(SemanticAnalysisError("left side of assignment must be a left-value, got '${left.toDisplayString()}'", left.location))
                 }
-                val right = typecheckExpression(expression.right).bind()
+                val right = typecheckAndConvertExpression(expression.right).bind()
                 val typecheckResult = typecheckBinary(left, right, expression.operator, expression.location).bind()
                 val intermediateExpression = expression.copy(
                     left = left,
@@ -425,8 +456,8 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 intermediateExpression.ofType(left.resolvedType())
             }
             is AST.Expression.Binary -> {
-                val left = typecheckExpression(expression.left).bind()
-                val right = typecheckExpression(expression.right).bind()
+                val left = typecheckAndConvertExpression(expression.left).bind()
+                val right = typecheckAndConvertExpression(expression.right).bind()
                 val typecheckResult = typecheckBinary(left, right, expression.operator, expression.location).bind()
                 expression.copy(
                     left = typecheckResult.left,
@@ -434,11 +465,11 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 ).ofType(typecheckResult.resultType)
             }
             is AST.Expression.Conditional -> {
-                val thenExpression = typecheckExpression(expression.thenExpression).bind()
-                val elseExpression = typecheckExpression(expression.elseExpression).bind()
+                val thenExpression = typecheckAndConvertExpression(expression.thenExpression).bind()
+                val elseExpression = typecheckAndConvertExpression(expression.elseExpression).bind()
                 val commonType = getCommonType(thenExpression.resolvedType(), elseExpression.resolvedType())
                 expression.copy(
-                    condition = typecheckExpression(expression.condition).bind(),
+                    condition = typecheckAndConvertExpression(expression.condition).bind(),
                     thenExpression = thenExpression.castTo(commonType),
                     elseExpression = elseExpression.castTo(commonType),
                 ).ofType(commonType)
@@ -462,7 +493,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 }
                 val typecheckedArguments = expression.arguments.zip(functionType.parameters)
                     .map { (argument, parameterType) ->
-                        typecheckExpression(argument).bind().convertByAssignmentTo(parameterType).bind()
+                        typecheckAndConvertExpression(argument).bind().convertByAssignmentTo(parameterType).bind()
                     }
                 expression.copy(
                     arguments = typecheckedArguments,
@@ -472,7 +503,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 expression.ofType(expression.value.type)
             }
             is AST.Expression.Postfix -> {
-                val operand = typecheckExpression(expression.operand).bind()
+                val operand = typecheckAndConvertExpression(expression.operand).bind()
                 if (!operand.isLValue()) {
                     raise(
                         SemanticAnalysisError("operand of postfix expression must be a lvalue, got ${operand.toDisplayString()}", expression.location),
@@ -483,7 +514,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 ).ofType(operand.resolvedType())
             }
             is AST.Expression.Unary -> {
-                val operand = typecheckExpression(expression.operand).bind()
+                val operand = typecheckAndConvertExpression(expression.operand).bind()
                 if (expression.operator != AST.UnaryOperator.LogicalNegate && operand.resolvedType() is Type.Pointer) {
                     raise(SemanticAnalysisError("invalid operand type for '${expression.operator.toDisplayString()}': ${operand.resolvedType().toDisplayString()}", expression.location))
                 }
@@ -513,7 +544,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             }
 
             is AST.Expression.Cast -> {
-                val inner = typecheckExpression(expression.expression).bind()
+                val inner = typecheckAndConvertExpression(expression.expression).bind()
                 if (inner.resolvedType() is Type.Double &&
                     expression.targetType is Type.Pointer ||
                     inner.resolvedType() is Type.Pointer &&
@@ -524,12 +555,12 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     )
                 }
                 expression.copy(
-                    expression = typecheckExpression(expression.expression).bind(),
+                    expression = typecheckAndConvertExpression(expression.expression).bind(),
                 ).ofType(expression.targetType)
             }
 
             is AST.Expression.AddressOf -> {
-                val typedInnerExpression = typecheckExpression(expression.expression).bind()
+                val typedInnerExpression = typecheckAndConvertExpression(expression.expression).bind()
                 val type = if (typedInnerExpression.isLValue()) {
                     Type.Pointer(referenced = typedInnerExpression.resolvedType())
                 } else {
@@ -540,7 +571,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 ).ofType(type)
             }
             is AST.Expression.Dereference -> {
-                val typedInnerExpression = typecheckExpression(expression.expression).bind()
+                val typedInnerExpression = typecheckAndConvertExpression(expression.expression).bind()
                 val type = when (val innerType = typedInnerExpression.resolvedType()) {
                     is Type.Pointer -> innerType.referenced
                     else -> raise(
@@ -556,9 +587,41 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 ).ofType(type)
             }
 
-            is AST.Expression.Subscript -> TODO()
+            is AST.Expression.Subscript -> {
+                var typedExpression = typecheckAndConvertExpression(expression.expression).bind()
+                var typedIndex = typecheckAndConvertExpression(expression.index).bind()
+                val type = when {
+                    typedExpression.resolvedType() is Type.Pointer && typedIndex.resolvedType().isInteger() -> {
+                        val pointerType = (typedExpression.resolvedType() as Type.Pointer).referenced
+                        typedIndex = typedIndex.castTo(Type.Long)
+                        pointerType
+                    }
+                    typedExpression.resolvedType().isInteger() && typedIndex.resolvedType() is Type.Pointer -> {
+                        val pointerType = (typedIndex.resolvedType() as Type.Pointer).referenced
+                        typedExpression = typedExpression.castTo(Type.Long)
+                        pointerType
+                    }
+                    else -> {
+                        raise(
+                            SemanticAnalysisError(
+                                "Subscription must use pointer and integer operands, got: " +
+                                    "'${typedExpression.resolvedType().toDisplayString()}' and " +
+                                    "'${typedIndex.resolvedType().toDisplayString()}'",
+                                typedExpression.location,
+                            ),
+                        )
+                    }
+                }
+                expression.copy(
+                    expression = typedExpression,
+                    index = typedIndex,
+                    type = type,
+                )
+            }
         }
     }
+
+    private fun Type.Data.isInteger() = this is Type.Arithmetic && this !is Type.Double
 
     @Suppress("KotlinConstantConditions")
     private fun typecheckBinary(
@@ -635,20 +698,21 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     private fun AST.Expression.isLValue() = when (this) {
         is AST.Expression.Variable -> true
         is AST.Expression.Dereference -> true
+        is AST.Expression.Subscript -> true
         else -> false
     }
 
     private fun getCommonType(type1: Type.Data, type2: Type.Data): Type.Data = when {
         type1 == type2 -> type1
         type1 == Type.Double || type2 == Type.Double -> Type.Double
-        type1.size() == type2.size() -> {
+        type1.byteSize() == type2.byteSize() -> {
             if (type1.signed()) {
                 type2
             } else {
                 type1
             }
         }
-        type1.size() > type2.size() -> type1
+        type1.byteSize() > type2.byteSize() -> type1
         else -> type2
     }
 

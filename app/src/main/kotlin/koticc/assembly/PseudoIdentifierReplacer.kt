@@ -119,9 +119,9 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
     private fun replace(
         operand: Assembly.Operand,
     ): Assembly.Operand = when (operand) {
-        is Assembly.Operand.PseudoIdentifier -> {
+        is Assembly.Operand.Pseudo -> {
             val size = symbolTable.objectSymbol(operand.name).type.byteSize
-            val stackOffset = stackOffsets.getOrPut(operand.name) {
+            val symbolStackOffset = stackOffsets.getOrPut(operand.name) {
                 currentStackBytes += size
                 if (currentStackBytes % size != 0) {
                     // f.ex. in case of quadwords - 8 bytes - we need to align their offset
@@ -130,6 +130,10 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
                 }
                 -currentStackBytes
             }
+            val stackOffset = when (operand) {
+                is Assembly.Operand.PseudoMem -> symbolStackOffset + operand.offset.toInt()
+                is Assembly.Operand.PseudoIdentifier -> symbolStackOffset
+            }
             Assembly.Operand.Memory(Assembly.RegisterValue.Bp, stackOffset)
         }
 
@@ -137,5 +141,6 @@ class PseudoIdentifierReplacer(private val symbolTable: BackendSymbolTable) {
         is Assembly.Operand.Immediate -> operand
         is Assembly.Operand.Data -> operand
         is Assembly.Operand.Memory -> operand
+        is Assembly.Operand.Indexed -> operand
     }
 }

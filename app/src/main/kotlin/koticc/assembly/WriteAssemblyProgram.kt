@@ -118,12 +118,14 @@ private fun Assembly.Type.instructionSuffix() = when (this) {
     Assembly.Type.LongWord -> 'l'
     Assembly.Type.QuadWord -> 'q'
     Assembly.Type.Double -> "sd"
+    is Assembly.Type.ByteArray -> TODO()
 }
 
 private fun Assembly.Type.toSize() = when (this) {
     Assembly.Type.LongWord -> Size.FourByte
     Assembly.Type.QuadWord -> Size.EightByte
     Assembly.Type.Double -> Size.EightByte
+    is Assembly.Type.ByteArray -> TODO()
 }
 
 private fun Assembly.Instruction.toOperatorString(): String = when (this) {
@@ -133,7 +135,7 @@ private fun Assembly.Instruction.toOperatorString(): String = when (this) {
     is Assembly.Instruction.Cdq -> when (type) {
         Assembly.Type.LongWord -> "cdq"
         Assembly.Type.QuadWord -> "cqo"
-        Assembly.Type.Double -> error("Bug: cdq should not be used with double")
+        Assembly.Type.Double, is Assembly.Type.ByteArray -> error("Bug: cdq should not be used with double / byte array")
     }
     is Assembly.Instruction.Cmp ->
         if (type == Assembly.Type.Double) {
@@ -198,7 +200,8 @@ private fun Assembly.Operand.toOperatorString(size: Size): String = when (this) 
     is Assembly.Operand.Immediate -> "\$$value"
     is Assembly.Operand.Data -> "_$name(%rip)"
     is Assembly.Operand.Memory -> "$offset(${register.toOutputString(Size.EightByte)})"
-    is Assembly.Operand.PseudoIdentifier ->
+    is Assembly.Operand.Indexed -> "(${base.toOutputString(size)}, ${index.toOutputString(size)}, $scale)"
+    is Assembly.Operand.Pseudo ->
         error(
             "Bug: pseudo identifiers should be removed " +
                 "before writing assembly output",

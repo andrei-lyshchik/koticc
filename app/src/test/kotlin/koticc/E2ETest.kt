@@ -53,6 +53,8 @@ class E2ETest {
             "/programs/postfix_double.c",
             "/programs/nan.c",
             "/programs/pointers.c",
+            "/programs/arrays_simple.c",
+            "/programs/arrays.c",
         )
 
     @ParameterizedTest

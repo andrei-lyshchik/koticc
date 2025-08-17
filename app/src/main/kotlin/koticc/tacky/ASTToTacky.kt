@@ -104,21 +104,43 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         val variableType = symbolTable.variableSymbol(declaration.name)
         if (variableType.attributes is VariableAttributes.Static) return
 
-        val initialValue = declaration.initializer?.let { initializer ->
+        declaration.initializer?.let { initializer ->
             when (initializer) {
-                is AST.VariableInitializer.Compound -> TODO()
-                is AST.VariableInitializer.Single -> generateExpressionAndConvert(initializer.expression)
+                is AST.VariableInitializer.Compound -> {
+                    generateCompoundInitializer(declaration.name, initializer, 0)
+                }
+                is AST.VariableInitializer.Single -> {
+                    val initialValue = generateExpressionAndConvert(initializer.expression)
+                    val variable = Tacky.Value.Variable(declaration.name)
+                    instructions.add(
+                        Tacky.Instruction.Copy(
+                            src = initialValue,
+                            dst = variable,
+                        ),
+                    )
+                }
             }
         }
-        val variable = Tacky.Value.Variable(declaration.name)
-        if (initialValue != null) {
-            instructions.add(
-                Tacky.Instruction.Copy(
-                    src = initialValue,
-                    dst = variable,
-                ),
-            )
+    }
+
+    private fun generateCompoundInitializer(declarationName: String, initializer: AST.VariableInitializer.Compound, offset: Long): Long {
+        var totalOffset = offset
+        for (subInitializer in initializer.initializers) {
+            when (subInitializer) {
+                is AST.VariableInitializer.Compound -> {
+                    val subInitOffset = generateCompoundInitializer(declarationName, subInitializer, totalOffset)
+                    totalOffset += subInitOffset
+                }
+                is AST.VariableInitializer.Single -> {
+                    val subInitializerValue = generateExpressionAndConvert(subInitializer.expression)
+                    instructions.add(
+                        Tacky.Instruction.CopyToOffset(subInitializerValue, declarationName, totalOffset),
+                    )
+                    totalOffset += subInitializer.resolvedType().byteSize()
+                }
+            }
         }
+        return totalOffset
     }
 
     private fun generateStatement(statement: AST.Statement) {
@@ -599,7 +621,20 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
             TackyExpressionResult.DereferencedPointer(inner)
         }
 
-        is AST.Expression.Subscript -> TODO()
+        is AST.Expression.Subscript -> {
+            val (tackyExpression, tackyIndex) = if (expression.expression.resolvedType() is Type.Pointer) {
+                generateExpressionAndConvert(expression.expression) to generateExpressionAndConvert(expression.index)
+            } else {
+                generateExpressionAndConvert(expression.index) to generateExpressionAndConvert(expression.expression)
+            }
+
+            val dst = nextVariable(expression.resolvedType())
+            instructions.add(
+                Tacky.Instruction.AddToPtr(tackyExpression, tackyIndex, expression.resolvedType().byteSize(), dst),
+            )
+
+            TackyExpressionResult.DereferencedPointer(dst)
+        }
     }
 
     private fun generateExpressionAndConvert(expression: AST.Expression): Tacky.Value = when (val result = generateExpression(expression)) {
@@ -766,13 +801,13 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                     )
                 }
             }
-            targetType.size() == innerExpressionType.size() -> instructions.add(
+            targetType.byteSize() == innerExpressionType.byteSize() -> instructions.add(
                 Tacky.Instruction.Copy(
                     src = tackyExpression,
                     dst = dst,
                 ),
             )
-            targetType.size() < innerExpressionType.size() -> instructions.add(
+            targetType.byteSize() < innerExpressionType.byteSize() -> instructions.add(
                 Tacky.Instruction.Truncate(
                     src = tackyExpression,
                     dst = dst,

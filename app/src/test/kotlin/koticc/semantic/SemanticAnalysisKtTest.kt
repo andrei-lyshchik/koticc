@@ -4,11 +4,17 @@ import arrow.core.left
 import arrow.core.right
 import koticc.ast.AST
 import koticc.ast.Type
+import koticc.ast.assertEqualsIgnoringLocations
+import koticc.ast.assign
 import koticc.ast.cast
+import koticc.ast.cond
 import koticc.ast.e
+import koticc.ast.eq
 import koticc.ast.int
 import koticc.ast.long
+import koticc.ast.plus
 import koticc.ast.program
+import koticc.parseAndAnalyze
 import koticc.token.Location
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -18,139 +24,26 @@ import org.junit.jupiter.params.provider.EnumSource
 class SemanticAnalysisKtTest {
     @Test
     fun `should replace variables name with unique ones and return count`() {
-        val input =
-            AST.Program(
-                declarations =
-                listOf(
-                    AST.Declaration.Function(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration.Variable(
-                                        name = "a",
-                                        initializer =
-                                        AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13))),
-                                        type = Type.Int,
-                                        storageClass = null,
-                                        location = Location(2, 5),
-                                    ),
-                                ),
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration.Variable(
-                                        name = "b",
-                                        initializer =
-                                        AST.VariableInitializer.Single(
-                                            AST.Expression.Constant(AST.IntConstant(2), null, Location(3, 13)),
-                                        ),
-                                        type = Type.Int,
-                                        storageClass = null,
-                                        location = Location(3, 5),
-                                    ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    statement =
-                                    AST.Statement.Return(
-                                        expression =
-                                        AST.Expression.Binary(
-                                            operator = AST.BinaryOperator.Add,
-                                            left =
-                                            AST.Expression.Variable(
-                                                "a",
-                                                null,
-                                                Location(4, 12),
-                                            ),
-                                            right =
-                                            AST.Expression.Variable(
-                                                "b",
-                                                null,
-                                                Location(4, 16),
-                                            ),
-                                            type = null,
-                                        ),
-                                        location = Location(4, 5),
-                                    ),
-                                ),
-                            ),
-                        ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                        storageClass = null,
-                        location = Location(1, 1),
-                    ),
-                ),
-            )
+        val input = """
+            int main(void) {
+                int a = 1;
+                int b = 2;
+                return a + b;
+            }
+        """.trimIndent()
 
         val expected =
             ValidASTProgram(
                 value =
-                AST.Program(
-                    declarations =
-                    listOf(
-                        AST.Declaration.Function(
-                            name = "main",
-                            parameters = emptyList(),
-                            body =
-                            AST.Block(
-                                blockItems =
-                                listOf(
-                                    AST.BlockItem.Declaration(
-                                        declaration =
-                                        AST.Declaration.Variable(
-                                            name = "a.0",
-                                            initializer =
-                                            AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13))),
-                                            type = Type.Int,
-                                            storageClass = null,
-                                            location = Location(2, 5),
-                                        ),
-                                    ),
-                                    AST.BlockItem.Declaration(
-                                        declaration =
-                                        AST.Declaration.Variable(
-                                            name = "b.1",
-                                            initializer =
-                                            AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(3, 13))),
-                                            type = Type.Int,
-                                            storageClass = null,
-                                            location = Location(3, 5),
-                                        ),
-                                    ),
-                                    AST.BlockItem.Statement(
-                                        statement =
-                                        AST.Statement.Return(
-                                            expression =
-                                            AST.Expression.Binary(
-                                                operator = AST.BinaryOperator.Add,
-                                                left =
-                                                AST.Expression.Variable(
-                                                    "a.0",
-                                                    Type.Int,
-                                                    Location(4, 12),
-                                                ),
-                                                right =
-                                                AST.Expression.Variable(
-                                                    "b.1",
-                                                    Type.Int,
-                                                    Location(4, 16),
-                                                ),
-                                                type = Type.Int,
-                                            ),
-                                            location = Location(4, 5),
-                                        ),
-                                    ),
-                                ),
-                            ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                            storageClass = null,
-                            location = Location(1, 1),
-                        ),
-                    ),
-                ),
+                program {
+                    main {
+                        int("a.0") assign 1.e.int()
+                        int("b.1") assign 2.e.int()
+                        return_(
+                            ("a.0".e.int() + "b.1".e.int()).int(),
+                        )
+                    }
+                },
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
                     "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
@@ -159,7 +52,7 @@ class SemanticAnalysisKtTest {
                 ),
             )
 
-        assertEquals(expected.right(), semanticAnalysis(input))
+        assertEqualsIgnoringLocations(expected, parseAndAnalyze(input))
     }
 
     @Test
@@ -341,89 +234,28 @@ class SemanticAnalysisKtTest {
     @ParameterizedTest
     @EnumSource(AST.PostfixOperator::class)
     fun `should replace variable names in postfix operator operand`(postfixOperator: AST.PostfixOperator) {
-        val input =
-            AST.Program(
-                declarations =
-                listOf(
-                    AST.Declaration.Function(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration.Variable(
-                                        name = "a",
-                                        initializer = AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13))),
-                                        type = Type.Int,
-                                        storageClass = null,
-                                        location = Location(2, 5),
-                                    ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    statement =
-                                    AST.Statement.Expression(
-                                        expression =
-                                        AST.Expression.Postfix(
-                                            operator = postfixOperator,
-                                            operand = AST.Expression.Variable("a", null, Location(3, 5)),
-                                            type = null,
-                                        ),
-                                    ),
-                                ),
-                            ),
-                        ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                        storageClass = null,
-                        location = Location(1, 1),
-                    ),
-                ),
-            )
+        val input = """
+            int main(void) {
+                int a = 1;
+                a${postfixOperator.toDisplayString()};
+            }
+        """.trimIndent()
 
         val expected =
             ValidASTProgram(
                 value =
-                AST.Program(
-                    declarations =
-                    listOf(
-                        AST.Declaration.Function(
-                            name = "main",
-                            parameters = emptyList(),
-                            body =
-                            AST.Block(
-                                blockItems =
-                                listOf(
-                                    AST.BlockItem.Declaration(
-                                        declaration =
-                                        AST.Declaration.Variable(
-                                            name = "a.0",
-                                            initializer = AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13))),
-                                            type = Type.Int,
-                                            storageClass = null,
-                                            location = Location(2, 5),
-                                        ),
-                                    ),
-                                    AST.BlockItem.Statement(
-                                        statement =
-                                        AST.Statement.Expression(
-                                            expression =
-                                            AST.Expression.Postfix(
-                                                operator = postfixOperator,
-                                                operand = AST.Expression.Variable("a.0", Type.Int, Location(3, 5)),
-                                                type = Type.Int,
-                                            ),
-                                        ),
-                                    ),
-                                ),
-                            ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                            storageClass = null,
-                            location = Location(1, 1),
-                        ),
-                    ),
-                ),
+                program {
+                    main {
+                        int("a.0") assign 1.e.int()
+                        exprStmt(
+                            AST.Expression.Postfix(
+                                operator = postfixOperator,
+                                operand = "a.0".e.int(),
+                                type = Type.Int,
+                            ).int(),
+                        )
+                    }
+                },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
                     "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
@@ -431,148 +263,28 @@ class SemanticAnalysisKtTest {
                 ),
             )
 
-        assertEquals(expected.right(), semanticAnalysis(input))
+        assertEqualsIgnoringLocations(expected, parseAndAnalyze(input))
     }
 
     @Test
     fun `should replace variable names with new names in declaration initializers`() {
-        val input =
-            AST.Program(
-                declarations =
-                listOf(
-                    AST.Declaration.Function(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration.Variable(
-                                        name = "a",
-                                        initializer = AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13))),
-                                        type = Type.Int,
-                                        storageClass = null,
-                                        location = Location(2, 5),
-                                    ),
-                                ),
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration.Variable(
-                                        name = "b",
-                                        initializer = AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(2), null, Location(3, 13))),
-                                        type = Type.Int,
-                                        storageClass = null,
-                                        location = Location(3, 5),
-                                    ),
-                                ),
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration.Variable(
-                                        name = "c",
-                                        initializer =
-                                        AST.VariableInitializer.Single(
-                                            AST.Expression.Binary(
-                                                operator = AST.BinaryOperator.Add,
-                                                left =
-                                                AST.Expression.Variable(
-                                                    "a",
-                                                    null,
-                                                    Location(2, 13),
-                                                ),
-                                                right =
-                                                AST.Expression.Variable(
-                                                    "b",
-                                                    null,
-                                                    Location(2, 17),
-                                                ),
-                                                type = null,
-                                            ),
-                                        ),
-                                        type = Type.Int,
-                                        storageClass = null,
-                                        location = Location(2, 5),
-                                    ),
-                                ),
-                            ),
-                        ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                        storageClass = null,
-                        location = Location(1, 1),
-                    ),
-                ),
-            )
+        val input = """
+            int main(void) {
+                int a = 1;
+                int b = 2;
+                int c = a + b;
+            }
+        """.trimIndent()
 
         val expected =
             ValidASTProgram(
-                value =
-                AST.Program(
-                    declarations =
-                    listOf(
-                        AST.Declaration.Function(
-                            name = "main",
-                            parameters = emptyList(),
-                            body =
-                            AST.Block(
-                                blockItems =
-                                listOf(
-                                    AST.BlockItem.Declaration(
-                                        declaration =
-                                        AST.Declaration.Variable(
-                                            name = "a.0",
-                                            initializer = AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13))),
-                                            type = Type.Int,
-                                            storageClass = null,
-                                            location = Location(2, 5),
-                                        ),
-                                    ),
-                                    AST.BlockItem.Declaration(
-                                        declaration =
-                                        AST.Declaration.Variable(
-                                            name = "b.1",
-                                            initializer = AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(3, 13))),
-                                            type = Type.Int,
-                                            storageClass = null,
-                                            location = Location(3, 5),
-                                        ),
-                                    ),
-                                    AST.BlockItem.Declaration(
-                                        declaration =
-                                        AST.Declaration.Variable(
-                                            name = "c.2",
-                                            initializer =
-                                            AST.VariableInitializer.Single(
-                                                AST.Expression.Binary(
-                                                    operator = AST.BinaryOperator.Add,
-                                                    left =
-                                                    AST.Expression.Variable(
-                                                        "a.0",
-                                                        Type.Int,
-                                                        Location(2, 13),
-                                                    ),
-                                                    right =
-                                                    AST.Expression.Variable(
-                                                        "b.1",
-                                                        Type.Int,
-                                                        Location(2, 17),
-                                                    ),
-                                                    type = Type.Int,
-                                                ),
-                                            ),
-                                            type = Type.Int,
-                                            storageClass = null,
-                                            location = Location(2, 5),
-                                        ),
-                                    ),
-                                ),
-                            ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                            storageClass = null,
-                            location = Location(1, 1),
-                        ),
-                    ),
-                ),
+                value = program {
+                    main {
+                        int("a.0") assign 1.e.int()
+                        int("b.1") assign 2.e.int()
+                        int("c.2") assign ("a.0".e.int() + "b.1".e.int()).int()
+                    }
+                },
                 renamedVariableCount = 3,
                 symbolTable = mapOf(
                     "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
@@ -582,100 +294,25 @@ class SemanticAnalysisKtTest {
                 ),
             )
 
-        assertEquals(expected.right(), semanticAnalysis(input))
+        assertEqualsIgnoringLocations(expected, parseAndAnalyze(input))
     }
 
     @Test
     fun `should support case with variable used in its own initializer`() {
-        val input =
-            AST.Program(
-                declarations =
-                listOf(
-                    AST.Declaration.Function(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration.Variable(
-                                        name = "a",
-                                        initializer =
-                                        AST.VariableInitializer.Single(
-                                            AST.Expression.Binary(
-                                                operator = AST.BinaryOperator.Add,
-                                                left =
-                                                AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13)),
-                                                right =
-                                                AST.Expression.Variable(
-                                                    "a",
-                                                    null,
-                                                    Location(2, 17),
-                                                ),
-                                                type = null,
-                                            ),
-                                        ),
-                                        type = Type.Int,
-                                        storageClass = null,
-                                        location = Location(2, 5),
-                                    ),
-                                ),
-                            ),
-                        ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                        storageClass = null,
-                        location = Location(1, 1),
-                    ),
-                ),
-            )
+        val input = """
+            int main(void) {
+                int a = 1 + a;
+            }
+        """.trimIndent()
 
         val expected =
             ValidASTProgram(
                 value =
-                AST.Program(
-                    declarations =
-                    listOf(
-                        AST.Declaration.Function(
-                            name = "main",
-                            parameters = emptyList(),
-                            body =
-                            AST.Block(
-                                blockItems =
-                                listOf(
-                                    AST.BlockItem.Declaration(
-                                        declaration =
-                                        AST.Declaration.Variable(
-                                            name = "a.0",
-                                            initializer =
-                                            AST.VariableInitializer.Single(
-                                                AST.Expression.Binary(
-                                                    operator = AST.BinaryOperator.Add,
-                                                    left =
-                                                    AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13)),
-                                                    right =
-                                                    AST.Expression.Variable(
-                                                        "a.0",
-                                                        Type.Int,
-                                                        Location(2, 17),
-                                                    ),
-                                                    type = Type.Int,
-                                                ),
-                                            ),
-                                            type = Type.Int,
-                                            storageClass = null,
-                                            location = Location(2, 5),
-                                        ),
-                                    ),
-                                ),
-                            ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                            storageClass = null,
-                            location = Location(1, 1),
-                        ),
-                    ),
-                ),
+                program {
+                    main {
+                        int("a.0") assign (1.e.int() + "a.0".e.int()).int()
+                    }
+                },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
                     "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
@@ -683,170 +320,34 @@ class SemanticAnalysisKtTest {
                 ),
             )
 
-        assertEquals(expected.right(), semanticAnalysis(input))
+        assertEqualsIgnoringLocations(expected, parseAndAnalyze(input))
     }
 
     @Test
     fun `should handle if statement`() {
-        val input =
-            AST.Program(
-                declarations =
-                listOf(
-                    AST.Declaration.Function(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration.Variable(
-                                        name = "a",
-                                        initializer =
-                                        AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13))),
-                                        type = Type.Int,
-                                        storageClass = null,
-                                        location = Location(2, 5),
-                                    ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    statement =
-                                    AST.Statement.If(
-                                        condition =
-                                        AST.Expression.Binary(
-                                            operator = AST.BinaryOperator.Equal,
-                                            left =
-                                            AST.Expression.Variable(
-                                                "a",
-                                                null,
-                                                Location(3, 13),
-                                            ),
-                                            right =
-                                            AST.Expression.Constant(AST.IntConstant(1), null, Location(3, 17)),
-                                            type = null,
-                                        ),
-                                        thenStatement =
-                                        AST.Statement.Expression(
-                                            expression =
-                                            AST.Expression.Assignment(
-                                                left =
-                                                AST.Expression.Variable(
-                                                    "a",
-                                                    null,
-                                                    Location(4, 5),
-                                                ),
-                                                right =
-                                                AST.Expression.Constant(AST.IntConstant(2), null, Location(4, 9)),
-                                                type = null,
-                                            ),
-                                        ),
-                                        elseStatement =
-                                        AST.Statement.Expression(
-                                            expression =
-                                            AST.Expression.Assignment(
-                                                left =
-                                                AST.Expression.Variable(
-                                                    "a",
-                                                    null,
-                                                    Location(5, 5),
-                                                ),
-                                                right =
-                                                AST.Expression.Constant(AST.IntConstant(3), null, Location(5, 9)),
-                                                type = null,
-                                            ),
-                                        ),
-                                    ),
-                                ),
-                            ),
-                        ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                        storageClass = null,
-                        location = Location(1, 1),
-                    ),
-                ),
-            )
+        val input = """
+            int main(void) {
+                int a = 1;
+                if (a == 1) {
+                    a = 2;
+                } else {
+                    a = 3;
+                }
+            }
+        """.trimIndent()
 
         val expected =
             ValidASTProgram(
-                value =
-                AST.Program(
-                    declarations =
-                    listOf(
-                        AST.Declaration.Function(
-                            name = "main",
-                            parameters = emptyList(),
-                            body =
-                            AST.Block(
-                                blockItems =
-                                listOf(
-                                    AST.BlockItem.Declaration(
-                                        declaration =
-                                        AST.Declaration.Variable(
-                                            name = "a.0",
-                                            initializer =
-                                            AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13))),
-                                            type = Type.Int,
-                                            storageClass = null,
-                                            location = Location(2, 5),
-                                        ),
-                                    ),
-                                    AST.BlockItem.Statement(
-                                        statement =
-                                        AST.Statement.If(
-                                            condition =
-                                            AST.Expression.Binary(
-                                                operator = AST.BinaryOperator.Equal,
-                                                left =
-                                                AST.Expression.Variable(
-                                                    "a.0",
-                                                    Type.Int,
-                                                    Location(3, 13),
-                                                ),
-                                                right =
-                                                AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(3, 17)),
-                                                type = Type.Int,
-                                            ),
-                                            thenStatement =
-                                            AST.Statement.Expression(
-                                                expression =
-                                                AST.Expression.Assignment(
-                                                    left =
-                                                    AST.Expression.Variable(
-                                                        "a.0",
-                                                        Type.Int,
-                                                        Location(4, 5),
-                                                    ),
-                                                    right =
-                                                    AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(4, 9)),
-                                                    type = Type.Int,
-                                                ),
-                                            ),
-                                            elseStatement =
-                                            AST.Statement.Expression(
-                                                expression =
-                                                AST.Expression.Assignment(
-                                                    left =
-                                                    AST.Expression.Variable(
-                                                        "a.0",
-                                                        Type.Int,
-                                                        Location(5, 5),
-                                                    ),
-                                                    right =
-                                                    AST.Expression.Constant(AST.IntConstant(3), Type.Int, Location(5, 9)),
-                                                    type = Type.Int,
-                                                ),
-                                            ),
-                                        ),
-                                    ),
-                                ),
-                            ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                            storageClass = null,
-                            location = Location(1, 1),
-                        ),
-                    ),
-                ),
+                value = program {
+                    main {
+                        int("a.0") assign 1.e.int()
+                        if_(("a.0".e.int() eq 1.e.int()).int()) {
+                            assign("a.0".e.int(), 2.e.int(), Type.Int)
+                        } else_ {
+                            assign("a.0".e.int(), 3.e.int(), Type.Int)
+                        }
+                    }
+                },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
                     "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
@@ -854,148 +355,35 @@ class SemanticAnalysisKtTest {
                 ),
             )
 
-        assertEquals(expected.right(), semanticAnalysis(input))
+        assertEqualsIgnoringLocations(expected, parseAndAnalyze(input))
     }
 
     @Test
     fun `should handle conditional expression`() {
-        val input =
-            AST.Program(
-                declarations =
-                listOf(
-                    AST.Declaration.Function(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration.Variable(
-                                        name = "a",
-                                        initializer = AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13))),
-                                        type = Type.Int,
-                                        storageClass = null,
-                                        location = Location(2, 5),
-                                    ),
-                                ),
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration.Variable(
-                                        name = "b",
-                                        initializer = null,
-                                        type = Type.Int,
-                                        storageClass = null,
-                                        location = Location(3, 5),
-                                    ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    statement =
-                                    AST.Statement.Expression(
-                                        expression =
-                                        AST.Expression.Conditional(
-                                            condition =
-                                            AST.Expression.Binary(
-                                                operator = AST.BinaryOperator.Equal,
-                                                left = AST.Expression.Variable("a", null, Location(3, 13)),
-                                                right = AST.Expression.Constant(AST.IntConstant(1), null, Location(3, 17)),
-                                                type = null,
-                                            ),
-                                            thenExpression =
-                                            AST.Expression.Assignment(
-                                                left = AST.Expression.Variable("b", null, Location(4, 5)),
-                                                right = AST.Expression.Constant(AST.IntConstant(2), null, Location(4, 9)),
-                                                type = null,
-                                            ),
-                                            elseExpression =
-                                            AST.Expression.Assignment(
-                                                left = AST.Expression.Variable("b", null, Location(5, 5)),
-                                                right = AST.Expression.Constant(AST.IntConstant(3), null, Location(5, 9)),
-                                                type = null,
-                                            ),
-                                            type = null,
-                                        ),
-                                    ),
-                                ),
-                            ),
-                        ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                        storageClass = null,
-                        location = Location(1, 1),
-                    ),
-                ),
-            )
+        val input = """
+            int main(void) {
+                int a = 1;
+                int b;
+                a == 1 ? (b = 2) : (b = 3);
+            }
+        """.trimIndent()
 
         val expected =
             ValidASTProgram(
                 value =
-                AST.Program(
-                    declarations =
-                    listOf(
-                        AST.Declaration.Function(
-                            name = "main",
-                            parameters = emptyList(),
-                            body =
-                            AST.Block(
-                                blockItems =
-                                listOf(
-                                    AST.BlockItem.Declaration(
-                                        declaration =
-                                        AST.Declaration.Variable(
-                                            name = "a.0",
-                                            initializer = AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13))),
-                                            type = Type.Int,
-                                            storageClass = null,
-                                            location = Location(2, 5),
-                                        ),
-                                    ),
-                                    AST.BlockItem.Declaration(
-                                        declaration =
-                                        AST.Declaration.Variable(
-                                            name = "b.1",
-                                            initializer = null,
-                                            type = Type.Int,
-                                            storageClass = null,
-                                            location = Location(3, 5),
-                                        ),
-                                    ),
-                                    AST.BlockItem.Statement(
-                                        statement =
-                                        AST.Statement.Expression(
-                                            expression =
-                                            AST.Expression.Conditional(
-                                                condition =
-                                                AST.Expression.Binary(
-                                                    operator = AST.BinaryOperator.Equal,
-                                                    left = AST.Expression.Variable("a.0", Type.Int, Location(3, 13)),
-                                                    right = AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(3, 17)),
-                                                    type = Type.Int,
-                                                ),
-                                                thenExpression =
-                                                AST.Expression.Assignment(
-                                                    left = AST.Expression.Variable("b.1", Type.Int, Location(4, 5)),
-                                                    right = AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(4, 9)),
-                                                    type = Type.Int,
-                                                ),
-                                                elseExpression =
-                                                AST.Expression.Assignment(
-                                                    left = AST.Expression.Variable("b.1", Type.Int, Location(5, 5)),
-                                                    right = AST.Expression.Constant(AST.IntConstant(3), Type.Int, Location(5, 9)),
-                                                    type = Type.Int,
-                                                ),
-                                                type = Type.Int,
-                                            ),
-                                        ),
-                                    ),
-                                ),
-                            ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                            storageClass = null,
-                            location = Location(1, 1),
-                        ),
-                    ),
-                ),
+                program {
+                    main {
+                        int("a.0") assign 1.e.int()
+                        int("b.1")
+                        exprStmt(
+                            cond(
+                                condition = ("a.0".e.int() eq 1.e.int()).int(),
+                                thenExpression = ("b.1".e.int() assign 2.e.int()).int(),
+                                elseExpression = ("b.1".e.int() assign 3.e.int()).int(),
+                            ).int(),
+                        )
+                    }
+                },
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
                     "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
@@ -1004,124 +392,31 @@ class SemanticAnalysisKtTest {
                 ),
             )
 
-        assertEquals(expected.right(), semanticAnalysis(input))
+        assertEqualsIgnoringLocations(expected, parseAndAnalyze(input))
     }
 
     @Test
     fun `should allow declaring same variable in nested scope`() {
-        val input =
-            AST.Program(
-                declarations =
-                listOf(
-                    AST.Declaration.Function(
-                        name = "main",
-                        parameters = emptyList(),
-                        body =
-                        AST.Block(
-                            blockItems =
-                            listOf(
-                                AST.BlockItem.Declaration(
-                                    declaration =
-                                    AST.Declaration.Variable(
-                                        name = "a",
-                                        initializer = AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(1), null, Location(2, 13))),
-                                        type = Type.Int,
-                                        storageClass = null,
-                                        location = Location(2, 5),
-                                    ),
-                                ),
-                                AST.BlockItem.Statement(
-                                    statement =
-                                    AST.Statement.If(
-                                        condition = AST.Expression.Constant(AST.IntConstant(1), null, Location(3, 5)),
-                                        thenStatement =
-                                        AST.Statement.Compound(
-                                            AST.Block(
-                                                blockItems =
-                                                listOf(
-                                                    AST.BlockItem.Declaration(
-                                                        declaration =
-                                                        AST.Declaration.Variable(
-                                                            name = "a",
-                                                            initializer =
-                                                            AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(4, 13))),
-                                                            type = Type.Int,
-                                                            storageClass = null,
-                                                            location = Location(4, 5),
-                                                        ),
-                                                    ),
-                                                ),
-                                            ),
-                                        ),
-                                        elseStatement = AST.Statement.Null(Location(5, 1)),
-                                    ),
-                                ),
-                            ),
-                        ),
-                        type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                        storageClass = null,
-                        location = Location(1, 1),
-                    ),
-                ),
-            )
+        val input = """
+             int main(void) {
+                 int a = 1;
+                 if (1) {
+                     int a = 2;
+                 }
+             }
+        """.trimIndent()
 
         val expected =
             ValidASTProgram(
                 value =
-                AST.Program(
-                    declarations =
-                    listOf(
-                        AST.Declaration.Function(
-                            name = "main",
-                            parameters = emptyList(),
-                            body =
-                            AST.Block(
-                                blockItems =
-                                listOf(
-                                    AST.BlockItem.Declaration(
-                                        declaration =
-                                        AST.Declaration.Variable(
-                                            name = "a.0",
-                                            initializer = AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(2, 13))),
-                                            type = Type.Int,
-                                            storageClass = null,
-                                            location = Location(2, 5),
-                                        ),
-                                    ),
-                                    AST.BlockItem.Statement(
-                                        statement =
-                                        AST.Statement.If(
-                                            condition = AST.Expression.Constant(AST.IntConstant(1), Type.Int, Location(3, 5)),
-                                            thenStatement =
-                                            AST.Statement.Compound(
-                                                AST.Block(
-                                                    blockItems =
-                                                    listOf(
-                                                        AST.BlockItem.Declaration(
-                                                            declaration =
-                                                            AST.Declaration.Variable(
-                                                                name = "a.1",
-                                                                initializer =
-                                                                AST.VariableInitializer.Single(AST.Expression.Constant(AST.IntConstant(2), Type.Int, Location(4, 13))),
-                                                                type = Type.Int,
-                                                                storageClass = null,
-                                                                location = Location(4, 5),
-                                                            ),
-                                                        ),
-                                                    ),
-                                                ),
-                                            ),
-                                            elseStatement = AST.Statement.Null(Location(5, 1)),
-                                        ),
-                                    ),
-                                ),
-                            ),
-                            type = Type.Function(parameters = emptyList(), returnType = Type.Int),
-                            storageClass = null,
-                            location = Location(1, 1),
-                        ),
-                    ),
-                ),
+                program {
+                    main {
+                        int("a.0") assign 1.e.int()
+                        if_(1.e.int()) {
+                            int("a.1") assign 2.e.int()
+                        }
+                    }
+                },
                 renamedVariableCount = 2,
                 symbolTable = mapOf(
                     "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
@@ -1130,7 +425,7 @@ class SemanticAnalysisKtTest {
                 ),
             )
 
-        assertEquals(expected.right(), semanticAnalysis(input))
+        assertEqualsIgnoringLocations(expected, parseAndAnalyze(input))
     }
 
     @Test

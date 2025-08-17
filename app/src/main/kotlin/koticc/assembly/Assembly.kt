@@ -4,10 +4,28 @@ import koticc.ast.LabelName
 import koticc.semantic.InitialConstantValue
 
 object Assembly {
-    enum class Type(val byteSize: Int) {
-        LongWord(4),
-        QuadWord(8),
-        Double(8),
+    sealed interface Type {
+        val byteSize: Int
+
+        data object LongWord : Type {
+            override val byteSize: Int
+                get() = 4
+        }
+
+        data object QuadWord : Type {
+            override val byteSize: Int
+                get() = 8
+        }
+
+        data object Double : Type {
+            override val byteSize: Int
+                get() = 8
+        }
+
+        data class ByteArray(
+            override val byteSize: Int,
+            val alignment: Int,
+        ) : Type
     }
 
     data class Program(
@@ -152,7 +170,15 @@ object Assembly {
 
         data class Memory(val register: RegisterValue, val offset: Int) : Operand
 
-        data class PseudoIdentifier(val name: String) : Operand
+        sealed interface Pseudo : Operand {
+            val name: String
+        }
+
+        data class PseudoIdentifier(override val name: String) : Pseudo
+
+        data class PseudoMem(override val name: String, val offset: Long) : Pseudo
+
+        data class Indexed(val base: RegisterValue, val index: RegisterValue, val scale: Int) : Operand
     }
 
     enum class RegisterValue {

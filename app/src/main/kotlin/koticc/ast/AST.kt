@@ -58,8 +58,12 @@ object AST {
     }
 
     sealed interface VariableInitializer {
-        data class Single(val expression: Expression) : VariableInitializer
-        data class Compound(val initializers: List<VariableInitializer>) : VariableInitializer
+        val type: Type.Data?
+
+        fun resolvedType(): Type.Data = type ?: error("expected type to be resolved at semantic analysis")
+
+        data class Single(val expression: Expression, override val type: Type.Data? = null) : VariableInitializer
+        data class Compound(val initializers: List<VariableInitializer>, override val type: Type.Data? = null) : VariableInitializer
     }
 
     enum class StorageClass : Displayable {

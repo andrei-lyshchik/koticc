@@ -143,15 +143,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
         name = tackyStaticVariable.name,
         global = tackyStaticVariable.global,
         initialValue = tackyStaticVariable.initialValue,
-        alignment = when (tackyStaticVariable.type) {
-            is Type.Int -> 4
-            is Type.UInt -> 4
-            is Type.Long -> 8
-            is Type.ULong -> 8
-            is Type.Double -> 8
-            is Type.Pointer -> 8
-            is Type.Array -> TODO()
-        },
+        alignment = symbolTable.objectSymbol(tackyStaticVariable.name).type.alignment(),
     )
 
     private fun tackyInstructionToAssembly(tackyInstruction: Tacky.Instruction): List<Assembly.Instruction> = when (tackyInstruction) {
@@ -573,7 +565,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                         Assembly.Instruction.Label(endLabel),
                     )
                 }
-                Assembly.Type.Double -> {
+                Assembly.Type.Double, is Assembly.Type.ByteArray -> {
                     error("Bug: unexpected type for dst of DoubleToUInt instruction")
                 }
             }
@@ -675,7 +667,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                         Assembly.Instruction.Label(endLabel),
                     )
                 }
-                Assembly.Type.Double -> error("Bug: unexpected type for src of UIntToDouble instruction")
+                Assembly.Type.Double, is Assembly.Type.ByteArray -> error("Bug: unexpected type for src of UIntToDouble instruction")
             }
         }
 
@@ -715,6 +707,45 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                 ),
             )
         }
+
+        is Tacky.Instruction.AddToPtr -> {
+            when {
+                tackyInstruction.scale in setOf(1L, 2, 4, 8) -> listOf(
+                    Assembly.Instruction.Mov(
+                        type = Assembly.Type.QuadWord,
+                        src = tackyValueToOperand(tackyInstruction.ptr),
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                    ),
+                    Assembly.Instruction.Mov(
+                        type = Assembly.Type.QuadWord,
+                        src = tackyValueToOperand(tackyInstruction.index),
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.Dx),
+                    ),
+                    Assembly.Instruction.LoadEffectiveAddress(
+                        src = Assembly.Operand.Indexed(
+                            base = Assembly.RegisterValue.Ax,
+                            index = Assembly.RegisterValue.Dx,
+                            scale = tackyInstruction.scale.toInt(),
+                        ),
+                        dst = tackyValueToOperand(tackyInstruction.dst),
+                    ),
+                )
+
+                else -> TODO()
+            }
+        }
+        is Tacky.Instruction.CopyToOffset -> {
+            listOf(
+                Assembly.Instruction.Mov(
+                    type = tackyInstruction.src.assemblyType(),
+                    src = tackyValueToOperand(tackyInstruction.src),
+                    dst = Assembly.Operand.PseudoMem(
+                        name = tackyInstruction.identifier,
+                        offset = tackyInstruction.offset,
+                    ),
+                ),
+            )
+        }
     }
 
     private fun tackyValueToOperand(tackyValue: Tacky.Value): Assembly.Operand = when (tackyValue) {
@@ -732,7 +763,11 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
             if (objectSymbol.static) {
                 Assembly.Operand.Data(tackyValue.name)
             } else {
-                Assembly.Operand.PseudoIdentifier(tackyValue.name)
+                if (objectSymbol.type is Assembly.Type.ByteArray) {
+                    Assembly.Operand.PseudoMem(tackyValue.name, 0)
+                } else {
+                    Assembly.Operand.PseudoIdentifier(tackyValue.name)
+                }
             }
         }
     }
@@ -1127,5 +1162,7 @@ fun Assembly.Operand.isMemory() = when (this) {
     is Assembly.Operand.Data -> true
     is Assembly.Operand.Immediate -> false
     is Assembly.Operand.PseudoIdentifier -> true
+    is Assembly.Operand.PseudoMem -> true
     is Assembly.Operand.Register -> false
+    is Assembly.Operand.Indexed -> true
 }

@@ -46,5 +46,20 @@ fun Type.Data.toAssemblyType(): Assembly.Type = when (this) {
     Type.ULong -> Assembly.Type.QuadWord
     Type.Double -> Assembly.Type.Double
     is Type.Pointer -> Assembly.Type.QuadWord
-    is Type.Array -> TODO()
+    is Type.Array -> {
+        val elementType = this.elementType.toAssemblyType()
+        val arrayByteSize = elementType.byteSize * this.size.toInt()
+        if (arrayByteSize >= 16) {
+            Assembly.Type.ByteArray(byteSize = arrayByteSize, alignment = 16)
+        } else {
+            Assembly.Type.ByteArray(byteSize = arrayByteSize, alignment = this.elementType.toAssemblyType().alignment())
+        }
+    }
+}
+
+fun Assembly.Type.alignment(): Int = when (this) {
+    is Assembly.Type.LongWord -> 4
+    is Assembly.Type.QuadWord -> 8
+    is Assembly.Type.Double -> 8
+    is Assembly.Type.ByteArray -> alignment
 }
