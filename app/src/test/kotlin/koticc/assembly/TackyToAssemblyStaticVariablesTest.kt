@@ -17,10 +17,10 @@ class TackyToAssemblyStaticVariablesTest {
     fun `should generate assembly for static variables`() {
         val tacky = tackyProgram {
             symbolTable = mapOf(
-                "a" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(InitialConstantValue.Int(0)), global = true)),
-                "b" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(InitialConstantValue.Int(1)), global = false)),
-                "c" to Type.Long.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(InitialConstantValue.Long(0)), global = true)),
-                "d" to Type.Long.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(InitialConstantValue.Long(2)), global = true)),
+                "a" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(listOf(InitialConstantValue.Int(0))), global = true)),
+                "b" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(listOf(InitialConstantValue.Int(1))), global = false)),
+                "c" to Type.Long.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(listOf(InitialConstantValue.Long(0))), global = true)),
+                "d" to Type.Long.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(listOf(InitialConstantValue.Long(2))), global = true)),
             )
             staticVariable("a", global = true, initialValue = 0)
             staticVariable("b", global = false, initialValue = 1)
@@ -63,7 +63,7 @@ class TackyToAssemblyStaticVariablesTest {
     fun `should properly refer to static variables relative to rip`() {
         val tacky = tackyProgram {
             symbolTable = mapOf(
-                "a" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(InitialConstantValue.Int(0)), global = true)),
+                "a" to Type.Int.toSymbol(attributes = VariableAttributes.Static(initialValue = InitialValue.Constant(listOf(InitialConstantValue.Int(0))), global = true)),
                 "main" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
             )
 

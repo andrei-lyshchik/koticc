@@ -108,9 +108,14 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     private fun typecheckFileScopeVariableDeclaration(
         declaration: AST.Declaration.Variable,
     ): Either<SemanticAnalysisError, AST.Declaration.Variable> = either {
-        val convertedInitializerConstant = convertStaticDeclarationInitializer(declaration).bind()
-        var initialValue = if (convertedInitializerConstant != null) {
-            InitialValue.Constant(convertedInitializerConstant.value.toInitialValue())
+        val convertedInitializerConstant = convertStaticDeclarationInitializer(
+            initializer = declaration.initializer,
+            type = declaration.type,
+            name = declaration.name,
+            location = declaration.location,
+        ).bind()
+        var initialValue = if (convertedInitializerConstant.isNotEmpty()) {
+            InitialValue.Constant(convertedInitializerConstant)
         } else {
             when (declaration.storageClass) {
                 AST.StorageClass.Extern -> InitialValue.NoInitializer
@@ -183,7 +188,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             location = declaration.location,
         )
         declaration.copy(
-            initializer = convertedInitializerConstant?.let { AST.VariableInitializer.Single(it) },
+            initializer = null,
         )
     }
 
@@ -249,9 +254,14 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 variableDeclaration
             }
             AST.StorageClass.Static -> {
-                val convertedInitializerConstant = convertStaticDeclarationInitializer(variableDeclaration).bind()
-                val initialConstantValue = convertedInitializerConstant?.value?.toInitialValue()
-                    ?: variableDeclaration.type.toZeroInitialValue()
+                val convertedInitializers = convertStaticDeclarationInitializer(
+                    initializer = variableDeclaration.initializer,
+                    type = variableDeclaration.type,
+                    name = variableDeclaration.name,
+                    location = variableDeclaration.location,
+                ).bind()
+                val initialConstantValue = convertedInitializers.takeIf { it.isNotEmpty() }
+                    ?: listOf(variableDeclaration.type.toZeroInitialValue())
                 symbolTable[variableDeclaration.name] = SymbolWithLocation(
                     value = Symbol.Variable(
                         type = variableDeclaration.type,
@@ -263,7 +273,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                     location = variableDeclaration.location,
                 )
                 variableDeclaration.copy(
-                    initializer = convertedInitializerConstant?.let { AST.VariableInitializer.Single(it) },
+                    initializer = null,
                 )
             }
             null -> {
@@ -280,18 +290,37 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         }
     }
 
-    private fun typecheckVariableInitializer(initializer: AST.VariableInitializer, targetType: Type.Data, location: Location): Either<SemanticAnalysisError, AST.VariableInitializer> = either {
+    private fun typecheckVariableInitializer(
+        initializer: AST.VariableInitializer,
+        targetType: Type.Data,
+        location: Location,
+    ): Either<SemanticAnalysisError, AST.VariableInitializer> = either {
         when (initializer) {
             is AST.VariableInitializer.Compound -> {
                 val elementType = when (targetType) {
                     is Type.Array -> targetType.elementType
                     else -> raise(SemanticAnalysisError("Can't initialize a scalar variable with a compound initializer", location))
                 }
-                // TODO: check the sizes, pad with zeros if less initializers than the array size, raise an error if more
+                if (initializer.initializers.size > targetType.size) {
+                    raise(
+                        SemanticAnalysisError(
+                            "too many initializers for variable, expected ${targetType.size}, got ${initializer.initializers.size}",
+                            location,
+                        ),
+                    )
+                }
+                val zeroPadding = if (initializer.initializers.size < targetType.size) {
+                    List(targetType.size.toInt() - initializer.initializers.size) {
+                        elementType.toZeroInitializer(location)
+                    }
+                } else {
+                    emptyList()
+                }
+
                 AST.VariableInitializer.Compound(
                     initializers = initializer.initializers.map { initializer ->
                         typecheckVariableInitializer(initializer, elementType, location).bind()
-                    },
+                    } + zeroPadding,
                     type = targetType,
                 )
             }
@@ -302,26 +331,86 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         }
     }
 
-    private fun convertStaticDeclarationInitializer(variableDeclaration: AST.Declaration.Variable): Either<SemanticAnalysisError, AST.Expression.Constant?> = either {
-        when (variableDeclaration.initializer) {
-            is AST.VariableInitializer.Compound -> TODO()
-            is AST.VariableInitializer.Single -> when (val expression = variableDeclaration.initializer.expression) {
-                is AST.Expression.Constant -> {
-                    if (variableDeclaration.type is Type.Pointer && !expression.isNullPointerConstant()) {
-                        raise(
-                            SemanticAnalysisError("invalid initializer '${expression.toDisplayString()}' for variable '${originalIdentifierName(variableDeclaration.name)}'", variableDeclaration.location),
-                        )
-                    }
-                    expression.convertTo(variableDeclaration.type)
+    private fun Type.Data.toZeroInitializer(location: Location): AST.VariableInitializer = when (this) {
+        is Type.Int -> AST.VariableInitializer.Single(AST.Expression.Constant(value = AST.IntConstant(0), type = this, location = location), this)
+        is Type.UInt -> AST.VariableInitializer.Single(AST.Expression.Constant(value = AST.UIntConstant(0u), type = this, location = location), this)
+        is Type.Long -> AST.VariableInitializer.Single(AST.Expression.Constant(value = AST.LongConstant(0L), type = this, location = location), this)
+        is Type.ULong -> AST.VariableInitializer.Single(AST.Expression.Constant(value = AST.ULongConstant(0uL), type = this, location = location), this)
+        is Type.Double -> AST.VariableInitializer.Single(AST.Expression.Constant(value = AST.DoubleConstant(0.0), type = this, location = location), this)
+        is Type.Pointer -> AST.VariableInitializer.Single(AST.Expression.Constant(value = AST.IntConstant(0), type = this, location = location), this)
+        is Type.Array -> AST.VariableInitializer.Compound(
+            initializers = buildList {
+                repeat(size) {
+                    add(elementType.toZeroInitializer(location))
                 }
-                else -> raise(
-                    SemanticAnalysisError(
-                        "non-constant initializer for variable '${originalIdentifierName(variableDeclaration.name)}'",
-                        variableDeclaration.location,
-                    ),
-                )
+            },
+            type = this,
+        )
+    }
+
+    private fun convertStaticDeclarationInitializer(
+        initializer: AST.VariableInitializer?,
+        type: Type.Data,
+        name: String,
+        location: Location,
+    ): Either<SemanticAnalysisError, List<InitialConstantValue>> = either {
+        when (initializer) {
+            is AST.VariableInitializer.Compound -> {
+                val (elementType, size) = when (type) {
+                    is Type.Array -> type.elementType to type.size
+                    else -> raise(
+                        SemanticAnalysisError("Can't initialize a scalar variable with a compound initializer", location),
+                    )
+                }
+                if (initializer.initializers.size > size) {
+                    raise(
+                        SemanticAnalysisError(
+                            "too many initializers for variable '$name', expected $size, got ${initializer.initializers.size}",
+                            location,
+                        ),
+                    )
+                }
+                val convertedSubInitializers = initializer.initializers.flatMap { subInitializer ->
+                    convertStaticDeclarationInitializer(subInitializer, elementType, name, location).bind()
+                }
+                val zeroPadding = if (convertedSubInitializers.size < size) {
+                    listOf(
+                        InitialConstantValue.Zero(bytes = elementType.byteSize().toInt() * (size - convertedSubInitializers.size).toInt()),
+                    )
+                } else {
+                    emptyList()
+                }
+                convertedSubInitializers + zeroPadding
             }
-            null -> null
+            is AST.VariableInitializer.Single -> {
+                if (type is Type.Array) {
+                    raise(
+                        SemanticAnalysisError("Can't initialize an array with a scalar expression", location),
+                    )
+                }
+                when (val expression = initializer.expression) {
+                    is AST.Expression.Constant -> {
+                        if (type is Type.Pointer && !expression.isNullPointerConstant()) {
+                            raise(
+                                SemanticAnalysisError(
+                                    "invalid initializer '${expression.toDisplayString()}' " +
+                                        "for variable '${originalIdentifierName(name)}'",
+                                    location,
+                                ),
+                            )
+                        }
+                        listOf(expression.convertTo(type).value.toInitialValue())
+                    }
+
+                    else -> raise(
+                        SemanticAnalysisError(
+                            "non-constant initializer for variable '${originalIdentifierName(name)}'",
+                            location,
+                        ),
+                    )
+                }
+            }
+            null -> emptyList()
         }
     }
 

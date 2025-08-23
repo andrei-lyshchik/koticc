@@ -47,7 +47,7 @@ object Assembly {
     data class StaticVariable(
         val name: String,
         val global: Boolean,
-        val initialValue: InitialConstantValue,
+        val initialValues: List<InitialConstantValue>,
         val alignment: Int,
     )
 

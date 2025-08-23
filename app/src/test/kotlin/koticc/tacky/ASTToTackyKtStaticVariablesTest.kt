@@ -37,13 +37,13 @@ class ASTToTackyKtStaticVariablesTest {
                 ),
                 "c" to Type.Int.toSymbol(
                     attributes = VariableAttributes.Static(
-                        initialValue = InitialValue.Constant(InitialConstantValue.Int(2)),
+                        initialValue = InitialValue.Constant(listOf(InitialConstantValue.Int(2))),
                         global = true,
                     ),
                 ),
                 "d" to Type.Int.toSymbol(
                     attributes = VariableAttributes.Static(
-                        initialValue = InitialValue.Constant(InitialConstantValue.Int(3)),
+                        initialValue = InitialValue.Constant(listOf(InitialConstantValue.Int(3))),
                         global = false,
                     ),
                 ),
@@ -85,7 +85,7 @@ class ASTToTackyKtStaticVariablesTest {
                 ),
                 "b" to Type.Int.toSymbol(
                     attributes = VariableAttributes.Static(
-                        initialValue = InitialValue.Constant(InitialConstantValue.Int(2)),
+                        initialValue = InitialValue.Constant(listOf(InitialConstantValue.Int(2))),
                         global = false,
                     ),
                 ),

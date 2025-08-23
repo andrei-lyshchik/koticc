@@ -33,7 +33,7 @@ sealed interface VariableAttributes {
 
 sealed interface InitialValue {
     data object Tentative : InitialValue
-    data class Constant(val value: InitialConstantValue) : InitialValue
+    data class Constant(val values: List<InitialConstantValue>) : InitialValue
     data object NoInitializer : InitialValue
 }
 
@@ -53,9 +53,14 @@ sealed interface InitialConstantValue {
         override fun isZero(): Boolean = value == 0uL
     }
     data class Double(val value: kotlin.Double) : InitialConstantValue {
-        override fun isZero(): Boolean = value == 0.0
+        override fun isZero(): Boolean = value.toBits() == DOUBLE_POSITIVE_ZERO
+    }
+    data class Zero(val bytes: kotlin.Int) : InitialConstantValue {
+        override fun isZero(): Boolean = true
     }
 }
+
+val DOUBLE_POSITIVE_ZERO = 0.0.toRawBits()
 
 fun AST.Constant.toInitialValue(): InitialConstantValue = when (this) {
     is AST.IntConstant -> InitialConstantValue.Int(value)
@@ -65,15 +70,7 @@ fun AST.Constant.toInitialValue(): InitialConstantValue = when (this) {
     is AST.DoubleConstant -> InitialConstantValue.Double(value)
 }
 
-fun Type.Data.toZeroInitialValue() = when (this) {
-    is Type.Int -> InitialConstantValue.Int(0)
-    is Type.UInt -> InitialConstantValue.UInt(0u)
-    is Type.Long -> InitialConstantValue.Long(0)
-    is Type.ULong -> InitialConstantValue.ULong(0uL)
-    is Type.Double -> InitialConstantValue.Double(0.0)
-    is Type.Pointer -> InitialConstantValue.ULong(0uL)
-    is Type.Array -> TODO()
-}
+fun Type.Data.toZeroInitialValue() = InitialConstantValue.Zero(bytes = this.byteSize().toInt())
 
 typealias SymbolTable = Map<String, Symbol>
 

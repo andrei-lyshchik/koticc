@@ -23,11 +23,37 @@ class TackyProgramBuilder {
     }
 
     fun staticVariable(name: String, global: Boolean, initialValue: Int) {
-        topLevel += Tacky.TopLevel.StaticVariable(Tacky.StaticVariable(name, global = global, initialValue = InitialConstantValue.Int(initialValue), type = Type.Int))
+        topLevel += Tacky.TopLevel.StaticVariable(
+            Tacky.StaticVariable(
+                name,
+                global = global,
+                initialValues = listOf(
+                    if (initialValue != 0) {
+                        InitialConstantValue.Int(initialValue)
+                    } else {
+                        InitialConstantValue.Zero(bytes = 4)
+                    },
+                ),
+                type = Type.Int,
+            ),
+        )
     }
 
     fun staticVariable(name: String, global: Boolean, initialValue: Long) {
-        topLevel += Tacky.TopLevel.StaticVariable(Tacky.StaticVariable(name, global = global, initialValue = InitialConstantValue.Long(initialValue), type = Type.Long))
+        topLevel += Tacky.TopLevel.StaticVariable(
+            Tacky.StaticVariable(
+                name,
+                global = global,
+                initialValues = listOf(
+                    if (initialValue != 0L) {
+                        InitialConstantValue.Long(initialValue)
+                    } else {
+                        InitialConstantValue.Zero(bytes = 8)
+                    },
+                ),
+                type = Type.Long,
+            ),
+        )
     }
 
     fun build(): Tacky.Program = Tacky.Program(topLevel, symbolTable)

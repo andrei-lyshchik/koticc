@@ -30,7 +30,7 @@ class SemanticAnalysisKtStaticVariables {
             expected = ValidASTProgram(
                 value = program {
                     function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                        int("i.0", storageClass = AST.StorageClass.Static) assign 1.e.int()
+                        int("i.0", storageClass = AST.StorageClass.Static)
                         plusAssign("i.0".e.int(), 1.e.int(), resultType = Type.Int, Type.Int)
                         return_("i.0".e.int())
                     }
@@ -40,7 +40,7 @@ class SemanticAnalysisKtStaticVariables {
                     "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
                     "i.0" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(InitialConstantValue.Int(1)),
+                            initialValue = InitialValue.Constant(listOf(InitialConstantValue.Int(1))),
                             global = false,
                         ),
                     ),
@@ -68,14 +68,14 @@ class SemanticAnalysisKtStaticVariables {
                 value = program {
                     int("x", storageClass = AST.StorageClass.Static)
                     int("x", storageClass = AST.StorageClass.Extern)
-                    int("x", storageClass = AST.StorageClass.Static) assign 5.e.int()
+                    int("x", storageClass = AST.StorageClass.Static)
                     int("x", storageClass = AST.StorageClass.Static)
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
                     "x" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(InitialConstantValue.Int(5)),
+                            initialValue = InitialValue.Constant(listOf(InitialConstantValue.Int(5))),
                             global = false,
                         ),
                     ),
@@ -120,7 +120,7 @@ class SemanticAnalysisKtStaticVariables {
                     }
                     // x is already in scope, so this refers to that x
                     int("x", storageClass = AST.StorageClass.Extern)
-                    int("x", storageClass = AST.StorageClass.Static) assign 5.e.int()
+                    int("x", storageClass = AST.StorageClass.Static)
                     // tentative definition can follow a definition with an initializer
                     int("x", storageClass = AST.StorageClass.Static)
                 },
@@ -128,7 +128,7 @@ class SemanticAnalysisKtStaticVariables {
                 symbolTable = mapOf(
                     "x" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(InitialConstantValue.Int(5)),
+                            initialValue = InitialValue.Constant(listOf(InitialConstantValue.Int(5))),
                             global = false,
                         ),
                     ),
@@ -183,7 +183,7 @@ class SemanticAnalysisKtStaticVariables {
                     "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
                     "i.0" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(InitialConstantValue.Int(0)),
+                            initialValue = InitialValue.Constant(listOf(InitialConstantValue.Zero(4))),
                             global = false,
                         ),
                     ),
@@ -224,13 +224,13 @@ class SemanticAnalysisKtStaticVariables {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    int("foo", storageClass = AST.StorageClass.Static) assign (-2147483648).e.int()
+                    int("foo", storageClass = AST.StorageClass.Static)
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
                     "foo" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(InitialConstantValue.Int(-2147483648)),
+                            initialValue = InitialValue.Constant(listOf(InitialConstantValue.Int(-2147483648))),
                             global = false,
                         ),
                     ),
@@ -251,13 +251,13 @@ class SemanticAnalysisKtStaticVariables {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    long("foo", storageClass = AST.StorageClass.Static) assign 1L.e.long()
+                    long("foo", storageClass = AST.StorageClass.Static)
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
                     "foo" to Type.Long.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(InitialConstantValue.Long(1L)),
+                            initialValue = InitialValue.Constant(listOf(InitialConstantValue.Long(1L))),
                             global = false,
                         ),
                     ),
@@ -281,7 +281,7 @@ class SemanticAnalysisKtStaticVariables {
             expected = ValidASTProgram(
                 value = program {
                     function("foo", Type.Function(parameters = emptyList(), returnType = Type.Int)) {
-                        long("i.0", storageClass = AST.StorageClass.Static) assign 1L.e.long()
+                        long("i.0", storageClass = AST.StorageClass.Static)
                     }
                 },
                 renamedVariableCount = 1,
@@ -289,7 +289,7 @@ class SemanticAnalysisKtStaticVariables {
                     "foo" to Type.Function(parameters = emptyList(), returnType = Type.Int).toSymbol(),
                     "i.0" to Type.Long.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(InitialConstantValue.Long(1L)),
+                            initialValue = InitialValue.Constant(listOf(InitialConstantValue.Long(1L))),
                             global = false,
                         ),
                     ),

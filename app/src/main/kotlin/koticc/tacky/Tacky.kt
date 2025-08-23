@@ -28,7 +28,7 @@ object Tacky {
         val name: String,
         val global: Boolean,
         val type: Type.Data,
-        val initialValue: InitialConstantValue,
+        val initialValues: List<InitialConstantValue>,
     )
 
     sealed interface Instruction {

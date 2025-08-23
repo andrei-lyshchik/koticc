@@ -29,7 +29,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
             expected = ValidASTProgram(
                 value = program {
                     int("a")
-                    int("b") assign 1.e.int()
+                    int("b")
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
@@ -41,7 +41,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
                     ),
                     "b" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(InitialConstantValue.Int(1)),
+                            initialValue = InitialValue.Constant(listOf(InitialConstantValue.Int(1))),
                             global = true,
                         ),
                     ),
@@ -78,7 +78,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
                             return_("foo".e.int())
                         }
                     }
-                    int("foo", storageClass = AST.StorageClass.Extern) assign 2.e.int()
+                    int("foo", storageClass = AST.StorageClass.Extern)
                 },
                 renamedVariableCount = 1,
                 symbolTable = mapOf(
@@ -86,7 +86,7 @@ class SemanticAnalysisKtFileScopeVariablesTest {
                     "foo.0" to Type.Int.toSymbol(attributes = VariableAttributes.Local),
                     "foo" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(InitialConstantValue.Int(2)),
+                            initialValue = InitialValue.Constant(listOf(InitialConstantValue.Int(2))),
                             global = true,
                         ),
                     ),
@@ -254,13 +254,13 @@ class SemanticAnalysisKtFileScopeVariablesTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    uInt("a") assign 1.toUInt().e.uInt()
+                    uInt("a")
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
                     "a" to Type.UInt.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(InitialConstantValue.UInt(1u)),
+                            initialValue = InitialValue.Constant(listOf(InitialConstantValue.UInt(1u))),
                             global = true,
                         ),
                     ),
@@ -281,13 +281,13 @@ class SemanticAnalysisKtFileScopeVariablesTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    double("a") assign 3.14.e.double()
+                    double("a")
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
                     "a" to Type.Double.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(InitialConstantValue.Double(3.14)),
+                            initialValue = InitialValue.Constant(listOf(InitialConstantValue.Double(3.14))),
                             global = true,
                         ),
                     ),
@@ -308,13 +308,13 @@ class SemanticAnalysisKtFileScopeVariablesTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    int("a") assign 3.e.int()
+                    int("a")
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
                     "a" to Type.Int.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(InitialConstantValue.Int(3)),
+                            initialValue = InitialValue.Constant(listOf(InitialConstantValue.Int(3))),
                             global = true,
                         ),
                     ),
@@ -335,13 +335,13 @@ class SemanticAnalysisKtFileScopeVariablesTest {
         assertEquals(
             expected = ValidASTProgram(
                 value = program {
-                    double("a") assign 3.0.e.double()
+                    double("a")
                 },
                 renamedVariableCount = 0,
                 symbolTable = mapOf(
                     "a" to Type.Double.toSymbol(
                         attributes = VariableAttributes.Static(
-                            initialValue = InitialValue.Constant(InitialConstantValue.Double(3.0)),
+                            initialValue = InitialValue.Constant(listOf(InitialConstantValue.Double(3.0))),
                             global = true,
                         ),
                     ),

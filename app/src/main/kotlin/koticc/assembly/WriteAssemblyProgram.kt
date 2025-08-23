@@ -65,27 +65,44 @@ private fun writeAssemblyStaticVariable(
         if (staticVariable.global) {
             write("    .globl _${staticVariable.name}\n")
         }
-        if (staticVariable.initialValue.isZero()) {
+        if (staticVariable.initialValues.all { it.isZero() }) {
             write("    .bss\n")
         } else {
             write("    .data\n")
         }
         write("    .balign ${staticVariable.alignment}\n")
         write("_${staticVariable.name}:\n")
-        if (staticVariable.initialValue is InitialConstantValue.Double || !staticVariable.initialValue.isZero()) {
-            write("    ${staticVariable.initialValue.toInitString()}")
-        } else {
-            write("    .zero ${staticVariable.alignment}")
+
+        staticVariable.initialValues.forEachIndexed { i, initialValue ->
+            val initString = if (initialValue.isZero()) {
+                ".zero ${initialValue.bytes()}"
+            } else {
+                initialValue.toInitString()
+            }
+            write("    $initString")
+            if (i != staticVariable.initialValues.size - 1) {
+                write("\n")
+            }
         }
     }
 }
 
-private fun InitialConstantValue.toInitString() = when (this) {
+private fun InitialConstantValue.toInitString(): String = when (this) {
     is InitialConstantValue.Int -> ".long $value"
     is InitialConstantValue.Long -> ".quad $value"
     is InitialConstantValue.UInt -> ".long $value"
     is InitialConstantValue.ULong -> ".quad $value"
     is InitialConstantValue.Double -> ".quad ${value.toRawBits()}"
+    is InitialConstantValue.Zero -> ".zero $bytes"
+}
+
+private fun InitialConstantValue.bytes() = when (this) {
+    is InitialConstantValue.Int -> 4
+    is InitialConstantValue.Long -> 8
+    is InitialConstantValue.UInt -> 4
+    is InitialConstantValue.ULong -> 8
+    is InitialConstantValue.Double -> 8
+    is InitialConstantValue.Zero -> bytes
 }
 
 private fun writeAssemblyStaticConstant(

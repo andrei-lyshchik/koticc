@@ -3,7 +3,9 @@ package koticc.assembly
 import koticc.ast.AST
 import koticc.ast.LabelName
 import koticc.ast.Type
+import koticc.semantic.DOUBLE_POSITIVE_ZERO
 import koticc.semantic.InitialConstantValue
+import koticc.semantic.toZeroInitialValue
 import koticc.tacky.Tacky
 
 fun tackyProgramToAssembly(tackyProgram: Tacky.Program): Assembly.Program = TackyAssemblyGenerator(tackyProgram.symbolTable.toBackendSymbolTable()).tackyProgramToAssembly(tackyProgram)
@@ -24,7 +26,11 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
             Assembly.StaticConstant(
                 name = name,
                 alignment = alignment,
-                value = InitialConstantValue.Double(value),
+                value = if (value.toBits() == DOUBLE_POSITIVE_ZERO) {
+                    Type.Double.toZeroInitialValue()
+                } else {
+                    InitialConstantValue.Double(value)
+                },
             )
         }
         return Assembly.Operand.Data(staticConstant.name)
@@ -142,7 +148,7 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
     private fun tackyStaticVariableToAssembly(tackyStaticVariable: Tacky.StaticVariable): Assembly.StaticVariable = Assembly.StaticVariable(
         name = tackyStaticVariable.name,
         global = tackyStaticVariable.global,
-        initialValue = tackyStaticVariable.initialValue,
+        initialValues = tackyStaticVariable.initialValues,
         alignment = symbolTable.objectSymbol(tackyStaticVariable.name).type.alignment(),
     )
 

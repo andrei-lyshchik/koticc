@@ -57,12 +57,12 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                 is Symbol.Variable -> {
                     when (symbol.attributes) {
                         is VariableAttributes.Static -> {
-                            val initialValue = when (val initialValue = symbol.attributes.initialValue) {
-                                is InitialValue.Constant -> initialValue.value
-                                InitialValue.Tentative -> symbol.type.toZeroInitialValue()
+                            val initialValues = when (val initialValue = symbol.attributes.initialValue) {
+                                is InitialValue.Constant -> initialValue.values
+                                InitialValue.Tentative -> listOf(symbol.type.toZeroInitialValue())
                                 InitialValue.NoInitializer -> return@mapNotNull null
                             }
-                            Tacky.StaticVariable(name, global = symbol.attributes.global, initialValue = initialValue, type = symbol.type)
+                            Tacky.StaticVariable(name, global = symbol.attributes.global, initialValues = initialValues, type = symbol.type)
                         }
                         else -> null
                     }
