@@ -135,7 +135,7 @@ private fun Assembly.Type.instructionSuffix() = when (this) {
     Assembly.Type.LongWord -> 'l'
     Assembly.Type.QuadWord -> 'q'
     Assembly.Type.Double -> "sd"
-    is Assembly.Type.ByteArray -> TODO()
+    is Assembly.Type.ByteArray -> error("Bug: byte array should not be used in instructions")
 }
 
 private fun Assembly.Type.toSize() = when (this) {

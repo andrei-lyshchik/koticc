@@ -82,9 +82,25 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         } else {
             false to null
         }
+        if (functionDeclaration.type.returnType is Type.Array) {
+            raise(
+                SemanticAnalysisError(
+                    "function '${originalIdentifierName(functionDeclaration.name)}' cannot return an array",
+                    functionDeclaration.location,
+                ),
+            )
+        }
+        val adjustedType = functionDeclaration.type.copy(
+            parameters = functionDeclaration.type.parameters.map { parameterType ->
+                when (parameterType) {
+                    is Type.Array -> Type.Pointer(parameterType.elementType)
+                    else -> parameterType
+                }
+            },
+        )
         symbolTable[functionDeclaration.name] = SymbolWithLocation(
             value = Symbol.Function(
-                type = functionDeclaration.type,
+                type = adjustedType,
                 defined = functionDeclaration.body != null || previouslyDefined,
                 global = previouslyGlobal ?: global,
             ),
@@ -93,7 +109,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         functionDeclaration.copy(
             body = functionDeclaration.body?.let {
                 functionDeclaration.parameters
-                    .zip(functionDeclaration.type.parameters)
+                    .zip(adjustedType.parameters)
                     .forEach { (parameter, parameterType) ->
                         symbolTable[parameter.name] = SymbolWithLocation(
                             value = Symbol.Variable(type = parameterType, attributes = VariableAttributes.Local),
