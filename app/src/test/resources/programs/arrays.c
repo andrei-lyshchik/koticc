@@ -18,23 +18,23 @@ int main(void) {
     for (int i = 0; i < 10; i++) {
         a[i] = i;
     }
-//
-//    int res = 0;
-//    for (int i = 0; i < 10; i++) {
-//        res += a[i];
-//    }
-//
-//    if (res != 45) {
-//        return 1;
-//    }
-//
-//    int file_scope_sum = 0;
-//    for (int i = 0; i < 3; i++) {
-//        file_scope_sum += file_scope[i];
-//    }
-//    if (file_scope_sum != 15) {
-//        return 2;
-//    }
+
+    int res = 0;
+    for (int i = 0; i < 10; i++) {
+        res += a[i];
+    }
+
+    if (res != 45) {
+        return 1;
+    }
+
+    int file_scope_sum = 0;
+    for (int i = 0; i < 3; i++) {
+        file_scope_sum += file_scope[i];
+    }
+    if (file_scope_sum != 15) {
+        return 2;
+    }
     int file_scope_zero_padded_sum = 0;
     for (int i = 0; i < 15; i++) {
         file_scope_zero_padded_sum += file_scope_zero_padded[i];
