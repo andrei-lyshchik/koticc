@@ -628,7 +628,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                 generateExpressionAndConvert(expression.index) to generateExpressionAndConvert(expression.expression)
             }
 
-            val dst = nextVariable(expression.resolvedType())
+            val dst = nextVariable(Type.Pointer(expression.resolvedType()))
             instructions.add(
                 Tacky.Instruction.AddToPtr(tackyExpression, tackyIndex, expression.resolvedType().byteSize(), dst),
             )

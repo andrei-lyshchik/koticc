@@ -30,6 +30,30 @@ int array_sum_with_array_param(int arr[1], int size) {
     return sum;
 }
 
+int check_subscript(unsigned *arr, unsigned expected) {
+    // make sure our index can be any integer type
+    unsigned val1 = arr[5];
+    unsigned val2 = arr[5u];
+    unsigned val3 = arr[5l];
+    unsigned val4 = arr[5ul];
+    if (val1 != expected) {
+        return 1;
+    }
+
+    if (val2 != expected) {
+        return 2;
+    }
+
+    if (val3 != expected) {
+        return 3;
+    }
+
+    if (val4 != expected) {
+        return 4;
+    }
+    return 0;
+}
+
 int main(void) {
     int a[10] = {0};
     for (int i = 0; i < 10; i++) {
@@ -103,9 +127,15 @@ int main(void) {
         return 9;
     }
 
-    int array_sum_with_array_param_result = array_sum_with_array_param(file_scope, 10);
+    int array_sum_with_array_param_result = array_sum_with_array_param(file_scope, 3);
     if (array_sum_with_array_param_result != 15) {
         return 10;
+    }
+
+    unsigned arr_unsigned[6] = {0, 0, 0, 0, 0, 7u};
+    int check = check_subscript(arr_unsigned, 7u);
+    if (check) {
+        return 10 + check;
     }
 
     return 0;
