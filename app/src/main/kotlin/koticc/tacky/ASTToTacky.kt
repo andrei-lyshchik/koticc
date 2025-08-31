@@ -123,24 +123,25 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         }
     }
 
-    private fun generateCompoundInitializer(declarationName: String, initializer: AST.VariableInitializer.Compound, offset: Long): Long {
-        var totalOffset = offset
+    private fun generateCompoundInitializer(declarationName: String, initializer: AST.VariableInitializer.Compound, startOffset: Long): Long {
+        var currentOffset = startOffset
         for (subInitializer in initializer.initializers) {
             when (subInitializer) {
                 is AST.VariableInitializer.Compound -> {
-                    val subInitOffset = generateCompoundInitializer(declarationName, subInitializer, totalOffset)
-                    totalOffset += subInitOffset
+                    val subInitOffset = generateCompoundInitializer(declarationName, subInitializer, currentOffset)
+                    currentOffset += subInitOffset
                 }
                 is AST.VariableInitializer.Single -> {
                     val subInitializerValue = generateExpressionAndConvert(subInitializer.expression)
                     instructions.add(
-                        Tacky.Instruction.CopyToOffset(subInitializerValue, declarationName, totalOffset),
+                        Tacky.Instruction.CopyToOffset(subInitializerValue, declarationName, currentOffset),
                     )
-                    totalOffset += subInitializer.resolvedType().byteSize()
+                    val byteSize = subInitializer.resolvedType().byteSize()
+                    currentOffset += byteSize
                 }
             }
         }
-        return totalOffset
+        return currentOffset - startOffset
     }
 
     private fun generateStatement(statement: AST.Statement) {

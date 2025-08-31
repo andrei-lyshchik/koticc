@@ -737,7 +737,32 @@ class TackyAssemblyGenerator(private val symbolTable: BackendSymbolTable) {
                     ),
                 )
 
-                else -> TODO()
+                else -> listOf(
+                    Assembly.Instruction.Mov(
+                        type = Assembly.Type.QuadWord,
+                        src = tackyValueToOperand(tackyInstruction.ptr),
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.Ax),
+                    ),
+                    Assembly.Instruction.Mov(
+                        type = Assembly.Type.QuadWord,
+                        src = tackyValueToOperand(tackyInstruction.index),
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.Dx),
+                    ),
+                    Assembly.Instruction.Binary(
+                        operator = Assembly.BinaryOperator.Mul,
+                        type = Assembly.Type.QuadWord,
+                        src = Assembly.Operand.Immediate(tackyInstruction.scale),
+                        dst = Assembly.Operand.Register(Assembly.RegisterValue.Dx),
+                    ),
+                    Assembly.Instruction.LoadEffectiveAddress(
+                        src = Assembly.Operand.Indexed(
+                            base = Assembly.RegisterValue.Ax,
+                            index = Assembly.RegisterValue.Dx,
+                            scale = 1,
+                        ),
+                        dst = tackyValueToOperand(tackyInstruction.dst),
+                    ),
+                )
             }
         }
         is Tacky.Instruction.CopyToOffset -> {
