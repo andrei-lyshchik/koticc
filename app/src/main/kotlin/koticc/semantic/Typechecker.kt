@@ -356,7 +356,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         is Type.Pointer -> AST.VariableInitializer.Single(AST.Expression.Constant(value = AST.IntConstant(0), type = this, location = location), this)
         is Type.Array -> AST.VariableInitializer.Compound(
             initializers = buildList {
-                repeat(size) {
+                repeat(this@toZeroInitializer.size.toInt()) {
                     add(elementType.toZeroInitializer(location))
                 }
             },
