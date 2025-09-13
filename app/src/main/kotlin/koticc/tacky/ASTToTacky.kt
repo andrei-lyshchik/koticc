@@ -297,344 +297,447 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
         }
     }
 
-    private fun generateExpression(expression: AST.Expression): TackyExpressionResult = when (expression) {
-        is AST.Expression.Constant -> Tacky.Value.Constant(expression.value).toPlainOperand()
-        is AST.Expression.Variable -> Tacky.Value.Variable(expression.name).toPlainOperand()
-        is AST.Expression.Unary -> {
-            val src = generateExpressionAndConvert(expression.operand)
-            val dst = nextVariable(expression.resolvedType())
-            instructions.add(
-                Tacky.Instruction.Unary(
-                    operator = expression.operator.toTackyOperator(),
-                    src = src,
-                    dst = dst,
-                ),
-            )
-            dst.toPlainOperand()
-        }
-        is AST.Expression.Binary -> {
-            when (val tackyOperator = expression.operator.toTackyOperator()) {
-                is TackyBinaryOperator.NonShortCircuiting -> {
-                    val left = generateExpressionAndConvert(expression.left)
-                    val right = generateExpressionAndConvert(expression.right)
-                    val dst = nextVariable(expression.resolvedType())
-                    instructions.add(
-                        Tacky.Instruction.Binary(
-                            operator = tackyOperator.operator,
-                            left = left,
-                            right = right,
-                            dst = dst,
-                        ),
-                    )
-                    dst.toPlainOperand()
-                }
-                TackyBinaryOperator.ShortCircuitingAnd -> {
-                    val left = generateExpressionAndConvert(expression.left)
-                    val falseLabel = nextLabelName("and_false")
-                    instructions.add(
-                        Tacky.Instruction.JumpIfZero(
-                            src = left,
-                            target = falseLabel,
-                        ),
-                    )
-                    val right = generateExpressionAndConvert(expression.right)
-                    instructions.add(
-                        Tacky.Instruction.JumpIfZero(
-                            src = right,
-                            target = falseLabel,
-                        ),
-                    )
-                    val dst = nextVariable(expression.resolvedType())
-                    instructions.add(
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.Constant(AST.IntConstant(1)),
-                            dst = dst,
-                        ),
-                    )
-                    val endLabel = nextLabelName("and_end")
-                    instructions.add(
-                        Tacky.Instruction.Jump(endLabel),
-                    )
-                    instructions.add(
-                        Tacky.Instruction.Label(falseLabel),
-                    )
-                    instructions.add(
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.Constant(AST.IntConstant(0)),
-                            dst = dst,
-                        ),
-                    )
-                    instructions.add(
-                        Tacky.Instruction.Label(endLabel),
-                    )
-                    dst.toPlainOperand()
-                }
-                TackyBinaryOperator.ShortCircuitingOr -> {
-                    val left = generateExpressionAndConvert(expression.left)
-                    val trueLabel = nextLabelName("or_true")
-                    instructions.add(
-                        Tacky.Instruction.JumpIfNotZero(
-                            src = left,
-                            target = trueLabel,
-                        ),
-                    )
-                    val right = generateExpressionAndConvert(expression.right)
-                    instructions.add(
-                        Tacky.Instruction.JumpIfNotZero(
-                            src = right,
-                            target = trueLabel,
-                        ),
-                    )
-                    val dst = nextVariable(expression.resolvedType())
-                    instructions.add(
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.Constant(AST.IntConstant(0)),
-                            dst = dst,
-                        ),
-                    )
-                    val endLabel = nextLabelName("or_end")
-                    instructions.add(
-                        Tacky.Instruction.Jump(endLabel),
-                    )
-                    instructions.add(
-                        Tacky.Instruction.Label(trueLabel),
-                    )
-                    instructions.add(
-                        Tacky.Instruction.Copy(
-                            src = Tacky.Value.Constant(AST.IntConstant(1)),
-                            dst = dst,
-                        ),
-                    )
-                    instructions.add(
-                        Tacky.Instruction.Label(endLabel),
-                    )
-                    dst.toPlainOperand()
-                }
+    private fun generateExpression(expression: AST.Expression): TackyExpressionResult {
+        return when (expression) {
+            is AST.Expression.Constant -> Tacky.Value.Constant(expression.value).toPlainOperand()
+            is AST.Expression.Variable -> Tacky.Value.Variable(expression.name).toPlainOperand()
+            is AST.Expression.Unary -> {
+                val src = generateExpressionAndConvert(expression.operand)
+                val dst = nextVariable(expression.resolvedType())
+                instructions.add(
+                    Tacky.Instruction.Unary(
+                        operator = expression.operator.toTackyOperator(),
+                        src = src,
+                        dst = dst,
+                    ),
+                )
+                dst.toPlainOperand()
             }
-        }
 
-        is AST.Expression.Assignment -> {
-            val right = generateExpressionAndConvert(expression.right)
-            when (val left = generateExpression(expression.left)) {
-                is TackyExpressionResult.PlainOperand -> {
-                    instructions.add(
-                        Tacky.Instruction.Copy(
-                            src = right,
-                            dst = left.value,
-                        ),
-                    )
-                    left
-                }
-                is TackyExpressionResult.DereferencedPointer -> {
-                    instructions.add(
-                        Tacky.Instruction.Store(
-                            src = right,
-                            dstPtr = left.ptr,
-                        ),
-                    )
-                    right.toPlainOperand()
-                }
-            }
-        }
-        is AST.Expression.CompoundAssignment -> {
-            val tackyOperator = when (val operator = expression.operator.toTackyOperator()) {
-                is TackyBinaryOperator.NonShortCircuiting -> operator.operator
-                else -> error("Unexpected operator for compound assignment, there's a bug in parser?: $operator")
-            }
-            when (val left = generateExpression(expression.left)) {
-                is TackyExpressionResult.PlainOperand -> {
-                    val convertedLeft = generateCast(left.value, expression.left.resolvedType(), expression.resolvedIntermediateLeftType())
-                    val right = generateExpressionAndConvert(expression.right)
-                    val tmp = nextVariable(expression.resolvedIntermediateResultType())
-                    instructions.add(
-                        Tacky.Instruction.Binary(
-                            operator = tackyOperator,
-                            left = convertedLeft,
-                            right = right,
-                            dst = tmp,
-                        ),
-                    )
-                    val tmpConverted = generateCast(tmp, expression.resolvedIntermediateResultType(), expression.resolvedType())
-                    instructions.add(
-                        Tacky.Instruction.Copy(
-                            src = tmpConverted,
-                            dst = left.value,
-                        ),
-                    )
-                    left.value.toPlainOperand()
-                }
-                is TackyExpressionResult.DereferencedPointer -> {
-                    val loadedLeft = nextVariable(expression.left.resolvedType())
-                    instructions.add(
-                        Tacky.Instruction.Load(
-                            srcPtr = left.ptr,
-                            dst = loadedLeft,
-                        ),
-                    )
-                    val convertedLeft = generateCast(loadedLeft, expression.left.resolvedType(), expression.resolvedIntermediateLeftType())
-                    val right = generateExpressionAndConvert(expression.right)
-                    val tmp = nextVariable(expression.resolvedIntermediateResultType())
-                    instructions.add(
-                        Tacky.Instruction.Binary(
-                            operator = tackyOperator,
-                            left = convertedLeft,
-                            right = right,
-                            dst = tmp,
-                        ),
-                    )
-                    val result = generateCast(tmp, expression.resolvedIntermediateResultType(), expression.resolvedType())
-                    instructions.add(
-                        Tacky.Instruction.Store(
-                            src = result,
-                            dstPtr = left.ptr,
-                        ),
-                    )
-                    result.toPlainOperand()
-                }
-            }
-        }
-        is AST.Expression.Postfix -> {
-            val operand = generateExpression(expression.operand)
-            val tempValue = nextVariable(expression.resolvedType())
-            when (operand) {
-                is TackyExpressionResult.PlainOperand -> {
-                    instructions.add(
-                        Tacky.Instruction.Copy(
-                            src = operand.value,
-                            dst = tempValue,
-                        ),
-                    )
-                }
-                is TackyExpressionResult.DereferencedPointer -> {
-                    instructions.add(
-                        Tacky.Instruction.Load(
-                            srcPtr = operand.ptr,
-                            dst = tempValue,
-                        ),
-                    )
+            is AST.Expression.Binary -> {
+                when (val tackyOperator = expression.operator.toTackyOperator()) {
+                    is TackyBinaryOperator.NonShortCircuiting -> {
+                        val leftType = expression.left.resolvedType()
+                        val rightType = expression.right.resolvedType()
+                        if (tackyOperator.operator == Tacky.BinaryOperator.Add && (leftType is Type.Pointer || rightType is Type.Pointer)) {
+                            val (tackyExpression, tackyIndex, scale) = if (leftType is Type.Pointer) {
+                                Triple(generateExpressionAndConvert(expression.left), generateExpressionAndConvert(expression.right), leftType.referenced.byteSize())
+                            } else {
+                                Triple(
+                                    generateExpressionAndConvert(expression.right),
+                                    generateExpressionAndConvert(
+                                        expression.left,
+                                    ),
+                                    (rightType as Type.Pointer).referenced.byteSize(),
+                                )
+                            }
+
+                            val dst = nextVariable(Type.Pointer(expression.resolvedType()))
+                            instructions.add(
+                                Tacky.Instruction.AddToPtr(
+                                    tackyExpression,
+                                    tackyIndex,
+                                    scale,
+                                    dst,
+                                ),
+                            )
+
+                            return dst.toPlainOperand()
+                        }
+
+                        if (tackyOperator.operator == Tacky.BinaryOperator.Subtract && leftType is Type.Pointer && rightType is Type.Long) {
+                            val tackyExpression = generateExpressionAndConvert(expression.left)
+                            val tackyIndex = generateExpressionAndConvert(expression.right)
+                            val negatedIndex = nextVariable(rightType)
+                            instructions.add(
+                                Tacky.Instruction.Unary(
+                                    operator = Tacky.UnaryOperator.Negate,
+                                    src = tackyIndex,
+                                    dst = negatedIndex,
+                                ),
+                            )
+
+                            val dst = nextVariable(Type.Pointer(expression.resolvedType()))
+                            instructions.add(
+                                Tacky.Instruction.AddToPtr(
+                                    tackyExpression,
+                                    negatedIndex,
+                                    leftType.referenced.byteSize(),
+                                    dst,
+                                ),
+                            )
+
+                            return dst.toPlainOperand()
+                        }
+                        if (tackyOperator.operator == Tacky.BinaryOperator.Subtract && leftType is Type.Pointer && rightType is Type.Pointer) {
+                            val left = generateExpressionAndConvert(expression.left)
+                            val right = generateExpressionAndConvert(expression.right)
+                            val diff = nextVariable(leftType)
+                            instructions.add(
+                                Tacky.Instruction.Binary(
+                                    operator = tackyOperator.operator,
+                                    left = left,
+                                    right = right,
+                                    dst = diff,
+                                ),
+                            )
+                            val dst = nextVariable(expression.resolvedType())
+                            instructions.add(
+                                Tacky.Instruction.Binary(
+                                    operator = Tacky.BinaryOperator.Divide,
+                                    left = diff,
+                                    right = Tacky.Value.Constant(AST.LongConstant(leftType.referenced.byteSize())),
+                                    dst = dst,
+                                ),
+                            )
+                            return dst.toPlainOperand()
+                        }
+
+                        val left = generateExpressionAndConvert(expression.left)
+                        val right = generateExpressionAndConvert(expression.right)
+                        val dst = nextVariable(expression.resolvedType())
+                        instructions.add(
+                            Tacky.Instruction.Binary(
+                                operator = tackyOperator.operator,
+                                left = left,
+                                right = right,
+                                dst = dst,
+                            ),
+                        )
+                        dst.toPlainOperand()
+                    }
+
+                    TackyBinaryOperator.ShortCircuitingAnd -> {
+                        val left = generateExpressionAndConvert(expression.left)
+                        val falseLabel = nextLabelName("and_false")
+                        instructions.add(
+                            Tacky.Instruction.JumpIfZero(
+                                src = left,
+                                target = falseLabel,
+                            ),
+                        )
+                        val right = generateExpressionAndConvert(expression.right)
+                        instructions.add(
+                            Tacky.Instruction.JumpIfZero(
+                                src = right,
+                                target = falseLabel,
+                            ),
+                        )
+                        val dst = nextVariable(expression.resolvedType())
+                        instructions.add(
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.Constant(AST.IntConstant(1)),
+                                dst = dst,
+                            ),
+                        )
+                        val endLabel = nextLabelName("and_end")
+                        instructions.add(
+                            Tacky.Instruction.Jump(endLabel),
+                        )
+                        instructions.add(
+                            Tacky.Instruction.Label(falseLabel),
+                        )
+                        instructions.add(
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.Constant(AST.IntConstant(0)),
+                                dst = dst,
+                            ),
+                        )
+                        instructions.add(
+                            Tacky.Instruction.Label(endLabel),
+                        )
+                        dst.toPlainOperand()
+                    }
+
+                    TackyBinaryOperator.ShortCircuitingOr -> {
+                        val left = generateExpressionAndConvert(expression.left)
+                        val trueLabel = nextLabelName("or_true")
+                        instructions.add(
+                            Tacky.Instruction.JumpIfNotZero(
+                                src = left,
+                                target = trueLabel,
+                            ),
+                        )
+                        val right = generateExpressionAndConvert(expression.right)
+                        instructions.add(
+                            Tacky.Instruction.JumpIfNotZero(
+                                src = right,
+                                target = trueLabel,
+                            ),
+                        )
+                        val dst = nextVariable(expression.resolvedType())
+                        instructions.add(
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.Constant(AST.IntConstant(0)),
+                                dst = dst,
+                            ),
+                        )
+                        val endLabel = nextLabelName("or_end")
+                        instructions.add(
+                            Tacky.Instruction.Jump(endLabel),
+                        )
+                        instructions.add(
+                            Tacky.Instruction.Label(trueLabel),
+                        )
+                        instructions.add(
+                            Tacky.Instruction.Copy(
+                                src = Tacky.Value.Constant(AST.IntConstant(1)),
+                                dst = dst,
+                            ),
+                        )
+                        instructions.add(
+                            Tacky.Instruction.Label(endLabel),
+                        )
+                        dst.toPlainOperand()
+                    }
                 }
             }
 
-            val constant = AST.IntConstant(1).convertTo(expression.resolvedType())
-            val right = Tacky.Value.Constant(constant)
-            when (operand) {
-                is TackyExpressionResult.PlainOperand -> {
-                    instructions.add(
-                        Tacky.Instruction.Binary(
-                            operator = expression.operator.toTackyOperator(),
-                            left = operand.value,
-                            right = right,
-                            dst = operand.value,
-                        ),
-                    )
-                }
-                is TackyExpressionResult.DereferencedPointer -> {
-                    val tempValue2 = nextVariable(expression.resolvedType())
-                    instructions.add(
-                        Tacky.Instruction.Binary(
-                            operator = expression.operator.toTackyOperator(),
-                            left = tempValue,
-                            right = right,
-                            dst = tempValue2,
-                        ),
-                    )
-                    instructions.add(
-                        Tacky.Instruction.Store(
-                            src = tempValue2,
-                            dstPtr = operand.ptr,
-                        ),
-                    )
+            is AST.Expression.Assignment -> {
+                val right = generateExpressionAndConvert(expression.right)
+                when (val left = generateExpression(expression.left)) {
+                    is TackyExpressionResult.PlainOperand -> {
+                        instructions.add(
+                            Tacky.Instruction.Copy(
+                                src = right,
+                                dst = left.value,
+                            ),
+                        )
+                        left
+                    }
+
+                    is TackyExpressionResult.DereferencedPointer -> {
+                        instructions.add(
+                            Tacky.Instruction.Store(
+                                src = right,
+                                dstPtr = left.ptr,
+                            ),
+                        )
+                        right.toPlainOperand()
+                    }
                 }
             }
 
-            tempValue.toPlainOperand()
-        }
-        is AST.Expression.Conditional -> {
-            val condition = generateExpressionAndConvert(expression.condition)
-            val elseLabel = nextLabelName("cond_else")
-            instructions.add(
-                Tacky.Instruction.JumpIfZero(
-                    src = condition,
-                    target = elseLabel,
-                ),
-            )
-            val thenValue = generateExpressionAndConvert(expression.thenExpression)
-            val result = nextVariable(expression.resolvedType())
-            instructions.add(
-                Tacky.Instruction.Copy(
-                    src = thenValue,
-                    dst = result,
-                ),
-            )
-            val endLabel = nextLabelName("cond_end")
-            instructions.add(
-                Tacky.Instruction.Jump(endLabel),
-            )
-            instructions.add(
-                Tacky.Instruction.Label(elseLabel),
-            )
-            val elseValue = generateExpressionAndConvert(expression.elseExpression)
-            instructions.add(
-                Tacky.Instruction.Copy(
-                    src = elseValue,
-                    dst = result,
-                ),
-            )
-            instructions.add(
-                Tacky.Instruction.Label(endLabel),
-            )
-            result.toPlainOperand()
-        }
-        is AST.Expression.FunctionCall -> {
-            val arguments = expression.arguments.map { generateExpressionAndConvert(it) }
-            val dst = nextVariable(expression.resolvedType())
-            instructions.add(
-                Tacky.Instruction.Call(
-                    name = expression.name,
-                    arguments = arguments,
-                    dst = dst,
-                ),
-            )
-            dst.toPlainOperand()
-        }
-
-        is AST.Expression.Cast -> {
-            val tackyExpression = generateExpressionAndConvert(expression.expression)
-            generateCast(tackyExpression, expression.expression.resolvedType(), expression.targetType).toPlainOperand()
-        }
-
-        is AST.Expression.AddressOf -> {
-            when (val inner = generateExpression(expression.expression)) {
-                is TackyExpressionResult.PlainOperand -> {
-                    val dst = nextVariable(expression.resolvedType())
-                    instructions.add(
-                        Tacky.Instruction.GetAddress(inner.value, dst),
-                    )
-                    dst.toPlainOperand()
+            is AST.Expression.CompoundAssignment -> {
+                val tackyOperator = when (val operator = expression.operator.toTackyOperator()) {
+                    is TackyBinaryOperator.NonShortCircuiting -> operator.operator
+                    else -> error("Unexpected operator for compound assignment, there's a bug in parser?: $operator")
                 }
-                is TackyExpressionResult.DereferencedPointer -> {
-                    inner.ptr.toPlainOperand()
+                when (val left = generateExpression(expression.left)) {
+                    is TackyExpressionResult.PlainOperand -> {
+                        val convertedLeft = generateCast(
+                            left.value,
+                            expression.left.resolvedType(),
+                            expression.resolvedIntermediateLeftType(),
+                        )
+                        val right = generateExpressionAndConvert(expression.right)
+                        val tmp = nextVariable(expression.resolvedIntermediateResultType())
+                        instructions.add(
+                            Tacky.Instruction.Binary(
+                                operator = tackyOperator,
+                                left = convertedLeft,
+                                right = right,
+                                dst = tmp,
+                            ),
+                        )
+                        val tmpConverted =
+                            generateCast(tmp, expression.resolvedIntermediateResultType(), expression.resolvedType())
+                        instructions.add(
+                            Tacky.Instruction.Copy(
+                                src = tmpConverted,
+                                dst = left.value,
+                            ),
+                        )
+                        left.value.toPlainOperand()
+                    }
+
+                    is TackyExpressionResult.DereferencedPointer -> {
+                        val loadedLeft = nextVariable(expression.left.resolvedType())
+                        instructions.add(
+                            Tacky.Instruction.Load(
+                                srcPtr = left.ptr,
+                                dst = loadedLeft,
+                            ),
+                        )
+                        val convertedLeft = generateCast(
+                            loadedLeft,
+                            expression.left.resolvedType(),
+                            expression.resolvedIntermediateLeftType(),
+                        )
+                        val right = generateExpressionAndConvert(expression.right)
+                        val tmp = nextVariable(expression.resolvedIntermediateResultType())
+                        instructions.add(
+                            Tacky.Instruction.Binary(
+                                operator = tackyOperator,
+                                left = convertedLeft,
+                                right = right,
+                                dst = tmp,
+                            ),
+                        )
+                        val result =
+                            generateCast(tmp, expression.resolvedIntermediateResultType(), expression.resolvedType())
+                        instructions.add(
+                            Tacky.Instruction.Store(
+                                src = result,
+                                dstPtr = left.ptr,
+                            ),
+                        )
+                        result.toPlainOperand()
+                    }
                 }
             }
-        }
-        is AST.Expression.Dereference -> {
-            val inner = generateExpressionAndConvert(expression.expression)
-            TackyExpressionResult.DereferencedPointer(inner)
-        }
 
-        is AST.Expression.Subscript -> {
-            val (tackyExpression, tackyIndex) = if (expression.expression.resolvedType() is Type.Pointer) {
-                generateExpressionAndConvert(expression.expression) to generateExpressionAndConvert(expression.index)
-            } else {
-                generateExpressionAndConvert(expression.index) to generateExpressionAndConvert(expression.expression)
+            is AST.Expression.Postfix -> {
+                val operand = generateExpression(expression.operand)
+                val tempValue = nextVariable(expression.resolvedType())
+                when (operand) {
+                    is TackyExpressionResult.PlainOperand -> {
+                        instructions.add(
+                            Tacky.Instruction.Copy(
+                                src = operand.value,
+                                dst = tempValue,
+                            ),
+                        )
+                    }
+
+                    is TackyExpressionResult.DereferencedPointer -> {
+                        instructions.add(
+                            Tacky.Instruction.Load(
+                                srcPtr = operand.ptr,
+                                dst = tempValue,
+                            ),
+                        )
+                    }
+                }
+
+                val constant = AST.IntConstant(1).convertTo(expression.resolvedType())
+                val right = Tacky.Value.Constant(constant)
+                when (operand) {
+                    is TackyExpressionResult.PlainOperand -> {
+                        instructions.add(
+                            Tacky.Instruction.Binary(
+                                operator = expression.operator.toTackyOperator(),
+                                left = operand.value,
+                                right = right,
+                                dst = operand.value,
+                            ),
+                        )
+                    }
+
+                    is TackyExpressionResult.DereferencedPointer -> {
+                        val tempValue2 = nextVariable(expression.resolvedType())
+                        instructions.add(
+                            Tacky.Instruction.Binary(
+                                operator = expression.operator.toTackyOperator(),
+                                left = tempValue,
+                                right = right,
+                                dst = tempValue2,
+                            ),
+                        )
+                        instructions.add(
+                            Tacky.Instruction.Store(
+                                src = tempValue2,
+                                dstPtr = operand.ptr,
+                            ),
+                        )
+                    }
+                }
+
+                tempValue.toPlainOperand()
             }
 
-            val dst = nextVariable(Type.Pointer(expression.resolvedType()))
-            instructions.add(
-                Tacky.Instruction.AddToPtr(tackyExpression, tackyIndex, expression.resolvedType().byteSize(), dst),
-            )
+            is AST.Expression.Conditional -> {
+                val condition = generateExpressionAndConvert(expression.condition)
+                val elseLabel = nextLabelName("cond_else")
+                instructions.add(
+                    Tacky.Instruction.JumpIfZero(
+                        src = condition,
+                        target = elseLabel,
+                    ),
+                )
+                val thenValue = generateExpressionAndConvert(expression.thenExpression)
+                val result = nextVariable(expression.resolvedType())
+                instructions.add(
+                    Tacky.Instruction.Copy(
+                        src = thenValue,
+                        dst = result,
+                    ),
+                )
+                val endLabel = nextLabelName("cond_end")
+                instructions.add(
+                    Tacky.Instruction.Jump(endLabel),
+                )
+                instructions.add(
+                    Tacky.Instruction.Label(elseLabel),
+                )
+                val elseValue = generateExpressionAndConvert(expression.elseExpression)
+                instructions.add(
+                    Tacky.Instruction.Copy(
+                        src = elseValue,
+                        dst = result,
+                    ),
+                )
+                instructions.add(
+                    Tacky.Instruction.Label(endLabel),
+                )
+                result.toPlainOperand()
+            }
 
-            TackyExpressionResult.DereferencedPointer(dst)
+            is AST.Expression.FunctionCall -> {
+                val arguments = expression.arguments.map { generateExpressionAndConvert(it) }
+                val dst = nextVariable(expression.resolvedType())
+                instructions.add(
+                    Tacky.Instruction.Call(
+                        name = expression.name,
+                        arguments = arguments,
+                        dst = dst,
+                    ),
+                )
+                dst.toPlainOperand()
+            }
+
+            is AST.Expression.Cast -> {
+                val tackyExpression = generateExpressionAndConvert(expression.expression)
+                generateCast(
+                    tackyExpression,
+                    expression.expression.resolvedType(),
+                    expression.targetType,
+                ).toPlainOperand()
+            }
+
+            is AST.Expression.AddressOf -> {
+                when (val inner = generateExpression(expression.expression)) {
+                    is TackyExpressionResult.PlainOperand -> {
+                        val dst = nextVariable(expression.resolvedType())
+                        instructions.add(
+                            Tacky.Instruction.GetAddress(inner.value, dst),
+                        )
+                        dst.toPlainOperand()
+                    }
+                    is TackyExpressionResult.DereferencedPointer -> {
+                        inner.ptr.toPlainOperand()
+                    }
+                }
+            }
+            is AST.Expression.Dereference -> {
+                val inner = generateExpressionAndConvert(expression.expression)
+                TackyExpressionResult.DereferencedPointer(inner)
+            }
+
+            is AST.Expression.Subscript -> {
+                val (tackyExpression, tackyIndex) = if (expression.expression.resolvedType() is Type.Pointer) {
+                    generateExpressionAndConvert(expression.expression) to generateExpressionAndConvert(expression.index)
+                } else {
+                    generateExpressionAndConvert(expression.index) to generateExpressionAndConvert(expression.expression)
+                }
+
+                val dst = nextVariable(Type.Pointer(expression.resolvedType()))
+                instructions.add(
+                    Tacky.Instruction.AddToPtr(tackyExpression, tackyIndex, expression.resolvedType().byteSize(), dst),
+                )
+
+                TackyExpressionResult.DereferencedPointer(dst)
+            }
         }
     }
 

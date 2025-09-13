@@ -765,6 +765,32 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             return@either BinaryTypecheckResult(left = left, right = right, resultType = left.resolvedType())
         }
 
+        if (operator == AST.BinaryOperator.Add) {
+            if (left.resolvedType() is Type.Pointer && right.resolvedType().isInteger()) {
+                val newRight = right.castTo(Type.Long)
+                return@either BinaryTypecheckResult(left = left, right = newRight, resultType = left.resolvedType())
+            }
+            if (right.resolvedType() is Type.Pointer && left.resolvedType().isInteger()) {
+                val newLeft = left.castTo(Type.Long)
+                return@either BinaryTypecheckResult(left = newLeft, right = right, resultType = right.resolvedType())
+            }
+        }
+
+        if (operator == AST.BinaryOperator.Subtract) {
+            if (left.resolvedType() is Type.Pointer && right.resolvedType().isInteger()) {
+                val newRight = right.castTo(Type.Long)
+                return@either BinaryTypecheckResult(left = left, right = newRight, resultType = left.resolvedType())
+            }
+            if (left.resolvedType() is Type.Pointer && right.resolvedType() == left.resolvedType()) {
+                return@either BinaryTypecheckResult(left = left, right = right, resultType = Type.Long)
+            }
+            if (left.resolvedType().isInteger() && right.resolvedType() is Type.Pointer) {
+                raise(
+                    SemanticAnalysisError("invalid operands to binary expression ('${left.resolvedType().toDisplayString()}' and '${right.resolvedType().toDisplayString()}')", location),
+                )
+            }
+        }
+
         val commonType = if (left.resolvedType() is Type.Pointer || right.resolvedType() is Type.Pointer) {
             getCommonPointerType(left, right).bind()
         } else {
@@ -907,6 +933,10 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             AST.BinaryOperator.NotEqual,
             AST.BinaryOperator.LogicalAnd,
             AST.BinaryOperator.LogicalOr,
+            AST.BinaryOperator.LessThan,
+            AST.BinaryOperator.LessThanOrEqual,
+            AST.BinaryOperator.GreaterThan,
+            AST.BinaryOperator.GreaterThanOrEqual,
         )
     }
 }

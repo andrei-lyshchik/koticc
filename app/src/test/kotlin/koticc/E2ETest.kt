@@ -57,6 +57,7 @@ class E2ETest {
             "/programs/arrays.c",
             "/programs/multi_dimensional_arrays.c",
             "/programs/alignment.c",
+            "/programs/pointer_arithmetic.c",
         )
 
     @ParameterizedTest
