@@ -610,7 +610,11 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                     }
                 }
 
-                val constant = AST.IntConstant(1).convertTo(expression.resolvedType())
+                val constantValue = when (val type = expression.resolvedType()) {
+                    is Type.Pointer -> AST.ULongConstant(type.referenced.byteSize().toULong())
+                    else -> AST.IntConstant(1)
+                }
+                val constant = constantValue.convertTo(expression.resolvedType())
                 val right = Tacky.Value.Constant(constant)
                 when (operand) {
                     is TackyExpressionResult.PlainOperand -> {
