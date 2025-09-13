@@ -532,14 +532,41 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                         )
                         val right = generateExpressionAndConvert(expression.right)
                         val tmp = nextVariable(expression.resolvedIntermediateResultType())
-                        instructions.add(
-                            Tacky.Instruction.Binary(
-                                operator = tackyOperator,
-                                left = convertedLeft,
-                                right = right,
-                                dst = tmp,
-                            ),
-                        )
+                        when (val type = expression.resolvedIntermediateResultType()) {
+                            is Type.Pointer -> {
+                                val correctRight = if (expression.operator == AST.BinaryOperator.Subtract) {
+                                    val rightNegated = nextVariable(expression.right.resolvedType())
+                                    instructions.add(
+                                        Tacky.Instruction.Unary(
+                                            operator = Tacky.UnaryOperator.Negate,
+                                            src = right,
+                                            dst = rightNegated,
+                                        ),
+                                    )
+                                    rightNegated
+                                } else {
+                                    right
+                                }
+                                instructions.add(
+                                    Tacky.Instruction.AddToPtr(
+                                        ptr = left.value,
+                                        index = correctRight,
+                                        scale = type.referenced.byteSize(),
+                                        dst = tmp,
+                                    ),
+                                )
+                            }
+                            else -> {
+                                instructions.add(
+                                    Tacky.Instruction.Binary(
+                                        operator = tackyOperator,
+                                        left = convertedLeft,
+                                        right = right,
+                                        dst = tmp,
+                                    ),
+                                )
+                            }
+                        }
                         val tmpConverted =
                             generateCast(tmp, expression.resolvedIntermediateResultType(), expression.resolvedType())
                         instructions.add(
@@ -566,14 +593,41 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                         )
                         val right = generateExpressionAndConvert(expression.right)
                         val tmp = nextVariable(expression.resolvedIntermediateResultType())
-                        instructions.add(
-                            Tacky.Instruction.Binary(
-                                operator = tackyOperator,
-                                left = convertedLeft,
-                                right = right,
-                                dst = tmp,
-                            ),
-                        )
+                        when (val type = expression.resolvedIntermediateResultType()) {
+                            is Type.Pointer -> {
+                                val correctRight = if (expression.operator == AST.BinaryOperator.Subtract) {
+                                    val rightNegated = nextVariable(expression.right.resolvedType())
+                                    instructions.add(
+                                        Tacky.Instruction.Unary(
+                                            operator = Tacky.UnaryOperator.Negate,
+                                            src = right,
+                                            dst = rightNegated,
+                                        ),
+                                    )
+                                    rightNegated
+                                } else {
+                                    right
+                                }
+                                instructions.add(
+                                    Tacky.Instruction.AddToPtr(
+                                        ptr = convertedLeft,
+                                        index = correctRight,
+                                        scale = type.referenced.byteSize(),
+                                        dst = tmp,
+                                    ),
+                                )
+                            }
+                            else -> {
+                                instructions.add(
+                                    Tacky.Instruction.Binary(
+                                        operator = tackyOperator,
+                                        left = convertedLeft,
+                                        right = right,
+                                        dst = tmp,
+                                    ),
+                                )
+                            }
+                        }
                         val result =
                             generateCast(tmp, expression.resolvedIntermediateResultType(), expression.resolvedType())
                         instructions.add(
@@ -610,34 +664,70 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                     }
                 }
 
-                val constantValue = when (val type = expression.resolvedType()) {
-                    is Type.Pointer -> AST.ULongConstant(type.referenced.byteSize().toULong())
-                    else -> AST.IntConstant(1)
-                }
-                val constant = constantValue.convertTo(expression.resolvedType())
-                val right = Tacky.Value.Constant(constant)
                 when (operand) {
                     is TackyExpressionResult.PlainOperand -> {
-                        instructions.add(
-                            Tacky.Instruction.Binary(
-                                operator = expression.operator.toTackyOperator(),
-                                left = operand.value,
-                                right = right,
-                                dst = operand.value,
-                            ),
-                        )
+                        when (val type = expression.resolvedType()) {
+                            is Type.Pointer -> {
+                                val index = if (expression.operator == AST.PostfixOperator.Decrement) {
+                                    -1
+                                } else {
+                                    1
+                                }
+                                instructions.add(
+                                    Tacky.Instruction.AddToPtr(
+                                        ptr = operand.value,
+                                        index = Tacky.Value.Constant(AST.IntConstant(index)),
+                                        scale = type.referenced.byteSize(),
+                                        dst = operand.value,
+                                    ),
+                                )
+                            }
+                            else -> {
+                                val constant = AST.IntConstant(1).convertTo(expression.resolvedType())
+                                val right = Tacky.Value.Constant(constant)
+                                instructions.add(
+                                    Tacky.Instruction.Binary(
+                                        operator = expression.operator.toTackyOperator(),
+                                        left = operand.value,
+                                        right = right,
+                                        dst = operand.value,
+                                    ),
+                                )
+                            }
+                        }
                     }
 
                     is TackyExpressionResult.DereferencedPointer -> {
                         val tempValue2 = nextVariable(expression.resolvedType())
-                        instructions.add(
-                            Tacky.Instruction.Binary(
-                                operator = expression.operator.toTackyOperator(),
-                                left = tempValue,
-                                right = right,
-                                dst = tempValue2,
-                            ),
-                        )
+                        when (val type = expression.resolvedType()) {
+                            is Type.Pointer -> {
+                                val index = if (expression.operator == AST.PostfixOperator.Decrement) {
+                                    -1
+                                } else {
+                                    1
+                                }
+                                instructions.add(
+                                    Tacky.Instruction.AddToPtr(
+                                        ptr = tempValue,
+                                        index = Tacky.Value.Constant(AST.IntConstant(index)),
+                                        scale = type.referenced.byteSize(),
+                                        dst = tempValue2,
+                                    ),
+                                )
+                            }
+                            else -> {
+                                val constant = AST.IntConstant(1).convertTo(expression.resolvedType())
+                                val right = Tacky.Value.Constant(constant)
+                                instructions.add(
+                                    Tacky.Instruction.Binary(
+                                        operator = expression.operator.toTackyOperator(),
+                                        left = tempValue,
+                                        right = right,
+                                        dst = tempValue2,
+                                    ),
+                                )
+                            }
+                        }
                         instructions.add(
                             Tacky.Instruction.Store(
                                 src = tempValue2,
