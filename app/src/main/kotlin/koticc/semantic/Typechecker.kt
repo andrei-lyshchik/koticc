@@ -389,9 +389,9 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 val convertedSubInitializers = initializer.initializers.flatMap { subInitializer ->
                     convertStaticDeclarationInitializer(subInitializer, elementType, name, location).bind()
                 }
-                val zeroPadding = if (convertedSubInitializers.size < size) {
+                val zeroPadding = if (initializer.initializers.size < size) {
                     listOf(
-                        InitialConstantValue.Zero(bytes = elementType.byteSize().toInt() * (size - convertedSubInitializers.size).toInt()),
+                        InitialConstantValue.Zero(bytes = elementType.byteSize().toInt() * (size - initializer.initializers.size).toInt()),
                     )
                 } else {
                     emptyList()

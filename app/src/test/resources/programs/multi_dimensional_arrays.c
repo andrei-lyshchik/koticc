@@ -8,6 +8,11 @@ long sum(long arr[3][4], int width, int height) {
     return total;
 }
 
+static int static_arr[4][3][5] = {
+    {{1}, {2, 3}},
+    {{4, 5, 6}, {7}},
+};
+
 int main(void) {
     long arr[3][4] = {
         {1, 2, 3, 4},
@@ -34,6 +39,20 @@ int main(void) {
         for (int j = 0; j < 2; j++)
             if (arr2[i][j] != 0)
                 return 5;
+
+    int three_d_arr[4][3][5] = {
+        {{1, 2}, {3}},
+        {{4, 5}, {6, 7}}
+    };
+    int elem = three_d_arr[1][1][1];
+    if (elem != 7) {
+        return 6;
+    }
+
+    int static_elem = static_arr[1][0][2];
+    if (static_elem != 6) {
+        return 7;
+    }
 
     return 0;
 }
