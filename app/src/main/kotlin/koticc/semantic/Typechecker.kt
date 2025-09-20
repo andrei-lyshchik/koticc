@@ -665,7 +665,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             }
 
             is AST.Expression.AddressOf -> {
-                val typedInnerExpression = typecheckAndConvertExpression(expression.expression).bind()
+                val typedInnerExpression = typecheckExpression(expression.expression).bind()
                 val type = if (typedInnerExpression.isLValue()) {
                     Type.Pointer(referenced = typedInnerExpression.resolvedType())
                 } else {
