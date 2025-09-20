@@ -47,11 +47,19 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
     ): Either<SemanticAnalysisError, AST.Declaration.Function> = either {
         val global = functionDeclaration.storageClass != AST.StorageClass.Static
         val existingSymbol = symbolTable[functionDeclaration.name]
+        val adjustedType = functionDeclaration.type.copy(
+            parameters = functionDeclaration.type.parameters.map { parameterType ->
+                when (parameterType) {
+                    is Type.Array -> Type.Pointer(parameterType.elementType)
+                    else -> parameterType
+                }
+            },
+        )
         val (previouslyDefined, previouslyGlobal) = if (existingSymbol != null) {
             when (val symbolValue = existingSymbol.value) {
                 is Symbol.Function -> {
                     val bothDefined = symbolValue.defined && functionDeclaration.body != null
-                    val conflictingTypes = symbolValue.type != functionDeclaration.type
+                    val conflictingTypes = symbolValue.type != adjustedType
                     if (bothDefined || conflictingTypes) {
                         raise(
                             SemanticAnalysisError(
@@ -82,7 +90,7 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
         } else {
             false to null
         }
-        if (functionDeclaration.type.returnType is Type.Array) {
+        if (adjustedType.returnType is Type.Array) {
             raise(
                 SemanticAnalysisError(
                     "function '${originalIdentifierName(functionDeclaration.name)}' cannot return an array",
@@ -90,14 +98,6 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 ),
             )
         }
-        val adjustedType = functionDeclaration.type.copy(
-            parameters = functionDeclaration.type.parameters.map { parameterType ->
-                when (parameterType) {
-                    is Type.Array -> Type.Pointer(parameterType.elementType)
-                    else -> parameterType
-                }
-            },
-        )
         symbolTable[functionDeclaration.name] = SymbolWithLocation(
             value = Symbol.Function(
                 type = adjustedType,

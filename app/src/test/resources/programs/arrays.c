@@ -30,6 +30,9 @@ int array_sum_with_array_param(int arr[1], int size) {
     return sum;
 }
 
+// shouldn't conflict with previous declaration
+int array_sum_with_array_param(int *arr, int size);
+
 int check_subscript(unsigned *arr, unsigned expected) {
     // make sure our index can be any integer type
     unsigned val1 = arr[5];
