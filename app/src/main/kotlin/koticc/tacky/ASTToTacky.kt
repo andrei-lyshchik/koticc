@@ -372,7 +372,7 @@ private class TackyGenerator(initialVariableCount: Int, private val symbolTable:
                         if (tackyOperator.operator == Tacky.BinaryOperator.Subtract && leftType is Type.Pointer && rightType is Type.Pointer) {
                             val left = generateExpressionAndConvert(expression.left)
                             val right = generateExpressionAndConvert(expression.right)
-                            val diff = nextVariable(leftType)
+                            val diff = nextVariable(expression.resolvedType())
                             instructions.add(
                                 Tacky.Instruction.Binary(
                                     operator = tackyOperator.operator,

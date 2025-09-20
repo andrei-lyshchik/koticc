@@ -60,5 +60,10 @@ int main(void) {
         return 9;
     }
 
+    long negative_ptr_diff = arr - arr_3;
+    if (negative_ptr_diff != -3) {
+        return 10;
+    }
+
     return 0;
 }
