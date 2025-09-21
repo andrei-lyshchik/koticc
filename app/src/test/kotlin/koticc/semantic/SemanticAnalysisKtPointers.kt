@@ -310,4 +310,43 @@ class SemanticAnalysisKtPointers {
             result,
         )
     }
+
+    @Test
+    fun `can't add two pointers`() {
+        val input = """
+            int main(void) {
+                int v = 1;
+                int *a = &v;
+                int *b = &v;
+                a + b;
+                return 0;
+            }
+        """.trimIndent()
+
+        val result = parseAndAnalyze(input)
+
+        assertEquals(
+            SemanticAnalysisError("Can't add two pointers", Location(5, 5)).left(),
+            result,
+        )
+    }
+
+    @Test
+    fun `can't compare pointer to zero with less or more than`() {
+        val input = """
+            int main(void) {
+                int v = 0;
+                int *p = &v;
+                p > 0;
+                return 0;
+            }
+        """.trimIndent()
+
+        val result = parseAndAnalyze(input)
+
+        assertEquals(
+            SemanticAnalysisError("Can't compare a pointer and a number", Location(4, 5)).left(),
+            result,
+        )
+    }
 }

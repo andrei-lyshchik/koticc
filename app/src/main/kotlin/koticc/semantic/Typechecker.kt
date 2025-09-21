@@ -774,6 +774,11 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
                 val newLeft = left.castTo(Type.Long)
                 return@either BinaryTypecheckResult(left = newLeft, right = right, resultType = right.resolvedType())
             }
+            if (left.resolvedType() is Type.Pointer && right.resolvedType() is Type.Pointer) {
+                raise(
+                    SemanticAnalysisError("Can't add two pointers", left.location),
+                )
+            }
         }
 
         if (operator == AST.BinaryOperator.Subtract) {
@@ -787,6 +792,24 @@ internal class Typechecker(private val nameMapping: Map<String, String>) {
             if (left.resolvedType().isInteger() && right.resolvedType() is Type.Pointer) {
                 raise(
                     SemanticAnalysisError("invalid operands to binary expression ('${left.resolvedType().toDisplayString()}' and '${right.resolvedType().toDisplayString()}')", location),
+                )
+            }
+        }
+        if (operator == AST.BinaryOperator.LessThan ||
+            operator == AST.BinaryOperator.LessThanOrEqual ||
+            operator == AST.BinaryOperator.GreaterThan ||
+            operator == AST.BinaryOperator.GreaterThanOrEqual
+        ) {
+            if (left.resolvedType() is Type.Pointer &&
+                right.resolvedType() is Type.Arithmetic ||
+                left.resolvedType() is Type.Arithmetic &&
+                right.resolvedType() is Type.Pointer
+            ) {
+                raise(
+                    SemanticAnalysisError(
+                        "Can't compare a pointer and a number",
+                        left.location,
+                    ),
                 )
             }
         }
